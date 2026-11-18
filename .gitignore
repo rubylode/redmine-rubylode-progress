@@ -1,0 +1,8 @@
+.claude/
+.DS_Store
+tmp/
+node_modules/
+.env
+.overmind.sock
+log/
+coverage/
