@@ -1,0 +1,63 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Runs the throwaway Redmine 7 this plugin is tried in (docker-compose.yml, http://127.0.0.1:3016).
+#
+#   bin/demo up        start it, run the plugin migrations, load the demo data (once; running it again changes nothing)
+#   bin/demo seed      load the demo data into a Redmine that is already running
+#   bin/demo restart   restart Redmine, to pick up a change to the plugin (it runs in production mode and caches code)
+#   bin/demo down      stop it, keep the data
+#   bin/demo reset     stop it and wipe the data
+#
+# Sign in as grace.hopper with demo-password-1 (a contributor who can edit issues), or as admin / admin.
+# Open the Progress tab of the project "Bridge", or Progress in the top menu for every project.
+require "net/http"
+
+ROOT = File.expand_path("..", __dir__)
+PORT = 3016
+READY_SECONDS = 300
+
+def compose(*arguments)
+  system("docker", "compose", *arguments, chdir: ROOT) || abort("docker compose #{arguments.join(' ')} failed")
+end
+
+def wait_until_ready
+  uri = URI("http://127.0.0.1:#{PORT}/login")
+  deadline = Time.now + READY_SECONDS
+  loop do
+    begin
+      return puts("Redmine is up at http://127.0.0.1:#{PORT}") if Net::HTTP.get_response(uri).code == "200"
+    rescue SystemCallError, EOFError, Net::ReadTimeout
+      nil
+    end
+    abort("Redmine did not answer within #{READY_SECONDS} seconds") if Time.now > deadline
+    sleep 3
+  end
+end
+
+def migrate
+  compose("exec", "-T", "redmine", "bin/rails", "redmine:plugins:migrate")
+end
+
+def seed
+  compose("exec", "-T", "redmine", "bin/rails", "redmine_rubylode_progress:demo")
+end
+
+case ARGV.first
+when "up"
+  compose("up", "-d", "redmine")
+  wait_until_ready
+  migrate
+  seed
+when "seed"
+  seed
+when "restart"
+  compose("restart", "redmine")
+  wait_until_ready
+when "down"
+  compose("down")
+when "reset"
+  compose("down", "-v")
+else
+  abort(File.read(__FILE__)[/\A#!.*?\n# frozen.*?\n\n((?:#.*\n)+)/m, 1].to_s.gsub(/^# ?/, ""))
+end

@@ -1,5 +1,5 @@
 # A throwaway Redmine 7 to try the plugin in. Not the real tracker.
-# Start: docker compose up -d, then open http://localhost:3019 (admin / admin, change it on first login).
+# Start: docker compose up -d, then open http://127.0.0.1:3016 (admin / admin, change it on first login; or bin/demo up, which also loads the demo data).
 # The repository is mounted as the plugin, so a code change shows after "docker compose restart redmine".
 # Wipe it: docker compose down -v
 # Tests: docker compose run --rm test (see bin/test)
@@ -8,7 +8,7 @@ services:
     image: redmine:7.0.2
     container_name: redmine-rubylode-progress-dev
     ports:
-      - "127.0.0.1:3019:3000"
+      - "127.0.0.1:3016:3000"
     environment:
       # The image ships without the development gems, so production is the mode it can boot in.
       RAILS_ENV: production
