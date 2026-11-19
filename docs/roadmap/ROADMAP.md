@@ -25,7 +25,8 @@ the viewer may see.
 6. Query count and the per-viewer rail cache, then the look and accessibility: ~~`09-performance.md`~~ done 2026-11-18 (ce8b166, 8bed01e),
    ~~`10-look-and-accessibility.md`~~ done 2026-11-18 (0dec454).
 7. Demo data and `bin/demo`: ~~`11-demo.md`~~ done 2026-11-19 (b08a875).
-8. Screenshots, README, CHANGELOG, the redmine.org listing text, then release v1.0.0 with `/rubylode:prepare-release`
+8. The owner's revisions after the first demo: ~~`14-owner-revisions.md`~~ done 2026-11-19 (4dcdd5d).
+9. Screenshots, README, CHANGELOG, the redmine.org listing text, then release v1.0.0 with `/rubylode:prepare-release`
    through the Gitea origin: `12-release.md`.
    - ~~Private Gitea origin and the public GitHub repository~~ done 2026-11-18: Gitea main publishes to
      `rubylode/redmine-rubylode-progress`, seeded once by hand.

@@ -1,6 +1,6 @@
 # 12. README, CHANGELOG, listing and release 1.0.0
 
-Blocked by slices 9, 10 and 11.
+Blocked by slices 9, 10, 11, 13 and 14.
 
 ## Done means
 

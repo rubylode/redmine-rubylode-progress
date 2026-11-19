@@ -35,8 +35,9 @@ Redmine's fixtures; (3) integration tests through the routes. No test reaches in
 | 9 | `09-performance.md` | Query count fixed; rail cached per viewer | 5, 8 |
 | 10 | `10-look-and-accessibility.md` | Tokens, dark variant, phone width, contrast | 6, 8 |
 | 11 | `11-demo.md` | `rake redmine_rubylode_progress:demo` and `bin/demo` | 6, 7, 8 |
-| 12 | `12-release.md` | README, CHANGELOG, listing, v1.0.0 released through Gitea | 9, 10, 11, 13 |
+| 12 | `12-release.md` | README, CHANGELOG, listing, v1.0.0 released through Gitea | 9, 10, 11, 13, 14 |
 | 13 | `13-edit-and-add-modals.md` | Quick-edit pencil and new-issue plus, through Redmine's own saves | 5 |
+| 14 | `14-owner-revisions.md` | Round marks, author and new-tab link, item modal, folds with progress, Due label, one top bar | 11 |
 
 Slices 2 and 3 go in either order; 7 and 8 can run beside 5 and 6. Each slice starts in a fresh session from its file,
 works test first, runs single files with `bin/test <file>` while working and `bin/test` once at the end, and ends with
