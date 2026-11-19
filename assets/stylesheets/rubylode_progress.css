@@ -84,7 +84,8 @@
   --rubylode-progress-monospace-font: ui-monospace, Menlo, monospace;
 }
 
-.rubylode-progress {
+/* Not an anchor: Redmine also puts this class on the top menu and project menu links named rubylode-progress. */
+.rubylode-progress:not(a) {
   box-sizing: border-box;
   max-width: var(--rubylode-progress-column-width);
   margin: 0 auto;

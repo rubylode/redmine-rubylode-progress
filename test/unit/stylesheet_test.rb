@@ -246,7 +246,16 @@ test "a narrow checklist column puts a row's number, assignee, pill and date on 
   assert_match(/\.rubylode-progress-row__main\s*\{[^}]*flex: 1 1 calc\(100% - /m, narrow)
 end
 
-test "every --rubylode-progress- property in the stylesheet is listed in docs/theming.md" do
+  # Redmine puts the menu item's name on its link as a class, so the top menu and the project menu carry
+  # a.rubylode-progress. The page wrapper is a div with the same class and must not style those links.
+  test "the page wrapper rule is scoped to the div, so the menu links named rubylode-progress are not laid out as the page" do
+    css = comment_free_stylesheet
+
+    assert_no_match(/^\.rubylode-progress\s*\{/, css)
+    assert_match(/^\.rubylode-progress:not\(a\)\s*\{[^}]*display: flex/m, css)
+  end
+
+  test "every --rubylode-progress- property in the stylesheet is listed in docs/theming.md" do
     used = comment_free_stylesheet.scan(/--rubylode-progress-[a-z-]+/).uniq
 
     assert_empty(used.reject { |name| THEMING.include?("`#{name}`") })
