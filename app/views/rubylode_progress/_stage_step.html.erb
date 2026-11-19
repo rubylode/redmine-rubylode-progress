@@ -4,11 +4,10 @@
     <%= tag.attributes(draggable: "true", data: { issue_id: step.issue.id, current_version_id: step.issue.fixed_version_id, update_path: issue_path(step.issue) }) if movable %>>
   <span class="rubylode-progress-step__mark" aria-hidden="true"></span>
   <%= render "item_title_link", project: project, issue: step.issue %>
-  <% if step.issue.author %>
-    <span class="rubylode-progress-step__author"><%= step.issue.author.name %></span>
-  <% end %>
-  <% if step.issue.assigned_to %>
-    <span class="rubylode-progress-step__assignee"><%= step.issue.assigned_to.name %></span>
+  <%= link_to "##{step.issue.id}", issue_path(step.issue), class: "rubylode-progress-step__number" %>
+  <% assignee_name = rubylode_progress_assignee_name(step.issue) %>
+  <% if assignee_name %>
+    <span class="rubylode-progress-step__assignee"><%= assignee_name %></span>
   <% end %>
   <span class="rubylode-progress-hover-actions">
     <% if editable_issue_ids.include?(step.issue.id) %>

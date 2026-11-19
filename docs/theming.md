@@ -16,6 +16,7 @@ Colors:
 | `--rubylode-progress-muted-text-color` | `#5d6672` | dates, notes, assignees, the tally, the ring of an upcoming stage |
 | `--rubylode-progress-line-color` | `#d9dee5` | panel borders and row dividers |
 | `--rubylode-progress-accent-color` | `#1f5f8b` | the current stage's mark and line, the pressed pill and group button |
+| `--rubylode-progress-on-accent-color` | `#ffffff` | text on the accent fill: the New issue button |
 | `--rubylode-progress-focus-color` | `#1f5f8b` | the keyboard focus outline |
 | `--rubylode-progress-drop-target-color` | the accent colour | the outline of a stage or section an issue is dragged over |
 | `--rubylode-progress-done-color` | `#1b6e34` | Done: marks, the line of a finished stage, pill text |
@@ -57,8 +58,8 @@ and have no default; a theme has no reason to set them: `--rubylode-progress-sha
 `--rubylode-progress-colour-below` (the rail line below a stage's mark, which also gives the first stage its short
 lead-in: filled to that stage's own share, in that stage's own colour).
 
-Each status also has its own mark shape (done a filled circle with a check, next a ring with a dot, needs you a ring,
-waiting a dashed ring, to do a plain ring; a stage mark is a tick when done, an exclamation mark when left behind, a ring with a dot when current, a plain ring when upcoming) and prints its label, so colour is never the only signal. Text contrast is at
+Each status also has its own mark shape on the checklist rows (done a filled circle with a check, in progress half filled, next a ring with a dot, needs you a ring,
+waiting a dashed ring, to do a plain ring; the steps in the stage list keep done, in progress and open only; a stage mark is a tick when done, an exclamation mark when left behind, a ring with a dot when current, a plain ring when upcoming) and prints its label, so colour is never the only signal. Text contrast is at
 least 4.5:1 for the defaults and for the dark block below; the marks and the filled line reach 3:1.
 
 ## Dark theme
@@ -72,6 +73,7 @@ Paste this into a dark theme's stylesheet:
   --rubylode-progress-muted-text-color: #9da7b3;
   --rubylode-progress-line-color: #2f3742;
   --rubylode-progress-accent-color: #6cb2eb;
+  --rubylode-progress-on-accent-color: #0d1117;
   --rubylode-progress-focus-color: #6cb2eb;
   --rubylode-progress-drop-target-color: #6cb2eb;
   --rubylode-progress-done-color: #7ee08f;

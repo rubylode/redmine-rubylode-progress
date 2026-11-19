@@ -10,8 +10,10 @@
       <% if local_assigns[:labels] %>
         <% date_line = rubylode_progress_stage_date_line(stage, today) %>
         <span class="rubylode-progress-track__label">
-          <span class="rubylode-progress-track__name"><%= stage.version.name %></span>
-          <span class="rubylode-progress-track__percent"><%= rubylode_progress_stage_percent(stage) %>%</span>
+          <span class="rubylode-progress-track__heading">
+            <span class="rubylode-progress-track__name"><%= stage.version.name %></span>
+            <span class="rubylode-progress-track__percent"><%= rubylode_progress_stage_percent(stage) %>%</span>
+          </span>
           <% if date_line %>
             <span class="rubylode-progress-track__date rubylode-progress-track__date--<%= date_line.first %>"><%= date_line.last %></span>
           <% end %>

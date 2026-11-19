@@ -39,12 +39,12 @@ class DemoDataTest < Redmine::IntegrationTest
     assert_includes 35..45, Issue.where(project_id: @main_project.self_and_descendants.pluck(:id)).count
   end
 
-  test "the demo shows every stage state: a done, a partial, a current, an upcoming and a locked stage" do
+  test "the demo shows every stage state: a done, a partial, a current and two open upcoming stages" do
     progress = RubylodeProgress::ProjectProgress.new(project: @main_project, viewer: @demo_person)
 
     assert_equal %i[done partial current upcoming upcoming], progress.stages.map(&:state)
-    assert_equal 1, progress.stages.count { |stage| stage.version.status == "locked" }
-    assert_equal 1, progress.stages.count { |stage| stage.version.open? && stage.upcoming? }
+    assert_equal 0, progress.stages.count { |stage| stage.version.status == "locked" }
+    assert_equal 2, progress.stages.count { |stage| stage.version.open? && stage.upcoming? }
     assert_equal 2, progress.stages.count { |stage| stage.version.closed? }
   end
 

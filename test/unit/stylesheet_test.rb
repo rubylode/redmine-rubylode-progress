@@ -58,7 +58,7 @@ class StylesheetTest < ActiveSupport::TestCase
   end
 
   def assert_readable(tokens, label)
-    pairs = [%w[text-color surface], %w[muted-text-color surface], %w[surface accent-color]]
+    pairs = [%w[text-color surface], %w[muted-text-color surface], %w[surface accent-color], %w[on-accent-color accent-color]]
     pairs += STATUSES.map { |status| ["#{status}-color", "#{status}-background"] }
     pairs << %w[behind-color behind-background]
     pairs.each do |foreground, background|
@@ -71,7 +71,7 @@ class StylesheetTest < ActiveSupport::TestCase
 
   # The marks and the filled line carry meaning, so they need 3:1 against the surface, in either block.
   def assert_marks_visible(tokens, label)
-    %w[done-color behind-color accent-color muted-text-color].each do |name|
+    %w[done-color behind-color accent-color muted-text-color next-color needs-you-color waiting-color].each do |name|
       ratio = contrast_ratio(tokens.fetch("--rubylode-progress-#{name}"), tokens.fetch("--rubylode-progress-surface"))
       assert_operator ratio, :>=, 3.0, "#{label}: #{name} on the surface is #{ratio.round(2)}:1"
     end
@@ -117,6 +117,35 @@ class StylesheetTest < ActiveSupport::TestCase
   test "marks and the filled line reach 3:1 on the surface, in both blocks" do
     assert_marks_visible(light_tokens, "light")
     assert_marks_visible(dark_tokens, "dark")
+  end
+
+  test "the New issue button's text is the on-accent colour, and it beats a theme's link colour by specificity" do
+    body = rules.find { |selector, _| selector.include?("new-issue-button:link") }&.last.to_s
+
+    assert_match(/color: var\(--rubylode-progress-on-accent-color\)/, body)
+    assert_match(/background: var\(--rubylode-progress-accent-color\)/, body)
+    assert_equal "#ffffff", light_tokens.fetch("--rubylode-progress-on-accent-color")
+  end
+
+  test "the second pass classes are styled: marks per status, the fold toggle, the info button, the refused target" do
+    selectors = rules.flat_map { |selector_text, _| selector_text.split(",").map(&:strip) }.join(" ")
+
+    %w[.rubylode-progress-row__mark--next .rubylode-progress-row__mark--waiting .rubylode-progress-row__mark--needs-you
+       .rubylode-progress-row__mark--in-progress .rubylode-progress-closed-fold__show .rubylode-progress-closed-fold__hide
+       .rubylode-progress-rules__icon .rubylode-progress-drop-refused .rubylode-progress-stage__tag
+       .rubylode-progress-tracker__updated .rubylode-progress-tracker__percent-note .rubylode-progress-track__heading].each do |name|
+      assert_includes selectors, name
+    end
+    assert_match(/\.rubylode-progress-row__mark--waiting\s*\{[^}]*dashed/, comment_free_stylesheet)
+    assert_match(/\.rubylode-progress-closed-fold\[open\] \.rubylode-progress-closed-fold__show\s*\{[^}]*display: none/, comment_free_stylesheet)
+    assert_match(/\.rubylode-progress-rules__summary\s*\{[^}]*min-height: 28px/, comment_free_stylesheet)
+    assert_match(/\.rubylode-progress-drop-refused\s*\{[^}]*--rubylode-progress-behind-color/, comment_free_stylesheet)
+  end
+
+  test "the issue numbers and assignees are set off by a thin line in the theme's line colour" do
+    body = rules.find { |selector, _| selector.include?("step__assignee") && selector.include?("row__number") }&.last.to_s
+
+    assert_match(/border-left: 1px solid var\(--rubylode-progress-line-color\)/, body)
   end
 
   test "the new theme properties have their light defaults" do

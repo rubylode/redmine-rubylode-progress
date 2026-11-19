@@ -68,18 +68,18 @@ class OwnerRevisionsTest < Redmine::IntegrationTest
       assert_select ".rubylode-progress-step--done", count: 1
       assert_select ".rubylode-progress-row--in-progress .rubylode-progress-row__mark", count: 1
       assert_select ".rubylode-progress-row--done .rubylode-progress-row__mark", count: 1
-      assert_select ".rubylode-progress-row--open .rubylode-progress-row__mark", count: 1
+      assert_select ".rubylode-progress-row__mark--next", count: 1
     end
   end
 
-  test "a checklist row carries the author and a new-tab link that opens the issue" do
+  test "a checklist row carries a new-tab link that opens the issue, and no author" do
     open_progress
 
-    assert_select "#rubylode-progress-item-#{@started_issue.id} .rubylode-progress-row__author", text: @developer.name
+    assert_select ".rubylode-progress-row__author", count: 0
     assert_select "#rubylode-progress-item-#{@started_issue.id} a[href=?][target=_blank][rel~=noopener][title][aria-label]",
                   "/issues/#{@started_issue.id}"
     assert_select ".rubylode-progress-step a[href=?][target=_blank][rel~=noopener]", "/issues/#{@started_issue.id}"
-    assert_select ".rubylode-progress-step .rubylode-progress-step__author", text: @developer.name
+    assert_select ".rubylode-progress-step__author", count: 0
   end
 
   test "the item title links to the issue and the modal action answers for a visible issue and refuses one the viewer cannot see" do

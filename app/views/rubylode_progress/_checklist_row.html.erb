@@ -1,13 +1,14 @@
 <% issue = item.issue %>
+<% mark_state = rubylode_progress_row_mark_state(item, settings) %>
+<% assignee_name = rubylode_progress_assignee_name(issue) %>
 <% date_kind, date_text = rubylode_progress_row_date(item, today) %>
 <%# Draggable only where the viewer may edit the issue and the checklist is grouped by version (its sections are the drop targets). %>
 <% movable = grouping == "version" && editable_issue_ids.include?(issue.id) %>
-<li class="rubylode-progress-row rubylode-progress-row--<%= rubylode_progress_mark_state(issue, settings) %> rubylode-progress-row--<%= item.status.to_s.dasherize %>" id="rubylode-progress-item-<%= issue.id %>"
+<li class="rubylode-progress-row rubylode-progress-row--<%= mark_state %> rubylode-progress-row--<%= item.status.to_s.dasherize %>" id="rubylode-progress-item-<%= issue.id %>"
     <%= tag.attributes(draggable: "true", data: { issue_id: issue.id, current_version_id: issue.fixed_version_id, update_path: issue_path(issue) }) if movable %>>
-  <span class="rubylode-progress-row__mark" aria-hidden="true"></span>
+  <span class="rubylode-progress-row__mark rubylode-progress-row__mark--<%= mark_state %>" aria-hidden="true"></span>
   <div class="rubylode-progress-row__main">
     <span class="rubylode-progress-row__title"><%= render "item_title_link", project: project, issue: issue %></span>
-    <% if issue.author %><span class="rubylode-progress-row__author"><%= issue.author.name %></span><% end %>
     <% if note.present? %><p class="rubylode-progress-row__note"><%= note %></p><% end %>
   </div>
   <%# Open on a wide screen; the controller folds it on a phone, where the button opens it again. %>
@@ -21,6 +22,7 @@
     </span>
   </details>
   <%= link_to "##{issue.id}", issue_path(issue), class: "rubylode-progress-row__number" %>
+  <% if assignee_name %><span class="rubylode-progress-row__assignee"><%= assignee_name %></span><% end %>
   <span class="rubylode-progress-pill rubylode-progress-pill--<%= item.status.to_s.dasherize %>"><%= rubylode_progress_status_label(item.status) %></span>
   <span class="rubylode-progress-row__date rubylode-progress-row__date--<%= date_kind %>"><%= date_text %></span>
 </li>

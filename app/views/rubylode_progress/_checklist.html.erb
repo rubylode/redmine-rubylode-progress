@@ -28,14 +28,18 @@
     <p class="rubylode-progress-checklist__empty"><%= l("rubylode_progress.checklist.empty.#{filter == "needs_you" ? "needs_you" : "other"}") %></p>
   <% end %>
   <% sections.each do |section| %>
-    <%# A version section is a drop target only when the checklist is grouped by version and the version accepts issues. %>
-    <% drop_target = grouping == "version" && section.version && progress.accepts_issues?(section.version) %>
-    <details class="rubylode-progress-section" open <%= tag.attributes(data: { version_id: section.version.id }) if drop_target %>>
+    <%# A version section is a drop target only when the checklist is grouped by version and the version accepts issues;
+        a version section that does not carries the reason, which the script shows on a drop. %>
+    <% versioned = grouping == "version" && section.version %>
+    <% drop_target = versioned && progress.accepts_issues?(section.version) %>
+    <% refuse_reason = versioned && !drop_target ? rubylode_progress_refuse_reason(section.version) : nil %>
+    <details class="rubylode-progress-section" open <%= tag.attributes(data: { version_id: section.version.id }) if drop_target %> <%= tag.attributes(data: { refuse_reason: refuse_reason }) if refuse_reason %>>
       <summary class="rubylode-progress-section__summary">
         <span class="rubylode-progress-chevron" aria-hidden="true"></span>
         <h3 class="rubylode-progress-section__title">
           <%= section.title || l("rubylode_progress.other_section") %>
-          <span class="rubylode-progress-section__tally"><%= l("rubylode_progress.checklist.section_tally", done: section.total_done_count, total: section.total_count) %></span>
+          <%# Under Open the count is the rows listed below it; the meter keeps the whole section for context. %>
+          <span class="rubylode-progress-section__tally"><%= filter == "open" ? l("rubylode_progress.checklist.section_open", count: section.items.size) : l("rubylode_progress.checklist.section_tally", done: section.total_done_count, total: section.total_count) %></span>
         </h3>
         <%= render "meter", percent: section.percent %>
       </summary>

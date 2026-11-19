@@ -19,7 +19,15 @@
   </div>
 
   <div class="rubylode-progress-tracker__summary">
-    <p class="rubylode-progress-tracker__percent"><%= progress.percent %>%</p>
+    <div class="rubylode-progress-tracker__figure">
+      <p class="rubylode-progress-tracker__percent"><%= progress.percent %>%</p>
+      <div class="rubylode-progress-tracker__figure-notes">
+        <p class="rubylode-progress-tracker__percent-note"><%= l("rubylode_progress.percent_note") %></p>
+        <% if last_change_on %>
+          <p class="rubylode-progress-tracker__updated"><%= l("rubylode_progress.updated", date: rubylode_progress_updated_text(last_change_on, today)) %></p>
+        <% end %>
+      </div>
+    </div>
     <p class="rubylode-progress-tracker__closed"><%= l("rubylode_progress.closed_of_total", closed: closed_count, total: progress.items.size) %></p>
     <% notices = RubylodeProgress::StageNotices.for(progress.stages, today: today) %>
     <% if notices.any? %>

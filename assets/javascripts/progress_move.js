@@ -3,7 +3,9 @@
  *
  * A Stimulus controller, registered on the application that Redmine 7 starts, using the browser's own drag and drop.
  * The server puts draggable="true", data-issue-id, data-current-version-id and data-update-path on the rows the viewer
- * may edit, and data-version-id on the stages and checklist sections that accept issues; this script only reads them.
+ * may edit, data-version-id on the stages and checklist sections that accept issues, and data-refuse-reason (a sentence)
+ * on the ones that do not; this script only reads them. A stage with a reason is highlighted as refused while an issue is
+ * dragged, and a drop on it shows the reason and moves nothing.
  * A drop sends one request to Redmine's own issue update, which decides permissions, workflow and version rules. The
  * page reloads on success; on failure nothing moves and Redmine's answer is shown. Without this file, or on a touch
  * screen, the pencil's quick-edit form has a Target version field that does the same.
@@ -11,9 +13,9 @@
 import { Controller } from "@hotwired/stimulus"
 import { application } from "controllers/application"
 
-const DROP_TARGET_SELECTOR = "[data-version-id]"
+const DROP_TARGET_SELECTOR = "[data-version-id], [data-refuse-reason]"
 const DRAGGED_CLASS = "rubylode-progress-dragged"
-const DROP_OVER_CLASS = "rubylode-progress-drop-over"
+const DROP_OVER_CLASS = "rubylode-progress-drop-over"\nconst DROP_REFUSED_CLASS = "rubylode-progress-drop-refused"
 
 class ProgressMoveController extends Controller {
   static targets = ["message"]
@@ -48,13 +50,14 @@ class ProgressMoveController extends Controller {
     if (!target) { return }
 
     event.preventDefault()
+    // Always "move": a browser fires no drop event when the effect is "none", and the drop is where the reason is shown.
     if (event.dataTransfer) { event.dataTransfer.dropEffect = "move" }
-    target.classList.add(DROP_OVER_CLASS)
+    target.classList.add(target.dataset.refuseReason ? DROP_REFUSED_CLASS : DROP_OVER_CLASS)
   }
 
   leave(event) {
     const target = event.target.closest ? event.target.closest(DROP_TARGET_SELECTOR) : null
-    if (target && !target.contains(event.relatedTarget)) { target.classList.remove(DROP_OVER_CLASS) }
+    if (target && !target.contains(event.relatedTarget)) { target.classList.remove(DROP_OVER_CLASS, DROP_REFUSED_CLASS) }
   }
 
   async drop(event) {
@@ -65,7 +68,12 @@ class ProgressMoveController extends Controller {
     event.preventDefault()
     this.clearHighlights()
     const updatePath = row.dataset.updatePath
+    const refuseReason = target.dataset.refuseReason
     this.finish()
+    if (refuseReason) {
+      this.showMessage(refuseReason)
+      return
+    }
     await this.move(updatePath, target.dataset.versionId)
   }
 
@@ -130,7 +138,7 @@ class ProgressMoveController extends Controller {
   }
 
   clearHighlights() {
-    this.element.querySelectorAll("." + DROP_OVER_CLASS).forEach((target) => target.classList.remove(DROP_OVER_CLASS))
+    this.element.querySelectorAll("." + DROP_OVER_CLASS + ", ." + DROP_REFUSED_CLASS).forEach((target) => target.classList.remove(DROP_OVER_CLASS, DROP_REFUSED_CLASS))
   }
 
   showMessage(text) {

@@ -4,7 +4,7 @@
 <% in_progress_names = legend.in_progress_names %>
 <% waiting_names = legend.waiting_names %>
 <details class="rubylode-progress-rules">
-  <summary class="rubylode-progress-rules__summary"><%= l("rubylode_progress.rules.summary") %></summary>
+  <summary class="rubylode-progress-rules__summary"><span class="rubylode-progress-rules__icon" aria-hidden="true">i</span><%= l("rubylode_progress.rules.summary") %></summary>
   <p class="rubylode-progress-rules__intro"><%= l("rubylode_progress.rules.intro") %></p>
   <ol class="rubylode-progress-rules__list">
     <li><span class="rubylode-progress-pill rubylode-progress-pill--done"><%= rubylode_progress_status_label(:done) %></span> <%= l("rubylode_progress.rules.done") %></li>

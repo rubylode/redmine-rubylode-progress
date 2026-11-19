@@ -55,6 +55,43 @@ def rubylode_progress_status_label(status)
     end
   end
 
+  # The mark's state for a checklist row: done when closed, in progress when its status is one of the settings' in
+  # progress statuses, else the derived status (to-do, next, waiting, needs-you), each with its own shape.
+  def rubylode_progress_row_mark_state(item, settings)
+    if item.status == :done
+      "done"
+    elsif settings.in_progress_status_ids.include?(item.issue.status_id)
+      "in-progress"
+    else
+      item.status.to_s.dasherize
+    end
+  end
+
+  # The assignee's name for a row, or nil when there is none or it is the viewer (the Needs you pill says that).
+  def rubylode_progress_assignee_name(issue)
+    assignee = issue.assigned_to
+    assignee && assignee.id != User.current.id ? assignee.name : nil
+  end
+
+  # Why a version takes no new issues, for the drop that is refused: it is closed, locked, or (open) not shared with
+  # the project. Depends on the version's status and name only, which the stage cache key already carries.
+  def rubylode_progress_refuse_reason(version)
+    kind = %w[closed locked].include?(version.status) ? version.status : "not_shared"
+    l("rubylode_progress.refuse.#{kind}", version: version.name)
+  end
+
+  # A day for the checklist's date column and the Updated line: the viewer's own plain day-month-year pattern with the
+  # year dropped for this year, else Redmine's own format.
+  def rubylode_progress_day_text(date, today)
+    pattern = Setting.date_format.presence || ::I18n.t("date.formats.default")
+    RubylodeProgress::RowDateFormat.format(date.to_date, today: today, pattern: pattern) || format_date(date)
+  end
+
+  # "11/19": the day of the last change, in the viewer's time zone.
+  def rubylode_progress_updated_text(time, today)
+    rubylode_progress_day_text(User.current.convert_time_to_user_timezone(time).to_date, today)
+  end
+
   # The fold's percentage, as the percent rule counts a stage.
   def rubylode_progress_stage_percent(stage)
     RubylodeProgress::PercentRule.percent_of(stage)
@@ -170,7 +207,7 @@ end
     elsif days <= DUE_SOON_DAYS
       [:soon, l("rubylode_progress.row_dates.due_soon", date: I18n.l(due.to_date, format: "%a %m/%d"), days: days)]
     else
-      [:plain, format_date(due)]
+      [:plain, rubylode_progress_day_text(due, today)]
     end
   end
 

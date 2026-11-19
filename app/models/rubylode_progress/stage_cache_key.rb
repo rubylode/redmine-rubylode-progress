@@ -23,7 +23,7 @@ module RubylodeProgress
   # It does not name the viewer's role: visibility also depends on the person (own issues, private issues). The ids of
   # the closed steps are in it too, because updated_on is only stored to the second: closing one of several issues inside
   # the second of the last change would otherwise leave the state and the ids unchanged.
-  # The round marks, the author and the stage's own percent are in the fragment too: the in-progress set and the authors'
+  # The round marks, the assignee and the stage's own percent are in the fragment too: the in-progress set and the assignees'
   # names are digested into the key; the percent follows the closed steps, already in it.
   # The pencils and the plus sit in the cached fragment, so the key also carries what decides them: a digest of the ids of
   # the stage's issues this viewer may edit, what the plus does for this viewer (none, modal or full form, which holds
@@ -40,7 +40,7 @@ module RubylodeProgress
        stage.state, digest_of_ids(step_issues), digest_of_ids(stage.steps.select(&:done?).map(&:issue)),
        precise(step_issues.filter_map(&:updated_on).max), settings.cache_digest, I18n.locale,
        stage.version.status, digest_of_ids(editable_step_issues), new_issue_mode,
-       digest_of_ids(in_progress_issues(step_issues, settings)), digest_of_authors(step_issues), accepts_issues]
+       digest_of_ids(in_progress_issues(step_issues, settings)), digest_of_assignees(step_issues), accepts_issues]
     end
 
     # The half-filled marks: open issues in one of the settings' in-progress statuses. updated_on is stored to the
@@ -49,9 +49,10 @@ module RubylodeProgress
       issues.select { |issue| !issue.closed? && settings.in_progress_status_ids.include?(issue.status_id) }
     end
 
-    # The authors' names are in the fragment but not on the issue, so a renamed person must change the key.
-    def self.digest_of_authors(issues)
-      Digest::SHA256.hexdigest(issues.map { |issue| "#{issue.id}:#{issue.author&.id}:#{issue.author&.name}" }.sort.join(","))
+    # The assignees' names are in the fragment but not on the issue, so a renamed person must change the key. The viewer
+    # (whose own issues show no name) is already in the key.
+    def self.digest_of_assignees(issues)
+      Digest::SHA256.hexdigest(issues.map { |issue| "#{issue.id}:#{issue.assigned_to&.id}:#{issue.assigned_to&.name}" }.sort.join(","))
     end
 
     def self.digest_of_ids(issues)

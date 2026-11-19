@@ -126,9 +126,10 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     refute_equal before, key_for(settings: settings)
   end
 
-  test "the key changes when an author is renamed, though no issue changed" do
+  test "the key changes when an assignee is renamed, though no issue changed" do
+    @issue.update_column(:assigned_to_id, @developer.id)
     before = key_for
-    @manager.update_column(:lastname, "Renamed")
+    @developer.update_column(:lastname, "Renamed")
 
     refute_equal before, key_for
   end

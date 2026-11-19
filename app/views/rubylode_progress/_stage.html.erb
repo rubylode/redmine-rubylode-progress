@@ -4,10 +4,13 @@
 <% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode, accepts_issues: accepts_issues) do %>
   <%= render "stage_mark", state: stage.state %>
   <% folds_closed = (stage.current? || stage.partial?) && stage.steps.any?(&:done?) %>
-  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %>>
+  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %> <%= tag.attributes(data: { refuse_reason: rubylode_progress_refuse_reason(stage.version) }) unless accepts_issues %>>
     <summary>
       <span class="rubylode-progress-chevron" aria-hidden="true"></span>
       <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>
+      <% if %w[closed locked].include?(stage.version.status) %>
+        <span class="rubylode-progress-stage__tag"><%= l("rubylode_progress.version_tag.#{stage.version.status}") %></span>
+      <% end %>
       <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_stage_state_label(stage) %></span>
       <% if stage.version.effective_date %>
         <span class="rubylode-progress-stage__date"><%= l("rubylode_progress.stage_due", date: format_date(stage.version.effective_date)) %></span>
@@ -26,7 +29,11 @@
     </ul>
     <% if folds_closed %>
       <details class="rubylode-progress-closed-fold">
-        <summary><%= l("rubylode_progress.show_closed", count: stage.done_step_count) %></summary>
+        <summary>
+          <span class="rubylode-progress-chevron" aria-hidden="true"></span>
+          <span class="rubylode-progress-closed-fold__show"><%= l("rubylode_progress.show_closed", count: stage.done_step_count) %></span>
+          <span class="rubylode-progress-closed-fold__hide"><%= l("rubylode_progress.hide_closed", count: stage.done_step_count) %></span>
+        </summary>
         <ul class="rubylode-progress-steps">
           <% stage.steps.select(&:done?).each do |step| %>
             <%= render "stage_step", step: step, project: project, settings: settings, editable_issue_ids: editable_issue_ids %>

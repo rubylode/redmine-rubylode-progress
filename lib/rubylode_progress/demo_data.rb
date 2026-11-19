@@ -20,7 +20,7 @@ module RubylodeProgress
   # projects and versions are plain nouns.
   #
   # One main project (Bridge) with five versions: Foundations is done, Framing is closed with one issue still open
-  # (partial), Decking is current, Lighting is locked and Opening is open and upcoming. Its subproject Bridge Cables
+  # (partial), Decking is current, and Lighting and Opening are open and upcoming (so an issue can be dragged into them). Its subproject Bridge Cables
   # shares the versions. Three smaller projects feed the cross-project page: Kiln (all done), Loom (not started) and
   # Quill (no versions). Safe to run twice: it runs in one transaction and does nothing when Bridge exists.
   # The demo people sign in with their login and DEMO_PASSWORD; the administrator stays admin / admin.
@@ -203,7 +203,6 @@ module RubylodeProgress
         link_blocked_issues
         versions.fetch(:foundations).update!(status: "closed")
         versions.fetch(:framing).update!(status: "closed")
-        versions.fetch(:lighting).update!(status: "locked")
       end
 
       def make_issue(project, version, subject, state, category, extras)

@@ -200,7 +200,7 @@ end
 
     open_progress
 
-    assert_select "details.rubylode-progress-stage[open] details.rubylode-progress-closed-fold > summary", text: "Show 1 closed", count: 2
+    assert_select "details.rubylode-progress-stage[open] details.rubylode-progress-closed-fold > summary > .rubylode-progress-closed-fold__show", text: "Show 1 closed", count: 2
     assert_select "details.rubylode-progress-closed-fold .rubylode-progress-step--done", count: 2
     assert_select "details.rubylode-progress-closed-fold .rubylode-progress-step--open", count: 0
     assert_select "details.rubylode-progress-stage:not([open]) details.rubylode-progress-closed-fold", count: 0
@@ -251,7 +251,7 @@ end
 
     assert_select ".rubylode-progress-section" do |sections|
       decking = sections.find { |section| section.text.include?("Decking") }
-      assert_includes decking.text, "1 of 3 closed"
+      assert_includes decking.text, "2 open"
       assert_includes decking.text, "33%"
     end
     assert_select ".rubylode-progress-section__tally", text: "0 of 2 closed", count: 0
@@ -324,7 +324,7 @@ end
     ) do
       open_progress
       assert_select "details.rubylode-progress-rules:not([open])", count: 1
-      assert_select "details.rubylode-progress-rules summary", text: "How statuses are decided"
+      assert_select "details.rubylode-progress-rules summary", text: /\AiHow statuses are decided\z/
       assert_select ".rubylode-progress-rules__list .rubylode-progress-pill", count: 5
       assert_select ".rubylode-progress-rules__list", text: /#{Regexp.escape(IssueStatus.find(WAITING_STATUS_ID).name)}/
       assert_select ".rubylode-progress-rules__list", text: /#{Regexp.escape(IssueStatus.find(IN_PROGRESS_STATUS_ID).name)}/

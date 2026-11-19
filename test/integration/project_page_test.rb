@@ -61,13 +61,13 @@ class ProjectPageTest < Redmine::IntegrationTest
     assert_response :success
   end
 
-  test "a member sees the title, Last change, Stage N of M and the track's label" do
+  test "a member sees the hidden title, Updated, Stage N of M and the track's label" do
     build_three_stages
 
     open_progress_as("jsmith")
 
     assert_select "h2", text: @project.name
-    assert_select ".rubylode-progress-title__last-change", text: /Last change/
+    assert_select ".rubylode-progress-tracker__updated", text: /\AUpdated /
     assert_select ".rubylode-progress-tracker__position", text: "Stage 2 of 3"
     assert_select ".rubylode-progress-tracker__headline", text: "Build"
     assert_select "ol.rubylode-progress-track[aria-label=?]", "50% done, 1 of 3 stages finished"
@@ -116,7 +116,7 @@ class ProjectPageTest < Redmine::IntegrationTest
 
     open_progress_as("jsmith")
 
-    assert_select "#rubylode-progress-item-#{far.id} .rubylode-progress-row__date", text: format_date_for_test(today + 30)
+    assert_select "#rubylode-progress-item-#{far.id} .rubylode-progress-row__date", text: expected_plain_row_date(today + 30, today)
     assert_select "#rubylode-progress-item-#{soon.id} .rubylode-progress-row__date--soon", text: "#{(today + 3).strftime("%a %m/%d")}, 3d"
     assert_select "#rubylode-progress-item-#{late.id} .rubylode-progress-row__date--overdue", text: "Overdue 45d"
     assert_select "#rubylode-progress-item-#{inherited.id} .rubylode-progress-row__date--overdue", text: "Overdue 10d"
@@ -198,7 +198,8 @@ class ProjectPageTest < Redmine::IntegrationTest
     end
   end
 
-  def format_date_for_test(date)
-    ApplicationController.new.helpers.format_date(date)
+  # The default pattern is month/day/year: the year is dropped for this year and two digits for another.
+  def expected_plain_row_date(date, today)
+    date.year == today.year ? date.strftime("%m/%d") : date.strftime("%m/%d/%y")
   end
 end

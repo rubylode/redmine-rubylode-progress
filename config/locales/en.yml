@@ -8,7 +8,8 @@ en:
     no_parent: No parent
     nothing_to_track: There is nothing to track yet. Add a version with issues to start the stages.
     nothing_to_track_yet: Nothing to track yet.
-    last_change: "Last change %{date}"
+    updated: "Updated %{date}"
+    percent_note: Average of stage progress
     stage_position: "Stage %{number} of %{total}"
     all_stages_done: "All %{total} stages done"
     track_label: "%{percent}% done, %{finished} of %{total} stages finished"
@@ -20,7 +21,14 @@ en:
       loading: "Loading…"
       failed: "The issue could not be loaded. Open it in a new tab instead."
       author: "Author: %{name}"
-    drag_hint: Drag an issue to another stage to move it.
+    drag_hint: Drag an issue to another open stage to move it.
+    refuse:
+      closed: "%{version} is closed, so it takes no new issues."
+      locked: "%{version} is locked, so it takes no new issues."
+      not_shared: "%{version} is not shared with this project, so it takes no new issues."
+    version_tag:
+      closed: closed
+      locked: locked
     move:
       refused: "Redmine did not move the issue."
       failed: "The issue could not be moved. Reload the page and try again."
@@ -47,6 +55,7 @@ en:
       upcoming: Upcoming
     row_more: "More actions for #%{number}"
     show_closed: "Show %{count} closed"
+    hide_closed: "Hide %{count} closed"
     blocking:
       one: "Blocking: %{title} #%{id}"
       other: "%{count} open issues"
@@ -96,6 +105,7 @@ en:
         other: "%{count} issues"
       by: "by %{grouping}"
       section_tally: "%{done} of %{total} closed"
+      section_open: "%{count} open"
       issue_query: Open as issue query
       new_issue: New issue
       empty:

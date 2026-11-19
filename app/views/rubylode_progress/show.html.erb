@@ -5,12 +5,12 @@
 <% end %>
 
 <div class="rubylode-progress">
-  <%= render "title", project: @project, last_change_on: @progress.last_change_on %>
+  <%= render "title", project: @project %>
 
   <% if @progress.stages.empty? %>
     <p class="rubylode-progress-empty"><%= l("rubylode_progress.nothing_to_track") %></p>
   <% else %>
-    <%= render "tracker_panel", progress: @progress, today: @today %>
+    <%= render "tracker_panel", progress: @progress, today: @today, last_change_on: @progress.last_change_on %>
     <%# One controller for both columns: the stage list and the checklist rows are dragged between the drop targets. The
         messages are server-rendered text; the address of each move is on the dragged row. %>
     <div class="rubylode-progress-columns" data-controller="rubylode-progress-move"
