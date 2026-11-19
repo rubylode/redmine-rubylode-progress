@@ -6,7 +6,11 @@
 Procfile.dev export-ignore
 docker export-ignore
 docker-compose.yml export-ignore
-docs export-ignore
+docs/screenshots export-ignore
+docs/thumbnail.png export-ignore
+docs/plans export-ignore
+docs/specs export-ignore
+docs/roadmap export-ignore
 bin/demo export-ignore
 script export-ignore
 package.json export-ignore
