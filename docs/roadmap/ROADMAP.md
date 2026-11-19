@@ -19,7 +19,7 @@ the viewer may see.
    - ~~`03-item-status.md`~~ done 2026-11-18 (84717b6).
    - ~~`04-issue-scope.md`~~ done 2026-11-18 (a705062; versions with nothing visible of ours never become stages).
 3. The project page and its filters: ~~`05-project-page.md`~~ done 2026-11-18 (86d9bef; the done-row closed date still
-   needs a test once the All filter exists), `06-filters.md`; then the quick-edit pencil and the
+   needs a test once the All filter exists), ~~`06-filters.md`~~ done 2026-11-18 (8aa9a93); then the quick-edit pencil and the
    new-issue plus: `13-edit-and-add-modals.md`.
 4. Settings, plugin-wide and per project: `07-settings.md`.
 5. The cross-project page at `/progress`: `08-all-projects-page.md`.
