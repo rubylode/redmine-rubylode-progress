@@ -114,6 +114,18 @@ class ProjectPageTest < Redmine::IntegrationTest
     assert_select "#rubylode-progress-item-#{done_issue.id}", count: 0
   end
 
+  test "the item date is the closed date for a done item" do
+    version = Version.generate!(project: @project, effective_date: Date.new(2026, 2, 15))
+    done_issue = Issue.generate!(project: @project, fixed_version: version, author: @manager, status_id: CLOSED_STATUS_ID)
+    done_issue.update_column(:closed_on, Time.utc(2026, 3, 5, 12))
+
+    log_user("jsmith", "jsmith")
+    get "#{progress_path}?filter=all"
+    assert_response :success
+
+    assert_select "#rubylode-progress-item-#{done_issue.id} .rubylode-progress-row__date", text: "03/05/2026"
+  end
+
   test "the open issues of a closed version still show under Open" do
     version = Version.generate!(project: @project, effective_date: Date.new(2026, 1, 15))
     left_behind = Issue.generate!(project: @project, fixed_version: version, author: @manager)
