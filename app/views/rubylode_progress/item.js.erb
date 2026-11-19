@@ -1,2 +1,19 @@
-$('#ajax-modal').html('<%= escape_javascript(render(partial: "rubylode_progress/item_frame", formats: [:html], locals: { issue: @issue })) %>');
-showModal('ajax-modal', '960px', '<%= escape_javascript("##{@issue.id} #{@issue.subject}") %>');
+<%# Only the issue's own content goes in the modal, never the whole page around it (header, menus, sidebar). Redmine's
+    page is fetched and its #content is inserted through jQuery, which also runs the page's inline scripts for the
+    editor toolbar and date fields. back_url brings a save back to this Progress page. %>
+$('#ajax-modal').html('<div class="rubylode-progress-item-content"><%= j l("rubylode_progress.item.loading") %></div>');
+showModal('ajax-modal', '960px', <%= raw "##{@issue.id} #{@issue.subject}".to_json %>);
+fetch(<%= raw issue_path(@issue, back_url: project_rubylode_progress_path(@project)).to_json %>,
+      { credentials: 'same-origin', headers: { Accept: 'text/html' } })
+  .then(function (response) {
+    if (!response.ok) { throw new Error(response.status); }
+    return response.text();
+  })
+  .then(function (html) {
+    var content = new DOMParser().parseFromString(html, 'text/html').querySelector('#content');
+    if (!content) { throw new Error('no content'); }
+    $('#ajax-modal .rubylode-progress-item-content').html(content.innerHTML);
+  })
+  .catch(function () {
+    $('#ajax-modal .rubylode-progress-item-content').text(<%= raw l("rubylode_progress.item.failed").to_json %>);
+  });

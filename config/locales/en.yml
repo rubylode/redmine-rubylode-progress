@@ -17,7 +17,8 @@ en:
     percent_done: "%{percent}% done"
     item:
       open_in_new_tab: "Open #%{number} in a new tab"
-      frame_title: "Issue #%{number}: %{subject}"
+      loading: "Loading…"
+      failed: "The issue could not be loaded. Open it in a new tab instead."
       author: "Author: %{name}"
     quick_edit:
       title: "Quick edit #%{number}: %{subject}"

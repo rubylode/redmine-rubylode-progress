@@ -90,8 +90,11 @@ class OwnerRevisionsTest < Redmine::IntegrationTest
     assert_response :success
     assert_includes response.body, "#ajax-modal"
     assert_includes response.body, "showModal("
-    assert_includes response.body, "iframe"
+    assert_not_includes response.body, "iframe", "only the issue's own content goes in the modal, not the whole site"
     assert_includes response.body, "/issues/#{@started_issue.id}"
+    assert_includes response.body, "#content"
+    assert_includes response.body, CGI.escape("/projects/#{@project.identifier}/progress"),
+                    "saving in the modal comes back to the Progress page"
 
     get item_modal_path
     assert_redirected_to "/issues/#{@started_issue.id}"
