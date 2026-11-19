@@ -274,3 +274,5 @@ module RubylodeProgress
     end
   end
 end
+
+require_relative "busy_demo_builder"

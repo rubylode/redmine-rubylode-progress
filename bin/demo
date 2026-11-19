@@ -5,6 +5,7 @@
 #
 #   bin/demo up        start it, run the plugin migrations, load the demo data (once; running it again changes nothing)
 #   bin/demo seed      load the demo data into a Redmine that is already running
+#   bin/demo seed-busy load only the busy project "Lighthouse" (45 versions, 1000 issues); does nothing when it exists
 #   bin/demo restart   restart Redmine, to pick up a change to the plugin (it runs in production mode and caches code)
 #   bin/demo down      stop it, keep the data
 #   bin/demo reset     stop it and wipe the data
@@ -43,6 +44,10 @@ def seed
   compose("exec", "-T", "redmine", "bin/rails", "redmine_rubylode_progress:demo")
 end
 
+def seed_busy
+  compose("exec", "-T", "redmine", "bin/rails", "redmine_rubylode_progress:demo_busy")
+end
+
 case ARGV.first
 when "up"
   compose("up", "-d", "redmine")
@@ -51,6 +56,8 @@ when "up"
   seed
 when "seed"
   seed
+when "seed-busy"
+  seed_busy
 when "restart"
   compose("restart", "redmine")
   wait_until_ready

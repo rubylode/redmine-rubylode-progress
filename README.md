@@ -207,6 +207,7 @@ A throwaway Redmine 7 with the plugin mounted and made-up projects (Bridge, with
 few smaller ones) runs from this folder:
 
     ruby bin/demo up         start it and load the demo data; Redmine is on http://127.0.0.1:3016
+    ruby bin/demo seed-busy  add only "Lighthouse", a busy public project (45 versions, 1000 issues); `up` loads it too
     ruby bin/demo restart    pick up a change to the plugin (it runs in production mode)
     ruby bin/demo down       stop it, keep the data
     ruby bin/demo reset      stop it and wipe the data

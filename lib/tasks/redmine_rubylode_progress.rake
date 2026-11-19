@@ -20,11 +20,20 @@ namespace :redmine_rubylode_progress do
   desc "Build the demo projects, versions and issues (does nothing when they are already there)"
   task demo: :environment do
     result = RubylodeProgress::DemoData.build
+    busy_result = RubylodeProgress::DemoData.build_busy
     if result == :built
       puts "Demo built: #{Project.count} projects, #{Issue.count} issues. Sign in as " \
            "#{RubylodeProgress::DemoData::DEMO_LOGIN} / #{RubylodeProgress::DemoData::DEMO_PASSWORD}."
     else
       puts "Demo data already loaded: #{Project.count} projects, #{Issue.count} issues."
     end
+    puts "Busy project Lighthouse: #{busy_result == :built ? 'built' : 'already loaded'}."
+  end
+
+  desc "Build only the busy demo project Lighthouse (45 versions, 1000 issues); does nothing when it is there already"
+  task demo_busy: :environment do
+    started = Time.now
+    result = RubylodeProgress::DemoData.build_busy
+    puts "Lighthouse #{result == :built ? 'built' : 'already loaded'} in #{(Time.now - started).round(1)} seconds."
   end
 end
