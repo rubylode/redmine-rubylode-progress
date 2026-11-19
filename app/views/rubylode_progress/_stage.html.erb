@@ -4,7 +4,7 @@
 <% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode, accepts_issues: accepts_issues, can_manage_version: can_manage_version) do %>
   <%= render "stage_mark", state: stage.state %>
   <% folds_closed = (stage.current? || stage.partial?) && stage.steps.any?(&:done?) %>
-  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %> <%= tag.attributes(data: { refuse_reason: rubylode_progress_refuse_reason(stage.version) }) unless accepts_issues %>>
+  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %> <%= tag.attributes(data: { refuse_reason: rubylode_progress_refuse_reason(stage.version, can_manage: can_manage_version) }) unless accepts_issues %>>
     <summary>
       <span class="rubylode-progress-chevron" aria-hidden="true"></span>
       <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>

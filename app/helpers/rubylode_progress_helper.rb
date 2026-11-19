@@ -74,10 +74,13 @@ def rubylode_progress_status_label(status)
   end
 
   # Why a version takes no new issues, for the drop that is refused: it is closed, locked, or (open) not shared with
-  # the project. Depends on the version's status and name only, which the stage cache key already carries.
-  def rubylode_progress_refuse_reason(version)
+  # the project. A viewer who may manage the version is told how to open it again. Depends on the version's status and
+  # name and on that right, which the stage cache key already carries.
+  def rubylode_progress_refuse_reason(version, can_manage: false)
     kind = %w[closed locked].include?(version.status) ? version.status : "not_shared"
-    l("rubylode_progress.refuse.#{kind}", version: version.name)
+    reason = l("rubylode_progress.refuse.#{kind}", version: version.name)
+    reason += l("rubylode_progress.refuse_hint.#{kind}") if can_manage && kind != "not_shared"
+    reason
   end
 
   # A day for the checklist's date column and the Updated line: the viewer's own plain day-month-year pattern with the

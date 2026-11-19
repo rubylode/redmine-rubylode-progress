@@ -32,7 +32,7 @@
         a version section that does not carries the reason, which the script shows on a drop. %>
     <% versioned = grouping == "version" && section.version %>
     <% drop_target = versioned && progress.accepts_issues?(section.version) %>
-    <% refuse_reason = versioned && !drop_target ? rubylode_progress_refuse_reason(section.version) : nil %>
+    <% refuse_reason = versioned && !drop_target ? rubylode_progress_refuse_reason(section.version, can_manage: progress.can_manage_version?(section.version)) : nil %>
     <details class="rubylode-progress-section" open <%= tag.attributes(data: { version_id: section.version.id }) if drop_target %> <%= tag.attributes(data: { refuse_reason: refuse_reason }) if refuse_reason %>>
       <summary class="rubylode-progress-section__summary">
         <span class="rubylode-progress-chevron" aria-hidden="true"></span>

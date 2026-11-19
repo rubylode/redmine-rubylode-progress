@@ -80,7 +80,22 @@ class VersionStatusTest < Redmine::IntegrationTest
     assert_select "span.rubylode-progress-stage__tag", text: "locked", count: 1
   end
 
-  test "the status modal answers for a stage and refuses a viewer without manage_versions (403) and a version that is not a stage (404)" do
+test "the refusal for a closed or locked stage tells a viewer who may manage versions how to reopen it" do
+  sign_in_as("jsmith")
+  get progress_path(query = "")
+  reasons = css_select("[data-refuse-reason]").map { |element| element["data-refuse-reason"] }.uniq
+  assert_includes reasons.join(" "), "Shipped is closed, so it takes no new issues. Use its status button to reopen it."
+  assert_includes reasons.join(" "), "Lighting is locked, so it takes no new issues. Use its status button to open it again."
+
+  post "/logout"
+  sign_in_as("dlopper")
+  get progress_path
+  reasons = css_select("[data-refuse-reason]").map { |element| element["data-refuse-reason"] }.uniq
+  assert_includes reasons, "Shipped is closed, so it takes no new issues."
+  assert reasons.none? { |reason| reason.include?("status button") }
+end
+
+test "the status modal answers for a stage and refuses a viewer without manage_versions (403) and a version that is not a stage (404)" do
     other_project = Project.generate!(is_public: true)
     foreign_version = Version.generate!(project: other_project, name: "Elsewhere")
 

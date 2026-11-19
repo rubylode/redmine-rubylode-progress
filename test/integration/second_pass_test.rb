@@ -251,10 +251,10 @@ class SecondPassTest < Redmine::IntegrationTest
 
     assert_select ".rubylode-progress-stage[data-version-id=?]", @decking.id.to_s, count: 1
     assert_select ".rubylode-progress-stage[data-version-id=?][data-refuse-reason]", @decking.id.to_s, count: 0
-    assert_select ".rubylode-progress-stage[data-refuse-reason=?]:not([data-version-id])", "Foundations is closed, so it takes no new issues.", count: 1
-    assert_select ".rubylode-progress-stage[data-refuse-reason=?]:not([data-version-id])", "Framing is closed, so it takes no new issues.", count: 1
-    assert_select ".rubylode-progress-stage[data-refuse-reason=?]:not([data-version-id])", "Lighting is locked, so it takes no new issues.", count: 1
-    assert_select ".rubylode-progress-section[data-refuse-reason=?]:not([data-version-id])", "Lighting is locked, so it takes no new issues.", count: 1
+    assert_select ".rubylode-progress-stage[data-refuse-reason=?]:not([data-version-id])", "Foundations is closed, so it takes no new issues. Use its status button to reopen it.", count: 1
+    assert_select ".rubylode-progress-stage[data-refuse-reason=?]:not([data-version-id])", "Framing is closed, so it takes no new issues. Use its status button to reopen it.", count: 1
+    assert_select ".rubylode-progress-stage[data-refuse-reason=?]:not([data-version-id])", "Lighting is locked, so it takes no new issues. Use its status button to open it again.", count: 1
+    assert_select ".rubylode-progress-section[data-refuse-reason=?]:not([data-version-id])", "Lighting is locked, so it takes no new issues. Use its status button to open it again.", count: 1
     assert_select ".rubylode-progress-section[data-version-id=?]", @decking.id.to_s, count: 1
   end
 

@@ -31,7 +31,7 @@ module RubylodeProgress
     MAIN_PROJECT_IDENTIFIER = "bridge".freeze
     ROLE_NAME = "Contributor".freeze
     PERMISSIONS = %i[view_issues add_issues edit_issues add_issue_notes view_private_notes set_notes_private
-                     view_rubylode_progress].freeze
+                     view_rubylode_progress manage_versions].freeze
     PEOPLE = [
       %w[grace.hopper Grace Hopper], %w[alan.turing Alan Turing], %w[ada.lovelace Ada Lovelace],
       %w[edsger.dijkstra Edsger Dijkstra], %w[john.backus John Backus]

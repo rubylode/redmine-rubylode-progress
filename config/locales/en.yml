@@ -26,6 +26,9 @@ en:
       closed: "%{version} is closed, so it takes no new issues."
       locked: "%{version} is locked, so it takes no new issues."
       not_shared: "%{version} is not shared with this project, so it takes no new issues."
+    refuse_hint:
+      closed: " Use its status button to reopen it."
+      locked: " Use its status button to open it again."
     version_tag:
       open: open
       locked: locked

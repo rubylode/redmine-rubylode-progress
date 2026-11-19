@@ -69,7 +69,18 @@ class DemoDataTest < Redmine::IntegrationTest
     assert progress.stages.any? { |stage| progress.new_issue_mode_for(stage.version) != :none }
   end
 
-  test "the cross-project page lists the main project and the three smaller ones" do
+test "the demo person may change a version's status, so every stage shows its status button" do
+  assert @demo_person.allowed_to?(:manage_versions, @main_project)
+
+  get "/projects/#{DemoData::MAIN_PROJECT_IDENTIFIER}/progress", headers: {}
+  log_user(DemoData::DEMO_LOGIN, DemoData::DEMO_PASSWORD)
+  get "/projects/#{DemoData::MAIN_PROJECT_IDENTIFIER}/progress"
+
+  assert_response :success
+  assert_select ".rubylode-progress-stage-list summary a[data-remote]", count: 5
+end
+
+test "the cross-project page lists the main project and the three smaller ones" do
     log_user(DemoData::DEMO_LOGIN, DemoData::DEMO_PASSWORD)
     get "/progress"
 
