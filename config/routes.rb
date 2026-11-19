@@ -16,3 +16,5 @@
 
 get "projects/:id/progress", to: "rubylode_progress#show", as: "project_rubylode_progress"
 get "projects/:id/progress/checklist", to: "rubylode_progress#checklist"
+patch "projects/:id/progress/settings", to: "rubylode_progress_project_settings#update",
+                                        as: "project_rubylode_progress_settings"

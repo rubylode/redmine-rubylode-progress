@@ -1,0 +1,12 @@
+<%# The project's own overrides of the plugin-wide Progress settings; an empty field uses the plugin-wide value. %>
+<% setting = RubylodeProgress::ProjectSetting.for(@project) %>
+<% defaults = RubylodeProgress::Settings.new %>
+<%= form_tag project_rubylode_progress_settings_path(@project), method: :patch, class: "tabular" do %>
+  <p class="info"><%= l("rubylode_progress.settings.project_intro") %></p>
+  <div class="box tabular">
+    <%= render "rubylode_progress/settings/fields", scope: "rubylode_progress_project_setting",
+                                                      values: setting.attributes.slice(*RubylodeProgress::ProjectSetting::OVERRIDE_ATTRIBUTES),
+                                                      defaults: defaults %>
+  </div>
+  <p><%= submit_tag l(:button_save) %></p>
+<% end %>

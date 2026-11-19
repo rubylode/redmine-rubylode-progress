@@ -37,3 +37,37 @@ en:
       waiting: Waiting
       next: Next
       to_do: To do
+    settings:
+      use_default: "Use the default (%{value})"
+      no_prefix: no prefix
+      no_statuses: none
+      project_intro: "Anything left on the default follows Administration, Plugins, Rubylode Progress."
+      counted_versions:
+        label: Versions that make the stages
+        hint: "Which versions count as stages: every version shared with this project, or only those whose name starts with the prefix."
+        choices:
+          all: All shared versions
+          prefix: Names starting with the prefix
+      version_name_prefix:
+        label: Version name prefix
+        hint: "Used when only versions starting with a prefix count. Up to 60 characters."
+      checklist_grouping:
+        label: Group the checklist by
+        hint: "How the checklist is split into sections."
+        choices:
+          version: Version
+          category: Category
+          parent: Parent issue
+      in_progress_status_ids:
+        label: Statuses that mean in progress
+        hint: "An open issue in one of these shows as in progress."
+      waiting_status_ids:
+        label: Statuses that mean waiting
+        hint: "An open issue in one of these shows as waiting on someone else."
+      next_issue_limit:
+        label: How many issues are Next
+        hint: "From %{first} to %{last}. The first open issues of the current stage are marked Next."
+      note_source:
+        label: Note shown on each item
+        hint: "The latest note the viewer may see, or the value of one issue custom field."
+        latest_note: Latest note

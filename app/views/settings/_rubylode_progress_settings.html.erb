@@ -1,0 +1,11 @@
+<%# Rubylode Progress: Administration, Plugins, Configure. Reading goes through RubylodeProgress::Settings, so a half-filled hash shows the defaults. %>
+<% current = RubylodeProgress::Settings.new(settings) %>
+<%= render "rubylode_progress/settings/fields", scope: "settings", values: {
+      "counted_versions" => current.counted_versions,
+      "version_name_prefix" => current.version_name_prefix,
+      "checklist_grouping" => current.checklist_grouping,
+      "in_progress_status_ids" => current.in_progress_status_ids,
+      "waiting_status_ids" => current.waiting_status_ids,
+      "next_issue_limit" => current.next_issue_limit,
+      "note_source" => current.note_source
+    }, defaults: nil %>

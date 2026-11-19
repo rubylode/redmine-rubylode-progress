@@ -1,0 +1,75 @@
+<%# The settings fields, shared by the plugin-wide page (defaults is nil) and a project's Progress tab, where an empty
+    value means "use the default" and every option list starts with that choice. Locals: scope (the form name), values
+    (the current value of each field, nil for "use the default"), defaults (the plugin-wide RubylodeProgress::Settings). %>
+<% settings_scope = RubylodeProgress::Settings %>
+<% field_id = ->(name) { "#{scope}_#{name}" } %>
+<% use_default_option = lambda do |label|
+     defaults ? [[l("rubylode_progress.settings.use_default", value: label), ""]] : []
+   end %>
+
+<p>
+  <label for="<%= field_id.call("counted_versions") %>"><%= l("rubylode_progress.settings.counted_versions.label") %></label>
+  <% choices = settings_scope::COUNTED_VERSIONS_CHOICES.map { |choice| [l("rubylode_progress.settings.counted_versions.choices.#{choice}"), choice] } %>
+  <%= select_tag "#{scope}[counted_versions]",
+                 options_for_select(use_default_option.call(l("rubylode_progress.settings.counted_versions.choices.#{defaults&.counted_versions}")) + choices,
+                                    values["counted_versions"].to_s),
+                 id: field_id.call("counted_versions") %>
+  <em class="info"><%= l("rubylode_progress.settings.counted_versions.hint") %></em>
+</p>
+<p>
+  <label for="<%= field_id.call("version_name_prefix") %>"><%= l("rubylode_progress.settings.version_name_prefix.label") %></label>
+  <%= text_field_tag "#{scope}[version_name_prefix]", values["version_name_prefix"], id: field_id.call("version_name_prefix"),
+                     maxlength: RubylodeProgress::ProjectSetting::MAXIMUM_PREFIX_LENGTH, size: 30,
+                     placeholder: defaults ? l("rubylode_progress.settings.use_default", value: defaults.version_name_prefix.presence || l("rubylode_progress.settings.no_prefix")) : nil %>
+  <em class="info"><%= l("rubylode_progress.settings.version_name_prefix.hint") %></em>
+</p>
+<p>
+  <label for="<%= field_id.call("checklist_grouping") %>"><%= l("rubylode_progress.settings.checklist_grouping.label") %></label>
+  <% choices = settings_scope::CHECKLIST_GROUPING_CHOICES.map { |choice| [l("rubylode_progress.settings.checklist_grouping.choices.#{choice}"), choice] } %>
+  <%= select_tag "#{scope}[checklist_grouping]",
+                 options_for_select(use_default_option.call(l("rubylode_progress.settings.checklist_grouping.choices.#{defaults&.checklist_grouping}")) + choices,
+                                    values["checklist_grouping"].to_s),
+                 id: field_id.call("checklist_grouping") %>
+  <em class="info"><%= l("rubylode_progress.settings.checklist_grouping.hint") %></em>
+</p>
+
+<% { "in_progress_status_ids" => :in_progress_status_ids, "waiting_status_ids" => :waiting_status_ids }.each do |name, reader| %>
+  <% chosen_ids = values[name] %>
+  <p>
+    <label><%= l("rubylode_progress.settings.#{name}.label") %></label>
+    <% if defaults %>
+      <% default_names = IssueStatus.sorted.select { |status| defaults.public_send(reader).include?(status.id) }.map(&:name) %>
+      <%= hidden_field_tag "#{scope}[use_default_#{name}]", "0", id: nil %>
+      <label class="block">
+        <%= check_box_tag "#{scope}[use_default_#{name}]", "1", chosen_ids.nil?, id: field_id.call("use_default_#{name}") %>
+        <%= l("rubylode_progress.settings.use_default", value: default_names.presence&.join(", ") || l("rubylode_progress.settings.no_statuses")) %>
+      </label>
+    <% end %>
+    <%= hidden_field_tag "#{scope}[#{name}][]", "", id: nil %>
+    <% IssueStatus.sorted.each do |status| %>
+      <label class="block">
+        <%= check_box_tag "#{scope}[#{name}][]", status.id, Array(chosen_ids).include?(status.id), id: field_id.call("#{name}_#{status.id}") %>
+        <%= status.name %>
+      </label>
+    <% end %>
+    <em class="info"><%= l("rubylode_progress.settings.#{name}.hint") %></em>
+  </p>
+<% end %>
+
+<p>
+  <label for="<%= field_id.call("next_issue_limit") %>"><%= l("rubylode_progress.settings.next_issue_limit.label") %></label>
+  <%= number_field_tag "#{scope}[next_issue_limit]", values["next_issue_limit"], id: field_id.call("next_issue_limit"),
+                       min: settings_scope::NEXT_ISSUE_LIMIT_RANGE.first, max: settings_scope::NEXT_ISSUE_LIMIT_RANGE.last,
+                       placeholder: defaults ? l("rubylode_progress.settings.use_default", value: defaults.next_issue_limit) : nil %>
+  <em class="info"><%= l("rubylode_progress.settings.next_issue_limit.hint", first: settings_scope::NEXT_ISSUE_LIMIT_RANGE.first, last: settings_scope::NEXT_ISSUE_LIMIT_RANGE.last) %></em>
+</p>
+<p>
+  <label for="<%= field_id.call("note_source") %>"><%= l("rubylode_progress.settings.note_source.label") %></label>
+  <% note_choices = [[l("rubylode_progress.settings.note_source.latest_note"), "latest_note"]] +
+                    IssueCustomField.sorted.map { |field| [field.name, "custom_field_#{field.id}"] } %>
+  <% default_note_label = note_choices.find { |_label, value| value == defaults&.note_source }&.first || l("rubylode_progress.settings.note_source.latest_note") %>
+  <%= select_tag "#{scope}[note_source]",
+                 options_for_select(use_default_option.call(default_note_label) + note_choices, values["note_source"].to_s),
+                 id: field_id.call("note_source") %>
+  <em class="info"><%= l("rubylode_progress.settings.note_source.hint") %></em>
+</p>
