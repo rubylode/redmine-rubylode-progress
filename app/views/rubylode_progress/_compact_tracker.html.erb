@@ -1,0 +1,20 @@
+<section class="rubylode-progress-compact-tracker">
+  <h3 class="rubylode-progress-compact-tracker__name">
+    <%= link_to tracker.project.name, project_rubylode_progress_path(tracker.project) %>
+  </h3>
+  <% if tracker.stages.empty? %>
+    <p class="rubylode-progress-compact-tracker__empty"><%= l("rubylode_progress.nothing_to_track_yet") %></p>
+  <% else %>
+    <div class="rubylode-progress-tracker__bar">
+      <%= render "rubylode_progress/track", stages: tracker.stages, percent: tracker.percent %>
+      <span class="rubylode-progress-tracker__percent"><%= tracker.percent %>%</span>
+    </div>
+    <p class="rubylode-progress-compact-tracker__stage">
+      <% if tracker.current_stage %>
+        <%= tracker.current_stage.version.name %>
+      <% else %>
+        <%= l("rubylode_progress.all_stages_done", total: tracker.stages.size) %>
+      <% end %>
+    </p>
+  <% end %>
+</section>

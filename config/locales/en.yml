@@ -7,6 +7,7 @@ en:
     no_category: No category
     no_parent: No parent
     nothing_to_track: There is nothing to track yet. Add a version with issues to start the stages.
+    nothing_to_track_yet: Nothing to track yet.
     last_change: "Last change %{date}"
     stage_position: "Stage %{number} of %{total}"
     all_stages_done: "All %{total} stages done"

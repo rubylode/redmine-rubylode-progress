@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 
+get "progress", to: "rubylode_progress_all_projects#index", as: "rubylode_progress_all_projects"
 get "projects/:id/progress", to: "rubylode_progress#show", as: "project_rubylode_progress"
 get "projects/:id/progress/checklist", to: "rubylode_progress#checklist"
 patch "projects/:id/progress/settings", to: "rubylode_progress_project_settings#update",

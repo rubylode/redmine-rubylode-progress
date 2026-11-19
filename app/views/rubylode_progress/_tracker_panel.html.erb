@@ -15,11 +15,7 @@
   <% end %>
 
   <div class="rubylode-progress-tracker__bar">
-    <ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: progress.percent, finished: progress.finished_stage_count, total: progress.stages.size) %>">
-      <% progress.stages.each do |stage| %>
-        <li class="rubylode-progress-track__dot rubylode-progress-track__dot--<%= stage.state %>"></li>
-      <% end %>
-    </ol>
+    <%= render "track", stages: progress.stages, percent: progress.percent %>
     <span class="rubylode-progress-tracker__percent"><%= progress.percent %>%</span>
   </div>
 

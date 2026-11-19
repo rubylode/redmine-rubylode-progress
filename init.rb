@@ -33,6 +33,11 @@ Redmine::Plugin.register :redmine_rubylode_progress do
   menu :project_menu, :rubylode_progress,
        { controller: "rubylode_progress", action: "show" },
        caption: :label_rubylode_progress, after: :roadmap, param: :id
+
+  menu :top_menu, :rubylode_progress,
+       { controller: "rubylode_progress_all_projects", action: "index" },
+       caption: :label_rubylode_progress,
+       if: ->(*) { RubylodeProgress::AllProjects.any_for?(User.current) }
 end
 
 # Redmine runs this file again on every code reload, so each patch goes in only once.

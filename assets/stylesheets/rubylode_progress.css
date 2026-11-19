@@ -16,3 +16,6 @@
 .rubylode-progress-pill{border:1px solid #bbb;border-radius:1em;padding:0 .6em;font-size:.8em}
 .rubylode-progress-section__tally{color:#666;font-weight:normal;font-size:.8em}
 @media (max-width:640px){.rubylode-progress-tiles{grid-template-columns:repeat(2,1fr)}}
+.rubylode-progress-all-projects{display:flex;flex-direction:column;gap:1em}
+.rubylode-progress-compact-tracker__name{margin:0 0 .3em}
+.rubylode-progress-compact-tracker__stage,.rubylode-progress-compact-tracker__empty{margin:.3em 0 0;color:#666}

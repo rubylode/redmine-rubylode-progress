@@ -1,0 +1,11 @@
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag "rubylode_progress", plugin: "redmine_rubylode_progress" %>
+<% end %>
+
+<h2><%= l(:label_rubylode_progress) %></h2>
+
+<div class="rubylode-progress-all-projects">
+  <% @trackers.each do |tracker| %>
+    <%= render "rubylode_progress/compact_tracker", tracker: tracker %>
+  <% end %>
+</div>
