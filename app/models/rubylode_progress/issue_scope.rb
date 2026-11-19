@@ -21,7 +21,7 @@ module RubylodeProgress
   # here, or belong to this project's tree in a project whose issues the viewer may see (owner's ruling, 2026-11-18): so
   # a version shared in from elsewhere with nothing of ours, or one of a hidden subproject, never becomes a stage.
   class IssueScope
-    ISSUE_PRELOADS = [:status, :priority, :assigned_to, :category, :parent, :fixed_version,
+    ISSUE_PRELOADS = [:project, :status, :priority, :assigned_to, :category, :parent, :fixed_version,
                       { relations_to: { issue_from: :status } }, { custom_values: :custom_field }].freeze
 
     # The cross-project page passes a short preload list and column list, as it reads only status and version.
@@ -53,6 +53,11 @@ module RubylodeProgress
       end
     end
 
+    # The ids of the counted versions an issue of this project may be filed in (Redmine refuses any other).
+    def shared_version_ids
+      @shared_version_ids ||= shared_versions.map(&:id).to_set
+    end
+
     def viewer_group_ids
       @viewer.logged? ? @viewer.group_ids : []
     end
@@ -61,8 +66,12 @@ module RubylodeProgress
 
     def candidate_versions
       @candidate_versions ||= counted_only(
-        (@project.shared_versions.to_a + @project.rolled_up_versions.visible(@viewer).preload(:project).to_a).uniq
+        (shared_versions + @project.rolled_up_versions.visible(@viewer).preload(:project).to_a).uniq
       )
+    end
+
+    def shared_versions
+      @shared_versions ||= @project.shared_versions.to_a
     end
 
     def tree_project_ids

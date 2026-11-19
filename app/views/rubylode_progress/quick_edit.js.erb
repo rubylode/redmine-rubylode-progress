@@ -1,0 +1,2 @@
+$('#ajax-modal').html('<%= escape_javascript(render(partial: "rubylode_progress/quick_edit_form", formats: [:html], locals: { issue: @issue, back_url: @back_url, modal: true })) %>');
+showModal('ajax-modal', '600px');

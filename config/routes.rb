@@ -19,3 +19,7 @@ get "projects/:id/progress", to: "rubylode_progress#show", as: "project_rubylode
 get "projects/:id/progress/checklist", to: "rubylode_progress#checklist"
 patch "projects/:id/progress/settings", to: "rubylode_progress_project_settings#update",
                                         as: "project_rubylode_progress_settings"
+get "projects/:id/progress/issues/:issue_id/quick_edit", to: "rubylode_progress#quick_edit",
+                                                         as: "project_rubylode_progress_quick_edit"
+get "projects/:id/progress/versions/:version_id/new_issue", to: "rubylode_progress#new_issue",
+                                                            as: "project_rubylode_progress_new_issue"

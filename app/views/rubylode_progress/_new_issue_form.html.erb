@@ -1,0 +1,36 @@
+<h3 class="title"><%= l("rubylode_progress.new_issue.title", version: version.name) %></h3>
+
+<%= form_tag project_issues_path(@project), method: :post, class: "rubylode-progress-form" do %>
+  <%= hidden_field_tag :back_url, back_url %>
+  <%= hidden_field_tag "issue[fixed_version_id]", version.id, id: "rubylode_progress_issue_fixed_version_id" %>
+  <div class="box tabular">
+    <p>
+      <%= label_tag "rubylode_progress_issue_tracker_id", l(:field_tracker) %>
+      <%= select_tag "issue[tracker_id]", options_from_collection_for_select(tracker_choices, :id, :name, issue.tracker_id), id: "rubylode_progress_issue_tracker_id" %>
+    </p>
+    <p>
+      <%= label_tag "rubylode_progress_issue_subject", l(:field_subject) %>
+      <%= text_field_tag "issue[subject]", nil, size: 60, maxlength: 255, required: true, id: "rubylode_progress_issue_subject" %>
+    </p>
+    <% if issue.safe_attribute?("assigned_to_id") %>
+      <p>
+        <%= label_tag "rubylode_progress_issue_assigned_to_id", l(:field_assigned_to) %>
+        <%= select_tag "issue[assigned_to_id]", content_tag(:option, "", value: "") + options_from_collection_for_select(issue.assignable_users, :id, :name), id: "rubylode_progress_issue_assigned_to_id" %>
+      </p>
+    <% end %>
+    <% if issue.safe_attribute?("description") %>
+      <p>
+        <%= label_tag "rubylode_progress_issue_description", l(:field_description) %>
+        <%= text_area_tag "issue[description]", nil, rows: 5, id: "rubylode_progress_issue_description" %>
+      </p>
+    <% end %>
+  </div>
+  <p class="buttons">
+    <%= submit_tag l(:button_create), name: nil %>
+    <% if modal %>
+      <%= link_to_function l(:button_cancel), "hideModal(this);" %>
+    <% else %>
+      <%= link_to l(:button_cancel), back_url %>
+    <% end %>
+  </p>
+<% end %>

@@ -18,7 +18,8 @@
 class RubylodeProgressController < ApplicationController
   menu_item :rubylode_progress
   before_action :find_project, :authorize
-  before_action :load_progress_and_filter
+  before_action :load_progress_and_filter, only: [:show, :checklist]
+  before_action :load_progress_for_modal, only: [:quick_edit, :new_issue]
 
   def show
     @tally = RubylodeProgress::Tally.from(@progress.items)
@@ -28,11 +29,54 @@ class RubylodeProgressController < ApplicationController
   # The checklist alone, for the filter links to swap in without reloading the page.
   def checklist
     load_checklist
-    render partial: "rubylode_progress/checklist", locals: { sections: @sections, item_notes: @item_notes },
-           layout: false
+    render partial: "rubylode_progress/checklist", locals: checklist_locals, layout: false
+  end
+
+  # The modal's form. The save goes to Redmine's own issue update, which decides again what this viewer may change.
+  def quick_edit
+    @issue = Issue.visible(User.current).where(project_id: @project.self_and_descendants.select(:id))
+                  .find_by(id: params[:issue_id])
+    return render_404 unless @issue
+    return render_403 unless @issue.editable?(User.current)
+
+    respond_to do |format|
+      format.html
+      format.js
+    end
+  end
+
+  # The modal for a new issue in one stage. A project that needs fields the modal does not show goes to Redmine's form.
+  def new_issue
+    @version = @progress.stages.map(&:version).find { |version| version.id == params[:version_id].to_i }
+    return render_404 unless @version
+
+    mode = @progress.new_issue_mode_for(@version)
+    return render_403 if mode == :none
+
+    @tracker_choices = Issue.allowed_target_trackers(@project, User.current).to_a
+    @full_form_url = new_project_issue_path(@project, issue: { fixed_version_id: @version.id }, back_url: @back_url)
+    @full_form = mode == :full_form
+    return redirect_to(@full_form_url) if @full_form && request.format.html?
+
+    @issue = Issue.new(project: @project, author: User.current, fixed_version: @version, tracker: @tracker_choices.first)
+    respond_to do |format|
+      format.html
+      format.js
+    end
   end
 
   private
+
+  # Where Redmine sends the viewer after the save: built here from the project and the filter, never taken from the request.
+  def load_progress_for_modal
+    @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
+    @filter = RubylodeProgress::ChecklistFilter.resolve(requested: params[:filter], remembered: remembered_filter)
+    @back_url = project_rubylode_progress_path(@project, filter: @filter)
+  end
+
+  def checklist_locals
+    { sections: @sections, item_notes: @item_notes, project: @project, progress: @progress, filter: @filter }
+  end
 
   def load_progress_and_filter
     @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)

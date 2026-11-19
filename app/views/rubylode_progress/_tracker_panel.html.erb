@@ -21,7 +21,9 @@
 
   <ol class="rubylode-progress-stages">
     <% progress.stages.each do |stage| %>
-      <%= render "stage", stage: stage, project: @project, settings: progress.settings %>
+      <%= render "stage", stage: stage, project: @project, settings: progress.settings,
+                          editable_issue_ids: progress.editable_issue_ids,
+                          new_issue_mode: progress.new_issue_mode_for(stage.version) %>
     <% end %>
   </ol>
 </section>

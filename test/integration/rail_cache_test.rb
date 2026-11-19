@@ -58,7 +58,7 @@ class RailCacheTest < Redmine::IntegrationTest
     log_user(login, login == "dlopper" ? "foo" : login)
     get "/projects/#{@project.identifier}/progress"
     assert_response :success
-    css_select(".rubylode-progress-step a").map(&:text)
+    css_select(".rubylode-progress-step a:not(.rubylode-progress-edit)").map(&:text)
   end
 
   test "each stage of the rail is written to the fragment cache, and a second view reads it" do

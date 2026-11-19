@@ -23,12 +23,17 @@ module RubylodeProgress
   # It does not name the viewer's role: visibility also depends on the person (own issues, private issues). The ids of
   # the closed steps are in it too, because updated_on is only stored to the second: closing one of several issues inside
   # the second of the last change would otherwise leave the state and the ids unchanged.
+  # The pencils and the plus sit in the cached fragment, so the key also carries what decides them: a digest of the ids of
+  # the stage's issues this viewer may edit, what the plus does for this viewer (none, modal or full form, which holds
+  # the add-issues right), and the version's status. A role that loses a right changes the key on the next view.
   module StageCacheKey
-    def self.for(stage:, project:, viewer:, settings:)
+    def self.for(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:)
       step_issues = stage.steps.map(&:issue)
+      editable_step_issues = step_issues.select { |issue| editable_issue_ids.include?(issue.id) }
       ["rubylode_progress/stage", project.id, viewer.id, stage.version.id, precise(stage.version.updated_on), stage.number,
        stage.state, digest_of_ids(step_issues), digest_of_ids(stage.steps.select(&:done?).map(&:issue)),
-       precise(step_issues.filter_map(&:updated_on).max), settings.cache_digest, I18n.locale]
+       precise(step_issues.filter_map(&:updated_on).max), settings.cache_digest, I18n.locale,
+       stage.version.status, digest_of_ids(editable_step_issues), new_issue_mode]
     end
 
     def self.digest_of_ids(issues)

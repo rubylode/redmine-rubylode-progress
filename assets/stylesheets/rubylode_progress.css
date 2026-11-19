@@ -382,6 +382,18 @@
   gap: var(--rubylode-progress-gap);
 }
 
+.rubylode-progress-edit,
+.rubylode-progress-add {
+  display: inline-flex;
+  align-items: center;
+  margin-left: var(--rubylode-progress-space-small);
+  color: var(--rubylode-progress-muted-text-color);
+}
+
+.rubylode-progress-stage__add {
+  margin: var(--rubylode-progress-space-small) 0 0;
+}
+
 .rubylode-progress a:focus-visible,
 .rubylode-progress-filter:focus-visible,
 .rubylode-progress summary:focus-visible {

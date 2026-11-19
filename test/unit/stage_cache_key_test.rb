@@ -38,11 +38,14 @@ class StageCacheKeyTest < ActiveSupport::TestCase
   end
 
   def key_for(viewer: @manager, settings: nil)
+    viewer = User.find(viewer.id)
     project = Project.find(@project.id)
     settings ||= RubylodeProgress::EffectiveSettings.for(project)
     progress = RubylodeProgress::ProjectProgress.new(project: project, viewer: viewer, settings: settings)
-    RubylodeProgress::StageCacheKey.for(stage: progress.stages.first, project: project, viewer: viewer,
-                                        settings: settings)
+    stage = progress.stages.first
+    RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: viewer, settings: settings,
+                                        editable_issue_ids: progress.editable_issue_ids,
+                                        new_issue_mode: progress.new_issue_mode_for(stage.version))
   end
 
   test "it does not change on a second identical build" do
@@ -125,5 +128,32 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     changed = I18n.with_locale(:fr) { key_for }
 
     refute_equal before, changed
+  end
+
+  test "the key changes when the viewer's role loses the right to edit" do
+    before = key_for
+    @manager_role.remove_permission!(:edit_issues, :edit_own_issues, :add_issue_notes)
+
+    refute_equal before, key_for
+  end
+
+  test "the key changes when the viewer's role loses the right to add issues" do
+    before = key_for
+    @manager_role.remove_permission!(:add_issues)
+
+    refute_equal before, key_for
+  end
+
+  test "the key changes with the version's status, even when its update time does not move" do
+    before = key_for
+    @version.update_columns(status: "locked")
+
+    refute_equal before, key_for
+  end
+
+  test "two viewers with different edit rights get different keys" do
+    @developer_role.remove_permission!(:edit_issues, :edit_own_issues, :add_issue_notes)
+
+    refute_equal key_for(viewer: @manager), key_for(viewer: @developer)
   end
 end

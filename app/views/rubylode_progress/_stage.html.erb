@@ -1,4 +1,4 @@
-<% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings) do %>
+<% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode) do %>
 <li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>">
   <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %>>
     <summary>
@@ -16,9 +16,17 @@
           <% if step.issue.assigned_to %>
             <span class="rubylode-progress-step__assignee"><%= step.issue.assigned_to.name %></span>
           <% end %>
+          <% if editable_issue_ids.include?(step.issue.id) %>
+            <%= render "quick_edit_link", project: project, issue: step.issue %>
+          <% end %>
         </li>
       <% end %>
     </ul>
+    <% unless new_issue_mode == :none %>
+      <p class="rubylode-progress-stage__add">
+        <%= render "new_issue_link", project: project, version: stage.version, full_form: new_issue_mode == :full_form %>
+      </p>
+    <% end %>
   </details>
 </li>
 <% end %>

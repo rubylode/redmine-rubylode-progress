@@ -21,9 +21,13 @@ module RubylodeProgress
   class ProjectProgress
     Item = Struct.new(:issue, :status, :step_number, keyword_init: true)
 
+    # What the new-issue modal shows. Anything beyond these needs Redmine's full form.
+    NEW_ISSUE_MODAL_ATTRIBUTES = %w[tracker_id subject description assigned_to_id fixed_version_id].freeze
+
     attr_reader :settings
 
     def initialize(project:, viewer:, settings: EffectiveSettings.for(project))
+      @project = project
       @viewer = viewer
       @settings = settings
       @scope = IssueScope.new(project: project, viewer: viewer, settings: settings)
@@ -54,12 +58,55 @@ module RubylodeProgress
       status_rule.status_for(issue)
     end
 
+    # The ids of the counted issues this viewer may edit, found for all of them at once from the issues already loaded.
+    def editable_issue_ids
+      @editable_issue_ids ||= items.map(&:issue).select { |issue| issue.editable?(@viewer) }.to_set(&:id)
+    end
+
+    # What the plus on a stage does for this viewer: :none (no plus), :modal (Redmine's modal), or :full_form (the
+    # project needs fields the modal does not show, so the plus links to Redmine's own new-issue form). Redmine files
+    # an issue only in an open version shared with the project, and only for a viewer who may add issues.
+    def new_issue_mode_for(version)
+      return :none unless version.open? && @scope.shared_version_ids.include?(version.id)
+
+      new_issue_mode
+    end
+
     # Taken over every counted issue, so it does not move when the checklist is filtered.
     def last_change_on
       @scope.issues.filter_map(&:updated_on).max
     end
 
     private
+
+    def new_issue_mode
+      @new_issue_mode ||= begin
+        trackers = @viewer.allowed_to?(:add_issues, @project) ? Issue.allowed_target_trackers(@project, @viewer).to_a : []
+        if trackers.empty?
+          :none
+        elsif hidden_required_fields?(trackers)
+          :full_form
+        else
+          :modal
+        end
+      end
+    end
+
+    # Whether a new issue of any of these trackers needs a field the modal does not show and that has no default: a
+    # required custom field, or a field the workflow makes required for one of the viewer's roles on a new issue. Two
+    # queries for all the trackers together, and deliberately on the safe side: a doubt sends the viewer to Redmine's form.
+    def hidden_required_fields?(trackers)
+      tracker_ids = trackers.map(&:id)
+      required_custom_field = IssueCustomField.where(is_required: true, default_value: [nil, ""])
+                                              .where("is_for_all = ? OR custom_fields.id IN (SELECT custom_field_id FROM custom_fields_projects WHERE project_id = ?)", true, @project.id)
+                                              .joins(:trackers).where(custom_fields_trackers: { tracker_id: tracker_ids })
+      return true if required_custom_field.exists?
+
+      role_ids = @viewer.admin? ? Role.pluck(:id) : @viewer.roles_for_project(@project).map(&:id)
+      WorkflowPermission.where(tracker_id: tracker_ids, old_status_id: trackers.map(&:default_status_id), role_id: role_ids,
+                               rule: "required")
+                        .where.not(field_name: NEW_ISSUE_MODAL_ATTRIBUTES).exists?
+    end
 
     def status_rule
       @status_rule ||= begin

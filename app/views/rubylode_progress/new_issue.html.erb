@@ -1,0 +1,7 @@
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag "rubylode_progress", plugin: "redmine_rubylode_progress" %>
+<% end %>
+
+<div class="rubylode-progress">
+  <%= render "new_issue_form", issue: @issue, version: @version, tracker_choices: @tracker_choices, back_url: @back_url, modal: false %>
+</div>

@@ -1,0 +1,5 @@
+<%= link_to sprite_icon("edit", l(:button_edit), icon_only: true),
+            project_rubylode_progress_quick_edit_path(project, issue_id: issue.id, filter: local_assigns[:filter]),
+            remote: true, class: "icon-only rubylode-progress-edit",
+            title: l("rubylode_progress.quick_edit.link_label", number: issue.id),
+            aria: { label: l("rubylode_progress.quick_edit.link_label", number: issue.id) } %>

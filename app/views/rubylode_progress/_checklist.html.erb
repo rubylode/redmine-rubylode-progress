@@ -9,7 +9,8 @@
       <% end %>
       <ul class="rubylode-progress-rows">
         <% section.items.each do |item| %>
-          <%= render "checklist_row", item: item, note: item_notes[item.issue.id] %>
+          <%= render "checklist_row", item: item, note: item_notes[item.issue.id],
+                                       project: project, editable_issue_ids: progress.editable_issue_ids, filter: filter %>
         <% end %>
       </ul>
     </div>
