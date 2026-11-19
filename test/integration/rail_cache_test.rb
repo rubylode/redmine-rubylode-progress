@@ -105,4 +105,26 @@ class RailCacheTest < Redmine::IntegrationTest
     Role.find(2).update!(issues_visibility: "all")
     assert_equal ["Written by the manager", "Written by the developer"].sort, steps_seen_by("dlopper").sort
   end
+
+  test "the cached fragment is reused when only a neighbour changes, while the rail line follows it" do
+    middle = Version.generate!(project: @project, name: "Launch", effective_date: Date.new(2026, 3, 1))
+    last = Version.generate!(project: @project, name: "Final", effective_date: Date.new(2026, 4, 1))
+    neighbour_issue = Issue.generate!(project: @project, fixed_version: middle, author: @manager)
+    Issue.generate!(project: @project, fixed_version: middle, author: @manager)
+    Issue.generate!(project: @project, fixed_version: last, author: @manager, status_id: CLOSED_STATUS_ID)
+    writes = []
+    subscriber = ActiveSupport::Notifications.subscribe("write_fragment.action_controller") { |*, payload| writes << payload[:key] }
+
+    steps_seen_by("jsmith")
+    assert_equal 3, writes.size
+    assert_select "li.rubylode-progress-stage-item:first-child[style*=?]", "share-into-next: 0%"
+
+    neighbour_issue.reload.update!(status_id: CLOSED_STATUS_ID)
+    get "/projects/#{@project.identifier}/progress"
+
+    assert_equal 4, writes.size, "only the stage that changed is written again, not the stage above it"
+    assert_select "li.rubylode-progress-stage-item:first-child[style*=?]", "share-into-next: 50%"
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
+  end
 end

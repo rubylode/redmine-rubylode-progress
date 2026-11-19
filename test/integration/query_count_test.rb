@@ -24,7 +24,7 @@ class QueryCountTest < Redmine::IntegrationTest
 
   CLOSED_STATUS_ID = 5
 
-  # What a project page costs once the preloads are in, whatever the issue count: 49 statements, measured on 2026-11-19 (45 before the edit and add controls, 48 before the author preload).
+  # What a project page costs once the preloads are in, whatever the issue count: 50 statements, measured on 2026-11-19 (49 before the design review, 45 before the edit and add controls, 48 before the author preload).
   # Redmine's own request: the session user and their preferences, the settings (read a few times each), the project, its
   # modules, memberships and roles, the menu's module and tracker checks (wiki, boards, repositories). The plugin's:
   # the project's setting row, the viewer's group ids, the project tree, the versions (own and shared), the issues, then
@@ -32,8 +32,8 @@ class QueryCountTest < Redmine::IntegrationTest
   # and their fields, and one for the latest notes. The edit and add controls added three, none per issue: the project's
   # trackers, one query for required custom fields and one for workflow-required fields across all the trackers (the
   # issues' projects load in one preload with the rest). The owner's revisions added one, the issues' authors, again one
-  # preload for all of them.
-  PROJECT_PAGE_QUERY_CEILING = 49
+  # preload for all of them. The design review added one: the names of the waiting and in-progress statuses for the rules panel (none when no status is chosen), 50 with both chosen.
+  PROJECT_PAGE_QUERY_CEILING = 50
 
   setup do
     @manager = User.find(2)
@@ -75,8 +75,14 @@ class QueryCountTest < Redmine::IntegrationTest
 
   test "the project page runs the same number of queries for 5 issues as for 50" do
     log_user("jsmith", "jsmith")
-    few = queries_for_progress_page(build_project(5, name: "Few"))
-    many = queries_for_progress_page(build_project(50, name: "Many"))
+    few = many = nil
+    # With statuses chosen, so the rules panel has names to look up.
+    with_settings plugin_redmine_rubylode_progress: RubylodeProgress::Settings::DEFAULTS.merge(
+      "in_progress_status_ids" => ["2"], "waiting_status_ids" => ["4"]
+    ) do
+      few = queries_for_progress_page(build_project(5, name: "Few"))
+      many = queries_for_progress_page(build_project(50, name: "Many"))
+    end
 
     assert_equal few, many
     assert_select ".rubylode-progress-step", count: 50
