@@ -427,6 +427,7 @@
 .rubylode-progress-checklist-column {
   flex: 1 1 30em;
   min-width: 0;
+  container-type: inline-size;
 }
 
 .rubylode-progress-stages,
@@ -1014,6 +1015,35 @@
 
 .rubylode-progress-row .rubylode-progress-pill {
   justify-self: center;
+}
+
+/* When the checklist column is narrow (a half-width column beside the stage list, a small window) the five fixed
+   columns would leave the title a sliver. The row becomes two lines instead: the mark, the title and the actions, then
+   the number, the assignee, the pill and the date under the title. */
+@container (max-width: 46em) {
+  .rubylode-progress-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .rubylode-progress-row__main {
+    flex: 1 1 calc(100% - 5.5em);
+    min-width: 0;
+  }
+
+  .rubylode-progress-row__number {
+    margin-left: 1.6em;
+    text-align: left;
+  }
+
+  .rubylode-progress-row .rubylode-progress-pill {
+    justify-self: auto;
+  }
+
+  .rubylode-progress-row__date {
+    text-align: left;
+  }
 }
 
 .rubylode-progress-pill--done {

@@ -223,7 +223,17 @@ class StylesheetTest < ActiveSupport::TestCase
     assert_match(/\.rubylode-progress-row\[draggable="true"\]\s*\{[^}]*cursor: grab/, comment_free_stylesheet)
   end
 
-  test "every --rubylode-progress- property in the stylesheet is listed in docs/theming.md" do
+test "a narrow checklist column puts a row's number, assignee, pill and date on a second line under the title" do
+  css = comment_free_stylesheet
+
+  assert_match(/\.rubylode-progress-checklist-column\s*\{[^}]*container-type: inline-size/, css)
+  narrow = css[/@container \(max-width: [\d.]+em\)\s*\{(.*?)\n\}\n/m, 1]
+  assert narrow, "the row layout needs a container query on the checklist column's width"
+  assert_match(/\.rubylode-progress-row\s*\{[^}]*display: flex[^}]*flex-wrap: wrap/m, narrow)
+  assert_match(/\.rubylode-progress-row__main\s*\{[^}]*flex: 1 1 calc\(100% - /m, narrow)
+end
+
+test "every --rubylode-progress- property in the stylesheet is listed in docs/theming.md" do
     used = comment_free_stylesheet.scan(/--rubylode-progress-[a-z-]+/).uniq
 
     assert_empty(used.reject { |name| THEMING.include?("`#{name}`") })
