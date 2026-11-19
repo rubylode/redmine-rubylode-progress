@@ -10,7 +10,8 @@ class RubylodeProgressController < ApplicationController
     @filter = "open"
     @tally = RubylodeProgress::Tally.from(@progress.items)
     @checklist_items = @progress.items.reject { |item| item.status == :done }
-    @sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @progress.settings.checklist_grouping)
+    @sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @progress.settings.checklist_grouping,
+                                                                  viewer: User.current)
     @item_notes = RubylodeProgress::ItemNotes.for(@checklist_items.map(&:issue), viewer: User.current,
                                                   settings: @progress.settings)
   end

@@ -24,10 +24,10 @@ module RubylodeProgress
 
     # by is "version" (in the order the items arrive, which is stage order), "category" (by name, then "No category")
     # or "parent" (by parent issue number, then "No parent").
-    def group(items, by:)
+    def group(items, by:, viewer:)
       case by
       when "category" then grouped(items, ->(issue) { issue.category }, :name, "no_category")
-      when "parent" then grouped(items, ->(issue) { issue.parent }, :id, "no_parent", title: ->(parent) { "##{parent.id} #{parent.subject}" })
+      when "parent" then grouped(items, ->(issue) { issue.parent }, :id, "no_parent", title: ->(parent) { parent_title(parent, viewer) })
       else grouped(items, ->(issue) { issue.fixed_version }, nil, nil)
       end
     end
@@ -40,6 +40,11 @@ module RubylodeProgress
       sections << section(I18n.t("rubylode_progress.#{missing_key}"), missing) if missing.any? && missing_key
       sections << section(nil, missing) if missing.any? && !missing_key
       sections
+    end
+
+    # The subject of a parent the viewer may not see is not theirs to read; its number is all the heading says.
+    def parent_title(parent, viewer)
+      parent.visible?(viewer) ? "##{parent.id} #{parent.subject}" : "##{parent.id}"
     end
 
     def section(title, items)

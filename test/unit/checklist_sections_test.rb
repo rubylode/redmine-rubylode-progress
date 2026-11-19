@@ -20,7 +20,10 @@ require File.expand_path("../test_helper", __dir__)
 class ChecklistSectionsTest < ActiveSupport::TestCase
   Item = RubylodeProgress::ProjectProgress::Item
   Named = Struct.new(:name)
-  ParentDouble = Struct.new(:id, :subject)
+  ParentDouble = Struct.new(:id, :subject, :visible) do
+    def visible?(_viewer) = visible != false
+  end
+  VIEWER = Object.new
   IssueDouble = Struct.new(:id, :fixed_version, :category, :parent, keyword_init: true)
 
   def item(id, status: :to_do, version: nil, category: nil, parent: nil)
@@ -33,7 +36,7 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
     beta = Named.new("Beta")
     items = [item(1, status: :done, version: alpha), item(2, version: alpha), item(3, version: beta)]
 
-    sections = RubylodeProgress::ChecklistSections.group(items, by: "version")
+    sections = RubylodeProgress::ChecklistSections.group(items, by: "version", viewer: VIEWER)
 
     assert_equal ["Alpha", "Beta"], sections.map(&:title)
     assert_equal [1, 0], sections.map(&:done_count)
@@ -43,7 +46,7 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
   test "by category, sections are by name and issues without one go last under No category" do
     items = [item(1), item(2, category: Named.new("Zebra")), item(3, category: Named.new("Apple"))]
 
-    sections = RubylodeProgress::ChecklistSections.group(items, by: "category")
+    sections = RubylodeProgress::ChecklistSections.group(items, by: "category", viewer: VIEWER)
 
     assert_equal ["Apple", "Zebra", I18n.t("rubylode_progress.no_category")], sections.map(&:title)
     assert_equal [[1]], sections.last.items.map { |row| [row.issue.id] }
@@ -53,10 +56,19 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
     parent = ParentDouble.new(5, "The parent")
     items = [item(5), item(6, parent: parent), item(7, parent: parent)]
 
-    sections = RubylodeProgress::ChecklistSections.group(items, by: "parent")
+    sections = RubylodeProgress::ChecklistSections.group(items, by: "parent", viewer: VIEWER)
 
     assert_equal ["#5 The parent", I18n.t("rubylode_progress.no_parent")], sections.map(&:title)
     assert_equal [[6, 7], [5]], sections.map { |section| section.items.map { |row| row.issue.id } }
+  end
+
+  test "by parent, a parent the viewer cannot see shows its number but never its subject" do
+    hidden = ParentDouble.new(9, "Secret subject", false)
+    items = [item(10, parent: hidden)]
+
+    sections = RubylodeProgress::ChecklistSections.group(items, by: "parent", viewer: VIEWER)
+
+    assert_equal ["#9"], sections.map(&:title)
   end
 
   test "grouping keeps the same items" do
@@ -64,7 +76,7 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
     items = [item(1, category: Named.new("A"), parent: parent, version: Named.new("V")), item(2), item(3, parent: parent)]
 
     %w[version category parent].each do |by|
-      grouped = RubylodeProgress::ChecklistSections.group(items, by: by).flat_map(&:items)
+      grouped = RubylodeProgress::ChecklistSections.group(items, by: by, viewer: VIEWER).flat_map(&:items)
       assert_equal items.map { |row| row.issue.id }.sort, grouped.map { |row| row.issue.id }.sort, by
     end
   end
