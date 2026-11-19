@@ -20,6 +20,12 @@ en:
         other: "%{count} steps planned"
       current: "%{done} of %{total} steps done"
       partial: "%{done} of %{total} steps done, %{left} left"
+    filters:
+      label: Checklist filter
+      open: Open
+      needs_you: Needs you
+      done: Done
+      all: All
     tiles:
       done: Done
       next: Next up

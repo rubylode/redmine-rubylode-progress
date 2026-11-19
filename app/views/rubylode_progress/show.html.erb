@@ -1,5 +1,6 @@
 <% content_for :header_tags do %>
   <%= stylesheet_link_tag "rubylode_progress", plugin: "redmine_rubylode_progress" %>
+  <%= javascript_include_tag "progress_filters", plugin: "redmine_rubylode_progress", type: "module" %>
 <% end %>
 
 <%= render "title", project: @project, last_change_on: @progress.last_change_on %>
@@ -9,5 +10,10 @@
 <% else %>
   <%= render "tracker_panel", progress: @progress %>
   <%= render "tiles", tally: @tally %>
-  <%= render "checklist", sections: @sections, item_notes: @item_notes %>
+  <div data-controller="rubylode-progress-filters">
+    <%= render "filters", project: @project, current_filter: @filter %>
+    <div data-rubylode-progress-filters-target="checklist">
+      <%= render "checklist", sections: @sections, item_notes: @item_notes %>
+    </div>
+  </div>
 <% end %>

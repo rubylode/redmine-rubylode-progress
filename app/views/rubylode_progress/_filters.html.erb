@@ -1,0 +1,12 @@
+<nav class="rubylode-progress-filters" aria-label="<%= l("rubylode_progress.filters.label") %>">
+  <% RubylodeProgress::ChecklistFilter::NAMES.each do |name| %>
+    <%= link_to l("rubylode_progress.filters.#{name}"),
+                project_rubylode_progress_path(project, filter: name),
+                class: "rubylode-progress-filter",
+                aria: { pressed: (name == current_filter).to_s },
+                data: { filter_name: name,
+                        checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, filter: name, only_path: true),
+                        "rubylode-progress-filters-target": "filter",
+                        action: "click->rubylode-progress-filters#choose" } %>
+  <% end %>
+</nav>
