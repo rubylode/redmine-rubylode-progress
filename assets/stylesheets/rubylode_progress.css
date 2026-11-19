@@ -399,8 +399,8 @@
   width: var(--rubylode-progress-rail-width);
   top: calc(var(--rail-offset) + var(--rail-mark-size));
   bottom: calc(-1 * var(--rail-offset));
-  background: linear-gradient(180deg, var(--rubylode-progress-colour-into-next) var(--rubylode-progress-share-into-next),
-                              var(--rubylode-progress-track-empty-color) var(--rubylode-progress-share-into-next));
+  background: linear-gradient(180deg, var(--rubylode-progress-colour-below) var(--rubylode-progress-share-below),
+                              var(--rubylode-progress-track-empty-color) var(--rubylode-progress-share-below));
 }
 
 .rubylode-progress-stage-item:last-child::after {
@@ -414,8 +414,8 @@
   width: var(--rubylode-progress-rail-width);
   top: 0;
   height: var(--rail-offset);
-  background: linear-gradient(180deg, var(--rubylode-progress-colour-into-self) var(--rubylode-progress-share-into-self),
-                              var(--rubylode-progress-track-empty-color) var(--rubylode-progress-share-into-self));
+  background: linear-gradient(180deg, var(--rubylode-progress-colour-below) var(--rubylode-progress-share-below),
+                              var(--rubylode-progress-track-empty-color) var(--rubylode-progress-share-below));
 }
 
 .rubylode-progress-stage summary,

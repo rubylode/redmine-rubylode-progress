@@ -98,21 +98,19 @@ class DesignReviewTest < Redmine::IntegrationTest
     assert_select ".rubylode-progress-track__date", text: /\ADone /
   end
 
-  test "each stage item carries the share and colour of the next stage" do
-    build_stages
+test "each stage item carries its own share and colour for the rail line below its mark" do
+  build_stages
 
-    open_progress
+  open_progress
 
-    items = css_select("li.rubylode-progress-stage-item")
-    shares = items.map { |item| item["style"][/share-into-next: (\d+%)/, 1] }
-    colours = items.map { |item| item["style"][/colour-into-next: var\((--[a-z-]+)\)/, 1] }
-    assert_equal ["50%", "33%", "0%", nil], shares
-    assert_equal ["--rubylode-progress-behind-color", "--rubylode-progress-accent-color",
-                  "--rubylode-progress-track-empty-color", nil], colours
-    assert_match(/share-into-self: 100%/, items.first["style"])
-    assert_no_match(/share-into-self/, items.last["style"])
-    assert_select "li.rubylode-progress-stage-item > .rubylode-progress-stage-mark", count: 4
-  end
+  items = css_select("li.rubylode-progress-stage-item")
+  shares = items.map { |item| item["style"][/share-below: (\d+%)/, 1] }
+  colours = items.map { |item| item["style"][/colour-below: var\((--[a-z-]+)\)/, 1] }
+  assert_equal ["100%", "50%", "33%", "0%"], shares
+  assert_equal ["--rubylode-progress-done-color", "--rubylode-progress-behind-color",
+                "--rubylode-progress-accent-color", "--rubylode-progress-track-empty-color"], colours
+  assert_select "li.rubylode-progress-stage-item > .rubylode-progress-stage-mark", count: 4
+end
 
   test "a partial stage past its due date shows the Behind notice with its open count" do
     build_stages

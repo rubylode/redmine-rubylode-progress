@@ -103,22 +103,15 @@ module RubylodeProgressHelper
       "--rubylode-progress-segment-color: var(#{STATE_COLOR_PROPERTIES.fetch(stage.state)})"
   end
 
-  # Inline properties for a stage's item on the rail. The line below a stage's mark runs into the next stage's mark, so
-  # it is filled to the next stage's share in the next stage's colour; the first stage also gets a short lead-in above
-  # its mark, filled to its own share. They sit on the uncached wrapper so the cached fragment never reads a neighbour.
-  def rubylode_progress_rail_style(stages, index)
-    parts = []
-    following = stages[index + 1]
-    if following
-      parts << "--rubylode-progress-share-into-next: #{rubylode_progress_stage_share(following)}%"
-      parts << "--rubylode-progress-colour-into-next: var(#{STATE_COLOR_PROPERTIES.fetch(following.state)})"
-    end
-    if index.zero?
-      parts << "--rubylode-progress-share-into-self: #{rubylode_progress_stage_share(stages[index])}%"
-      parts << "--rubylode-progress-colour-into-self: var(#{STATE_COLOR_PROPERTIES.fetch(stages[index].state)})"
-    end
-    parts.join("; ")
-  end
+# Inline properties for a stage's item on the rail. The line below a stage's mark belongs to that stage: it is
+# filled, top down, to the stage's own share in the stage's own colour, so a done stage runs green to the next mark
+# and a stage left behind runs red below its own mark. The first stage also gets a short lead-in above its mark in
+# the same colour. Only the stage itself is read, so the cached fragment and its wrapper never depend on a neighbour.
+def rubylode_progress_rail_style(stages, index)
+  stage = stages[index]
+  "--rubylode-progress-share-below: #{rubylode_progress_stage_share(stage)}%; " \
+    "--rubylode-progress-colour-below: var(#{STATE_COLOR_PROPERTIES.fetch(stage.state)})"
+end
 
   # The sentence of one notice in the tracker header.
   def rubylode_progress_notice_text(notice)

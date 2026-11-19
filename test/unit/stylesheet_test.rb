@@ -144,7 +144,7 @@ class StylesheetTest < ActiveSupport::TestCase
   test "the rail line and the tracker segment are gradients of the inline share and colour properties" do
     gradients = rules.select { |selector, _| selector.include?("stage-item::after") || selector.include?("track__segment") }.map(&:last).join
 
-    assert_match(/linear-gradient\(180deg, var\(--rubylode-progress-colour-into-next\) var\(--rubylode-progress-share-into-next\)/m, gradients)
+    assert_match(/linear-gradient\(180deg, var\(--rubylode-progress-colour-below\) var\(--rubylode-progress-share-below\)/m, gradients)
     assert_match(/linear-gradient\(90deg, var\(--rubylode-progress-segment-color\) var\(--rubylode-progress-share\)/m, gradients)
   end
 

@@ -50,11 +50,11 @@ Sizes and type:
 | `--rubylode-progress-small-text-size` | `0.85em` | pills, dates, labels |
 | `--rubylode-progress-monospace-font` | `ui-monospace, Menlo, monospace` | percents, counts, issue numbers, dates |
 
-The page also sets six properties inline, per stage, to draw the tracker and the rail. They are not theme properties and
-have no default; a theme has no reason to set them: `--rubylode-progress-share` and `--rubylode-progress-segment-color`
-(one segment of the top tracker), `--rubylode-progress-share-into-next` and `--rubylode-progress-colour-into-next` (the
-rail line below a stage, filled to the next stage's share), with `--rubylode-progress-share-into-self` and
-`--rubylode-progress-colour-into-self` for the short lead-in above the first stage.
+The page also sets four properties inline, per stage, to draw the tracker and the rail. They are not theme properties
+and have no default; a theme has no reason to set them: `--rubylode-progress-share` and
+`--rubylode-progress-segment-color` (one segment of the top tracker), `--rubylode-progress-share-below` and
+`--rubylode-progress-colour-below` (the rail line below a stage's mark, which also gives the first stage its short
+lead-in: filled to that stage's own share, in that stage's own colour).
 
 Each status also has its own mark shape (done a filled circle with a check, next a ring with a dot, needs you a ring,
 waiting a dashed ring, to do a plain ring; a stage mark is a tick when done, an exclamation mark when left behind, a ring with a dot when current, a plain ring when upcoming) and prints its label, so colour is never the only signal. Text contrast is at
