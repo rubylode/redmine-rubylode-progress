@@ -5,7 +5,7 @@ The text to paste at www.redmine.org, Plugins, New plugin. Redmine's "Check for 
 | Field | Value |
 |---|---|
 | Name | Rubylode Progress |
-| Short description | A Progress tab for each project: the versions as stages on a track, the current stage, the percent done and a filtered checklist; a page for all projects; quick edit and drag to another stage |
+| Short description | A Progress tab for each project: the versions as stages on a track, the current stage, the percent done and a filtered checklist; a page for all projects; quick edit, drag to another stage and a version's status from the page |
 | Homepage | https://github.com/rubylode/redmine-rubylode-progress |
 | Compatible with | Redmine 7.0.x |
 | License | GNU General Public License, version 2 or (at your option) any later version |
@@ -13,7 +13,7 @@ The text to paste at www.redmine.org, Plugins, New plugin. Redmine's "Check for 
 
 ## Notes for this version
 
-Version 1.0.0. A Progress tab for each project: the versions as stages on a track, the current stage, the percent done and a checklist with filters (Open, Needs you, Overdue, Next up, Done, All); a page for all projects; quick edit, new issue and drag to another stage; settings for the whole site and for each project. Needs Redmine 7.0 or newer. Install and settings are described in the README at https://github.com/rubylode/redmine-rubylode-progress.
+Version 1.0.0. A Progress tab for each project: the versions as stages on a track, the current stage, the percent done and a checklist with filters (Open, Needs you, Overdue, Next up, Done, All); a page for all projects; quick edit, new issue, drag to another stage and changing a version's status from the page; settings for the whole site and for each project. Needs Redmine 7.0 or newer. Install and settings are described in the README at https://github.com/rubylode/redmine-rubylode-progress.
 
 ## File to upload
 
