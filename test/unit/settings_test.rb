@@ -36,6 +36,14 @@ class SettingsTest < ActiveSupport::TestCase
     assert_equal 12, RubylodeProgress::Settings.new("note_source" => "custom_field_12").note_custom_field_id
   end
 
+  test "the finished stages kept default to 3, are held to 0 to 20, and unusable values read as 3" do
+    assert_equal 3, RubylodeProgress::Settings.new({}).finished_stages_kept
+    assert_equal 20, RubylodeProgress::Settings.new("finished_stages_kept" => "99").finished_stages_kept
+    assert_equal 0, RubylodeProgress::Settings.new("finished_stages_kept" => "-4").finished_stages_kept
+    assert_equal 7, RubylodeProgress::Settings.new("finished_stages_kept" => "7").finished_stages_kept
+    assert_equal 3, RubylodeProgress::Settings.new("finished_stages_kept" => "lots").finished_stages_kept
+  end
+
   test "the effective settings are frozen and their digest follows their values" do
     project = Project.find(1)
     plain = RubylodeProgress::EffectiveSettings.for(project)

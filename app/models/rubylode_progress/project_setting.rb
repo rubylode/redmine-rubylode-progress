@@ -21,19 +21,23 @@ module RubylodeProgress
     self.table_name = "rubylode_progress_project_settings"
 
     OVERRIDE_ATTRIBUTES = %w[counted_versions version_name_prefix checklist_grouping in_progress_status_ids
-                             waiting_status_ids next_issue_limit note_source].freeze
+                             waiting_status_ids next_issue_limit note_source finished_stages_kept].freeze
     MAXIMUM_PREFIX_LENGTH = 60
 
     belongs_to :project
 
     serialize :in_progress_status_ids, coder: JSON
     serialize :waiting_status_ids, coder: JSON
+    # The versions the project has unticked; NULL (the default) counts every version.
+    serialize :excluded_version_ids, coder: JSON
 
     validates :project, presence: true
     validates :counted_versions, inclusion: { in: Settings::COUNTED_VERSIONS_CHOICES }, allow_nil: true
     validates :checklist_grouping, inclusion: { in: Settings::CHECKLIST_GROUPING_CHOICES }, allow_nil: true
     validates :next_issue_limit, numericality: { only_integer: true }, allow_nil: true
     validates :next_issue_limit, inclusion: { in: Settings::NEXT_ISSUE_LIMIT_RANGE }, allow_nil: true
+    validates :finished_stages_kept, numericality: { only_integer: true }, allow_nil: true
+    validates :finished_stages_kept, inclusion: { in: Settings::FINISHED_STAGES_KEPT_RANGE }, allow_nil: true
     validates :version_name_prefix, length: { maximum: MAXIMUM_PREFIX_LENGTH }, allow_nil: true
     validates :note_source, format: { with: /\A(latest_note|custom_field_\d+)\z/ }, allow_nil: true
 

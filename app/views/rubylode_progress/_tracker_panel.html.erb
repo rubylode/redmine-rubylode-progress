@@ -15,7 +15,7 @@
         <p class="rubylode-progress-tracker__description"><%= current_stage.version.description %></p>
       <% end %>
     <% end %>
-    <%= render "track", stages: progress.stages, percent: progress.percent, labels: true, today: today %>
+    <%= render "track", stages: progress.stages, percent: progress.percent, labels: true, today: today, fold: progress.finished_stage_fold %>
   </div>
 
   <div class="rubylode-progress-tracker__summary">

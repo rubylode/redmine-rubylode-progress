@@ -22,6 +22,10 @@ module RubylodeProgressHelper
     current: "--rubylode-progress-accent-color", upcoming: "--rubylode-progress-track-empty-color"
   }.freeze
   DUE_SOON_DAYS = 7
+  # Over this many stages the top track stops labelling every stage: it folds the older finished ones into one mark and
+  # labels only the current stage and its neighbours.
+  TRACK_CONDENSE_THRESHOLD = 12
+  FINISHED_FOLD_ANCHOR = "rubylode-progress-finished-fold"
 
 # Redmine's modal is a jQuery UI dialog with an overlay behind it; a click on the overlay, that is anywhere outside
 # the dialog, closes it. Appended to each modal response, after showModal has opened the dialog.
@@ -159,6 +163,36 @@ def rubylode_progress_rail_style(stages, index)
   "--rubylode-progress-share-below: #{rubylode_progress_stage_share(stage)}%; " \
     "--rubylode-progress-colour-below: var(#{STATE_COLOR_PROPERTIES.fetch(stage.state)})"
 end
+
+  # What the top track draws, in order, as [entry, labelled] pairs: a stage or the fold's summary mark. Up to
+  # TRACK_CONDENSE_THRESHOLD stages (or without labels, as on the cross-project page) it is every stage, labelled. Above
+  # that: the first folded stage's mark, the summary mark, then every other stage; only the current stage and its two
+  # neighbours are labelled (the last two stages when none is current).
+  def rubylode_progress_track_entries(stages, fold, condense:)
+    return stages.map { |stage| [stage, true] } unless condense && stages.size > TRACK_CONDENSE_THRESHOLD
+
+    labelled = rubylode_progress_labelled_stages(stages)
+    stages.each_with_object([]) do |stage, entries|
+      if !fold.folded?(stage)
+        entries << [stage, labelled.any? { |other| other.equal?(stage) }]
+      elsif stage.equal?(fold.first_stage)
+        entries << [stage, false] << [fold, false]
+      end
+    end
+  end
+
+  def rubylode_progress_labelled_stages(stages)
+    current_index = stages.index(&:current?)
+    return stages.last(2) unless current_index
+
+    stages[[current_index - 1, 0].max..(current_index + 1)]
+  end
+
+  # The tooltip of a mark that has no visible label.
+  def rubylode_progress_track_mark_title(stage)
+    l("rubylode_progress.track_mark_title", name: stage.version.name, percent: rubylode_progress_stage_percent(stage),
+                                            state: rubylode_progress_stage_state_label(stage))
+  end
 
   # The sentence of one notice in the tracker header.
   def rubylode_progress_notice_text(notice)

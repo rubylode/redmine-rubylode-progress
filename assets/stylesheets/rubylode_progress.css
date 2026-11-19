@@ -387,6 +387,47 @@
   font-weight: bold;
 }
 
+/* The summary mark of the folded finished stages: three dots in the done colour, a link to the fold row of the stage
+   list. Its target is 44px wide and tall; the negative margin keeps the line as thin as the other marks'. */
+.rubylode-progress-track__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25em;
+  box-sizing: border-box;
+  min-width: 44px;
+  min-height: 44px;
+  margin-block: calc((var(--rubylode-progress-stage-mark-size) - 44px) / 2);
+  text-decoration: none;
+}
+
+.rubylode-progress-track__dot {
+  width: 0.4em;
+  height: 0.4em;
+  border-radius: 50%;
+  background: var(--rubylode-progress-done-color);
+}
+
+.rubylode-progress-track__ellipsis:hover .rubylode-progress-track__dot,
+.rubylode-progress-track__ellipsis:focus-visible .rubylode-progress-track__dot {
+  background: var(--rubylode-progress-accent-color);
+}
+
+.rubylode-progress-track__stage--summary .rubylode-progress-track__name {
+  white-space: normal;
+  text-align: right;
+}
+
+/* The finished-stages fold: a stage-list row whose summary reads like a stage's, and whose list is the stages as they
+   render on their own. */
+.rubylode-progress-finished-fold > summary {
+  min-height: 1.6em;
+}
+
+.rubylode-progress-stages--folded {
+  margin-top: var(--rubylode-progress-space-small);
+}
+
 .rubylode-progress-compact-tracker .rubylode-progress-track {
   margin-top: var(--rubylode-progress-space-small);
 }
@@ -484,6 +525,7 @@
 
 .rubylode-progress-stage summary,
 .rubylode-progress-section__summary,
+.rubylode-progress-finished-fold > summary,
 .rubylode-progress-closed-fold summary {
   cursor: pointer;
   display: flex;
@@ -495,6 +537,7 @@
 
 .rubylode-progress-stage summary::-webkit-details-marker,
 .rubylode-progress-section__summary::-webkit-details-marker,
+.rubylode-progress-finished-fold > summary::-webkit-details-marker,
 .rubylode-progress-closed-fold summary::-webkit-details-marker,
 .rubylode-progress-rules__summary::-webkit-details-marker {
   display: none;
@@ -511,6 +554,7 @@
 }
 
 .rubylode-progress-stage[open] > summary > .rubylode-progress-chevron,
+.rubylode-progress-finished-fold[open] > summary > .rubylode-progress-chevron,
 .rubylode-progress-section[open] > summary > .rubylode-progress-chevron {
   transform: rotate(45deg);
 }
@@ -1211,6 +1255,7 @@
   .rubylode-progress-new-issue-button,
   .rubylode-progress-issue-query,
   .rubylode-progress-stage summary,
+  .rubylode-progress-finished-fold > summary,
   .rubylode-progress-status-button,
   .rubylode-progress-section__summary,
   .rubylode-progress-rules__summary {

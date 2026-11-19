@@ -13,6 +13,10 @@ en:
     stage_position: "Stage %{number} of %{total}"
     all_stages_done: "All %{total} stages done"
     track_label: "%{percent}% done, %{finished} of %{total} stages finished"
+    finished_fold: "%{count} finished stages"
+    track_summary_label: "%{count} stages done"
+    track_summary_show: "Show the %{count} finished stages"
+    track_mark_title: "%{name}, %{percent}%, %{state}"
     other_section: Other
     stage_due: "Due %{date}"
     percent_done: "%{percent}% done"
@@ -181,6 +185,12 @@ en:
       next_issue_limit:
         label: How many issues are Next
         hint: "From %{first} to %{last}. The first open issues of the current stage are marked Next."
+      finished_stages_kept:
+        label: Finished stages kept in the list
+        hint: "From %{first} to %{last}. Older finished stages fold into one row of the stage list and one mark on the top track."
+      counted_version_ids:
+        label: Versions that count as stages
+        hint: "Untick a version to leave it out: it is not a stage and its issues are not counted. New versions are counted as they appear."
       note_source:
         label: Note shown on each item
         hint: "The latest note the viewer may see, or the value of one issue custom field."

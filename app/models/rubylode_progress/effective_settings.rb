@@ -22,7 +22,8 @@ module RubylodeProgress
   # them (an empty override falls back).
   EffectiveSettings = Data.define(:counted_versions, :version_name_prefix, :checklist_grouping,
                                   :in_progress_status_ids, :waiting_status_ids, :next_issue_limit,
-                                  :note_custom_field_id) do
+                                  :note_custom_field_id, :finished_stages_kept,
+                                  :excluded_version_ids) do
     def self.for(project, plugin_settings: Settings.new)
       row = project.rubylode_progress_setting
       plugin_settings = plugin_settings.with_overrides(row.overrides) if row
@@ -32,12 +33,16 @@ module RubylodeProgress
           in_progress_status_ids: plugin_settings.in_progress_status_ids.freeze,
           waiting_status_ids: plugin_settings.waiting_status_ids.freeze,
           next_issue_limit: plugin_settings.next_issue_limit,
-          note_custom_field_id: plugin_settings.note_custom_field_id)
+          note_custom_field_id: plugin_settings.note_custom_field_id,
+          finished_stages_kept: plugin_settings.finished_stages_kept,
+          excluded_version_ids: Array(row&.excluded_version_ids).filter_map { |id| Integer(id.to_s, 10) rescue nil }.sort.freeze)
     end
 
-    # Changes whenever any value changes, for cache keys.
+    # Changes whenever a value a cached stage reads changes. How many finished stages stay unfolded is left out: the fold
+    # is drawn outside the cache and the number changes nothing inside a stage. The unticked versions are in: they decide
+    # which stages exist, so which numbers the stages carry.
     def cache_digest
-      Digest::SHA256.hexdigest(to_h.sort.inspect)
+      Digest::SHA256.hexdigest(to_h.except(:finished_stages_kept).sort.inspect)
     end
   end
 end

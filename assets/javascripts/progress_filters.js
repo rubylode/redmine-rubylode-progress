@@ -62,3 +62,21 @@ class ProgressFiltersController extends Controller {
 }
 
 application.register("rubylode-progress-filters", ProgressFiltersController)
+
+// The three dots on the top track link to the fold row of the stage list. The anchor alone jumps there; this opens the
+// fold too, and scrolls it into view.
+class ProgressFoldController extends Controller {
+  open(event) {
+    const fold = document.getElementById(event.currentTarget.hash.slice(1))
+    if (!fold) { return }
+
+    event.preventDefault()
+    fold.open = true
+    fold.scrollIntoView({ block: "start", behavior: "smooth" })
+    const summary = fold.querySelector("summary")
+    if (summary) { summary.focus({ preventScroll: true }) }
+    history.replaceState(null, "", event.currentTarget.hash)
+  }
+}
+
+application.register("rubylode-progress-fold", ProgressFoldController)

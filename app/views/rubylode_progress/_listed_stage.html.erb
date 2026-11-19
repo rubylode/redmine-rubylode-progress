@@ -1,0 +1,7 @@
+<%# One stage's item of the stage list: the same markup whether it sits in the list or inside the finished-stages fold. %>
+<%= render "stage", stage: stage, project: project, settings: progress.settings,
+                    editable_issue_ids: progress.editable_issue_ids,
+                    new_issue_mode: progress.new_issue_mode_for(stage.version),
+                    accepts_issues: progress.accepts_issues?(stage.version),
+                    can_manage_version: progress.can_manage_version?(stage.version),
+                    rail_style: rubylode_progress_rail_style(progress.stages, stage_indexes.fetch(stage.version.id)) %>

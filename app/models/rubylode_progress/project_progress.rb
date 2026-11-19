@@ -40,6 +40,11 @@ module RubylodeProgress
 
     def stages = stage_list.stages
 
+    # The older finished stages the stage list and the track fold; the fold is drawn outside the stage cache.
+    def finished_stage_fold
+      @finished_stage_fold ||= FinishedStageFold.new(stages, settings.finished_stages_kept)
+    end
+
     def current_stage = stage_list.current_stage
 
     def percent = PercentRule.percent_for(stages)

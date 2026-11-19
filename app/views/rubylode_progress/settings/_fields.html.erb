@@ -64,6 +64,13 @@
   <em class="info"><%= l("rubylode_progress.settings.next_issue_limit.hint", first: settings_scope::NEXT_ISSUE_LIMIT_RANGE.first, last: settings_scope::NEXT_ISSUE_LIMIT_RANGE.last) %></em>
 </p>
 <p>
+  <label for="<%= field_id.call("finished_stages_kept") %>"><%= l("rubylode_progress.settings.finished_stages_kept.label") %></label>
+  <%= number_field_tag "#{scope}[finished_stages_kept]", values["finished_stages_kept"], id: field_id.call("finished_stages_kept"),
+                       min: settings_scope::FINISHED_STAGES_KEPT_RANGE.first, max: settings_scope::FINISHED_STAGES_KEPT_RANGE.last,
+                       placeholder: defaults ? l("rubylode_progress.settings.use_default", value: defaults.finished_stages_kept) : nil %>
+  <em class="info"><%= l("rubylode_progress.settings.finished_stages_kept.hint", first: settings_scope::FINISHED_STAGES_KEPT_RANGE.first, last: settings_scope::FINISHED_STAGES_KEPT_RANGE.last) %></em>
+</p>
+<p>
   <label for="<%= field_id.call("note_source") %>"><%= l("rubylode_progress.settings.note_source.label") %></label>
   <% note_choices = [[l("rubylode_progress.settings.note_source.latest_note"), "latest_note"]] +
                     IssueCustomField.sorted.map { |field| [field.name, "custom_field_#{field.id}"] } %>

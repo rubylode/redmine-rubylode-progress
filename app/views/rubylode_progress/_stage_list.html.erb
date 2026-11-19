@@ -1,15 +1,32 @@
+<% fold = progress.finished_stage_fold %>
+<% stage_indexes = progress.stages.each_with_index.to_h { |stage, index| [stage.version.id, index] } %>
 <section class="rubylode-progress-stage-list">
   <% if progress.draggable_issues? %>
     <p class="rubylode-progress-hint"><%= l("rubylode_progress.drag_hint") %></p>
   <% end %>
   <ol class="rubylode-progress-stages">
-    <% progress.stages.each_with_index do |stage, index| %>
-      <%= render "stage", stage: stage, project: project, settings: progress.settings,
-                          editable_issue_ids: progress.editable_issue_ids,
-                          new_issue_mode: progress.new_issue_mode_for(stage.version),
-                          accepts_issues: progress.accepts_issues?(stage.version),
-                          can_manage_version: progress.can_manage_version?(stage.version),
-                          rail_style: rubylode_progress_rail_style(progress.stages, index) %>
+    <% fold.list_entries.each do |entry| %>
+      <% if entry.is_a?(RubylodeProgress::FinishedStageFold) %>
+        <%# Outside the stage cache: it reads only the stages' states and step counts, which the stage keys already carry. %>
+        <li class="rubylode-progress-stage-item rubylode-progress-stage-item--done" style="--rubylode-progress-share-below: 100%; --rubylode-progress-colour-below: var(--rubylode-progress-done-color)">
+          <%= render "stage_mark", state: :done %>
+          <details class="rubylode-progress-finished-fold" id="<%= RubylodeProgressHelper::FINISHED_FOLD_ANCHOR %>">
+            <summary>
+              <span class="rubylode-progress-chevron" aria-hidden="true"></span>
+              <span class="rubylode-progress-stage__name"><%= l("rubylode_progress.finished_fold", count: entry.stage_count) %></span>
+              <%= render "meter", percent: entry.percent %>
+              <span class="rubylode-progress-stage__summary"><%= l("rubylode_progress.stage_summary.done", count: entry.issue_count) %></span>
+            </summary>
+            <ol class="rubylode-progress-stages rubylode-progress-stages--folded">
+              <% entry.folded_stages.each do |stage| %>
+                <%= render "listed_stage", progress: progress, project: project, stage: stage, stage_indexes: stage_indexes %>
+              <% end %>
+            </ol>
+          </details>
+        </li>
+      <% else %>
+        <%= render "listed_stage", progress: progress, project: project, stage: entry, stage_indexes: stage_indexes %>
+      <% end %>
     <% end %>
   </ol>
 </section>

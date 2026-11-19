@@ -1,25 +1,56 @@
 <%# The stage tracker: one segment per stage, each ending in its mark. The segment running into a mark is filled to that
-    stage's closed share, so the line is continuous. The marks are decoration; each label says the state in words. %>
+    stage's closed share, so the line is continuous. The marks are decoration; each label says the state in words.
+    Over 12 stages (and with labels) the older finished stages are one summary mark of three dots that links to the fold
+    row of the stage list, and only the current stage and its neighbours get a full label: the others are a mark with a
+    tooltip and a visually hidden label. The aria-label counts every stage either way. %>
+<% fold = local_assigns[:fold] %>
+<% entries = rubylode_progress_track_entries(stages, fold || RubylodeProgress::FinishedStageFold.new(stages, 0), condense: local_assigns[:labels] && fold) %>
 <ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: percent, finished: stages.count(&:done?), total: stages.size) %>">
-  <% stages.each do |stage| %>
-    <li class="rubylode-progress-track__stage rubylode-progress-track__stage--<%= stage.state %>" style="<%= rubylode_progress_segment_style(stage) %>">
-      <span class="rubylode-progress-track__line">
-        <span class="rubylode-progress-track__segment"></span>
-        <%= render "rubylode_progress/stage_mark", state: stage.state %>
-      </span>
-      <% if local_assigns[:labels] %>
-        <% date_line = rubylode_progress_stage_date_line(stage, today) %>
+  <% entries.each do |entry, labelled| %>
+    <% if entry.is_a?(RubylodeProgress::FinishedStageFold) %>
+      <li class="rubylode-progress-track__stage rubylode-progress-track__stage--summary"
+          style="--rubylode-progress-share: 100%; --rubylode-progress-segment-color: var(--rubylode-progress-done-color)">
+        <span class="rubylode-progress-track__line">
+          <span class="rubylode-progress-track__segment"></span>
+          <a class="rubylode-progress-track__ellipsis" href="#<%= RubylodeProgressHelper::FINISHED_FOLD_ANCHOR %>"
+             title="<%= l("rubylode_progress.track_summary_show", count: entry.stage_count) %>"
+             aria-label="<%= l("rubylode_progress.track_summary_show", count: entry.stage_count) %>"
+             data-action="click->rubylode-progress-fold#open">
+            <span class="rubylode-progress-track__dot" aria-hidden="true"></span>
+            <span class="rubylode-progress-track__dot" aria-hidden="true"></span>
+            <span class="rubylode-progress-track__dot" aria-hidden="true"></span>
+          </a>
+        </span>
         <span class="rubylode-progress-track__label">
           <span class="rubylode-progress-track__heading">
-            <span class="rubylode-progress-track__name"><%= stage.version.name %></span>
-            <span class="rubylode-progress-track__percent"><%= rubylode_progress_stage_percent(stage) %>%</span>
+            <span class="rubylode-progress-track__name"><%= l("rubylode_progress.track_summary_label", count: entry.stage_count) %></span>
           </span>
-          <% if date_line %>
-            <span class="rubylode-progress-track__date rubylode-progress-track__date--<%= date_line.first %>"><%= date_line.last %></span>
-          <% end %>
-          <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_stage_state_label(stage) %></span>
         </span>
-      <% end %>
-    </li>
+      </li>
+    <% else %>
+      <% stage = entry %>
+      <% titled = local_assigns[:labels] && !labelled %>
+      <li class="rubylode-progress-track__stage rubylode-progress-track__stage--<%= stage.state %>" style="<%= rubylode_progress_segment_style(stage) %>"<% if titled %> title="<%= rubylode_progress_track_mark_title(stage) %>"<% end %>>
+        <span class="rubylode-progress-track__line">
+          <span class="rubylode-progress-track__segment"></span>
+          <%= render "rubylode_progress/stage_mark", state: stage.state %>
+        </span>
+        <% if titled %>
+          <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_track_mark_title(stage) %></span>
+        <% elsif local_assigns[:labels] %>
+          <% date_line = rubylode_progress_stage_date_line(stage, today) %>
+          <span class="rubylode-progress-track__label">
+            <span class="rubylode-progress-track__heading">
+              <span class="rubylode-progress-track__name"><%= stage.version.name %></span>
+              <span class="rubylode-progress-track__percent"><%= rubylode_progress_stage_percent(stage) %>%</span>
+            </span>
+            <% if date_line %>
+              <span class="rubylode-progress-track__date rubylode-progress-track__date--<%= date_line.first %>"><%= date_line.last %></span>
+            <% end %>
+            <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_stage_state_label(stage) %></span>
+          </span>
+        <% end %>
+      </li>
+    <% end %>
   <% end %>
 </ol>

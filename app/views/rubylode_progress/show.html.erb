@@ -4,7 +4,7 @@
   <%= javascript_include_tag "progress_move", plugin: "redmine_rubylode_progress", type: "module" %>
 <% end %>
 
-<div class="rubylode-progress">
+<div class="rubylode-progress" data-controller="rubylode-progress-fold">
   <%= render "title", project: @project %>
 
   <% if @progress.stages.empty? %>
