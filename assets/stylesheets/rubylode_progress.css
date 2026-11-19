@@ -1057,7 +1057,7 @@
 /* When the checklist column is narrow (a half-width column beside the stage list, a small window) the five fixed
    columns would leave the title a sliver. The row becomes two lines instead: the mark, the title and the actions, then
    the number, the assignee, the pill and the date under the title. */
-@container (max-width: 46em) {
+@container (max-width: 56em) {
   .rubylode-progress-row {
     display: flex;
     flex-wrap: wrap;
