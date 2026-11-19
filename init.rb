@@ -21,6 +21,8 @@ Redmine::Plugin.register :redmine_rubylode_progress do
   version "0.1.0"
   requires_redmine version_or_higher: "7.0.0"
 
+  settings default: RubylodeProgress::Settings::DEFAULTS
+
   project_module :rubylode_progress do
     permission :view_rubylode_progress, { rubylode_progress: [:show, :checklist] }, read: true
   end

@@ -17,8 +17,14 @@
 
 # Plain stand-ins for Redmine issues, so the item status rule and the Next limit are tested without a database.
 module StatusDoubles
+  PriorityDouble = Struct.new(:position)
+
   StatusIssueDouble = Struct.new(:id, :status_id, :closed, :assigned_to_id, :blocked, :priority_position, :due_date,
                                  keyword_init: true) do
+    def priority
+      PriorityDouble.new(priority_position)
+    end
+
     def closed?
       closed
     end

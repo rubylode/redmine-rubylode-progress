@@ -22,7 +22,10 @@ see is in it.
    plugin-wide values only; slice 7 lays the project's row over them.
 3. `app/models/rubylode_progress/issue_scope.rb`: `IssueScope.new(project:, viewer:, settings:)`:
    - `#versions`: Plan's call, as Redmine's Roadmap with subprojects on: `project.shared_versions` plus
-     `project.rolled_up_versions.visible(viewer)`, unique, then the prefix filter when `counted_versions == "prefix"`.
+     `project.rolled_up_versions.visible(viewer)`, unique, then the prefix filter when `counted_versions == "prefix"`. Then (owner's ruling, 2026-11-18) a version is
+     kept only when it holds a visible issue of this project or its subprojects, or belongs to this project's tree in a
+     project where the viewer may view issues: a version shared in from elsewhere with nothing of ours (Roadmap drops
+     it too) and a version a hidden private subproject shares up (Roadmap would show its name) never become stages.
    - `#issues`: `Issue.visible(viewer).where(project_id: project.self_and_descendants.select(:id), fixed_version_id:
      version ids)`, preloading `:status`, `:priority`, `:assigned_to`, `:category`, `:parent`,
      `relations_to: { issue_from: :status }`, `:fixed_version`.

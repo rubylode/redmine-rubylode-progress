@@ -27,7 +27,7 @@ module RubylodeProgress
 
       current_stage_issues
         .select { |issue| status_rule_without_next.status_for(issue) == :to_do }
-        .sort_by { |issue| [-issue.priority_position, issue.due_date ? 0 : 1, issue.due_date || Date.new, issue.id] }
+        .sort_by { |issue| [-issue.priority.position, issue.due_date ? 0 : 1, issue.due_date || Date.new, issue.id] }
         .first(limit)
         .map(&:id)
     end
