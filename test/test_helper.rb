@@ -16,3 +16,4 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 require File.expand_path("../../../test/test_helper", __dir__)
+require File.expand_path("support/query_counter", __dir__)

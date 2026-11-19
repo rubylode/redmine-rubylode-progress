@@ -1,3 +1,4 @@
+<% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings) do %>
 <li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>">
   <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %>>
     <summary>
@@ -20,3 +21,4 @@
     </ul>
   </details>
 </li>
+<% end %>
