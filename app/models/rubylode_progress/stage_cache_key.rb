@@ -28,6 +28,8 @@ module RubylodeProgress
   # The pencils and the plus sit in the cached fragment, so the key also carries what decides them: a digest of the ids of
   # the stage's issues this viewer may edit, what the plus does for this viewer (none, modal or full form, which holds
   # the add-issues right), and the version's status. A role that loses a right changes the key on the next view.
+  # The rail line below a stage depends on the next stage, so it is drawn from properties on the uncached item around
+  # this fragment, and nothing about a neighbour is in the key. Nothing in the fragment reads today, so no date is in it.
   module StageCacheKey
     def self.for(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:)
       step_issues = stage.steps.map(&:issue)

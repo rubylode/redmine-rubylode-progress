@@ -16,35 +16,45 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module RubylodeProgress
-  # Splits the checklist rows under headings. Grouping only changes the headings, never which items appear.
+  # Splits the checklist rows under headings. Grouping only changes the headings, never which items appear. Each
+  # section's tally and percent count all of its issues, however the rows are filtered, so a heading never says "0/3"
+  # beside a full meter.
   module ChecklistSections
-    Section = Struct.new(:title, :items, :done_count, keyword_init: true) do
-      # The closed share of the items, rounded.
+    Section = Struct.new(:title, :items, :done_count, :total_count, :total_done_count, keyword_init: true) do
+      # The closed share of all the section's issues, rounded.
       def percent
-        items.empty? ? 0 : Rational(done_count * 100, items.size).round
+        total_count.to_i.zero? ? 0 : Rational(total_done_count * 100, total_count).round
       end
     end
 
     module_function
 
     # by is "version" (in the order the items arrive, which is stage order), "category" (by name, then "No category")
-    # or "parent" (by parent issue number, then "No parent").
-    def group(items, by:, viewer:)
+    # or "parent" (by parent issue number, then "No parent"). scope_items is every issue the sections are made of; items
+    # are the rows to show. Sections left without a row are dropped.
+    def group(items, by:, viewer:, scope_items: items)
+      shown = items.to_set.compare_by_identity
       case by
-      when "category" then grouped(items, ->(issue) { issue.category }, :name, "no_category")
-      when "parent" then grouped(items, ->(issue) { issue.parent }, :id, "no_parent", title: ->(parent) { parent_title(parent, viewer) })
-      else grouped(items, ->(issue) { issue.fixed_version }, nil, nil)
+      when "category"
+        grouped(scope_items, shown, key: ->(issue) { issue.category&.name }, title: ->(issue) { issue.category.name },
+                                    order: :sorted, missing_key: "no_category")
+      when "parent"
+        grouped(scope_items, shown, key: ->(issue) { issue.parent&.id }, title: ->(issue) { parent_title(issue.parent, viewer) },
+                                    order: :sorted, missing_key: "no_parent")
+      else
+        grouped(scope_items, shown, key: ->(issue) { issue.fixed_version }, title: ->(issue) { issue.fixed_version.name },
+                                    order: :arrival, missing_key: nil)
       end
     end
 
-    def grouped(items, owner_of, sort_key, missing_key, title: :name.to_proc)
-      owned, missing = items.partition { |item| owner_of.call(item.issue) }
-      groups = owned.group_by { |item| owner_of.call(item.issue) }
-      owners = sort_key ? groups.keys.sort_by(&sort_key) : groups.keys
-      sections = owners.map { |owner| section(title.call(owner), groups.fetch(owner)) }
-      sections << section(I18n.t("rubylode_progress.#{missing_key}"), missing) if missing.any? && missing_key
-      sections << section(nil, missing) if missing.any? && !missing_key
-      sections
+    def grouped(scope_items, shown, key:, title:, order:, missing_key:)
+      owned, missing = scope_items.partition { |item| key.call(item.issue) }
+      groups = owned.group_by { |item| key.call(item.issue) }
+      keys = order == :sorted ? groups.keys.sort : groups.keys
+      sections = keys.map { |group_key| section(title.call(groups.fetch(group_key).first.issue), groups.fetch(group_key), shown) }
+      missing_title = missing_key ? I18n.t("rubylode_progress.#{missing_key}") : nil
+      sections << section(missing_title, missing, shown) if missing.any?
+      sections.reject { |built| built.items.empty? }
     end
 
     # The subject of a parent the viewer may not see is not theirs to read; its number is all the heading says.
@@ -52,8 +62,10 @@ module RubylodeProgress
       parent.visible?(viewer) ? "##{parent.id} #{parent.subject}" : "##{parent.id}"
     end
 
-    def section(title, items)
-      Section.new(title: title, items: items, done_count: items.count { |item| item.status == :done })
+    def section(title, scope_items, shown)
+      rows = scope_items.select { |item| shown.include?(item) }
+      Section.new(title: title, items: rows, done_count: rows.count { |item| item.status == :done },
+                  total_count: scope_items.size, total_done_count: scope_items.count { |item| item.status == :done })
     end
   end
 end

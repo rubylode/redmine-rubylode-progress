@@ -25,6 +25,7 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
   end
   VIEWER = Object.new
   IssueDouble = Struct.new(:id, :fixed_version, :category, :parent, keyword_init: true)
+  CategoryDouble = Struct.new(:id, :name)
 
   def item(id, status: :to_do, version: nil, category: nil, parent: nil)
     issue = IssueDouble.new(id: id, fixed_version: version, category: category, parent: parent)
@@ -79,5 +80,30 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
       grouped = RubylodeProgress::ChecklistSections.group(items, by: by, viewer: VIEWER).flat_map(&:items)
       assert_equal items.map { |row| row.issue.id }.sort, grouped.map { |row| row.issue.id }.sort, by
     end
+  end
+
+  test "one category name is one section, even when two categories of different projects share it" do
+    items = [item(1, category: CategoryDouble.new(10, "Safety")), item(2, category: CategoryDouble.new(20, "Safety")),
+             item(3, category: CategoryDouble.new(30, "Surface"))]
+
+    sections = RubylodeProgress::ChecklistSections.group(items, by: "category", viewer: VIEWER)
+
+    assert_equal %w[Safety Surface], sections.map(&:title)
+    assert_equal [[1, 2], [3]], sections.map { |section| section.items.map { |row| row.issue.id } }
+  end
+
+  test "a filtered list keeps each section's tally and percent over all its items, and drops sections with no rows" do
+    safety = CategoryDouble.new(1, "Safety")
+    surface = CategoryDouble.new(2, "Surface")
+    everything = [item(1, status: :done, category: safety), item(2, category: safety), item(3, status: :done, category: surface)]
+    open_only = everything.reject { |row| row.status == :done }
+
+    sections = RubylodeProgress::ChecklistSections.group(open_only, by: "category", viewer: VIEWER, scope_items: everything)
+
+    assert_equal ["Safety"], sections.map(&:title)
+    assert_equal 1, sections.first.items.size
+    assert_equal 2, sections.first.total_count
+    assert_equal 1, sections.first.total_done_count
+    assert_equal 50, sections.first.percent
   end
 end

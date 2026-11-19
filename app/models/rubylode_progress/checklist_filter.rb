@@ -16,9 +16,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module RubylodeProgress
-  # The four ways to narrow the checklist. The tiles are never filtered; only the rows are.
+  # The six ways to narrow the checklist, in the order of the pills. The stage list is never filtered; only the rows are.
   module ChecklistFilter
-    NAMES = %w[open needs_you done all].freeze
+    NAMES = %w[needs_you overdue next open done all].freeze
     DEFAULT = "open"
     PREFERENCE_KEY = :rubylode_progress_checklist_filter
 
@@ -36,13 +36,28 @@ module RubylodeProgress
       DEFAULT
     end
 
-    def apply(name, items)
+    def apply(name, items, today: Date.current)
       case name
       when "needs_you" then items.select { |item| item.status == :needs_you }
+      when "overdue" then items.select { |item| overdue?(item, today: today) }
+      when "next" then items.select { |item| item.status == :next }
       when "done" then items.select { |item| item.status == :done }
       when "all" then items
       else items.reject { |item| item.status == :done }
       end
+    end
+
+    # How many rows each filter would show, for the numbers on the pills.
+    def counts(items, today: Date.current)
+      NAMES.to_h { |name| [name, apply(name, items, today: today).size] }
+    end
+
+    # Open and past its own due date, or, with none of its own, its version's. A closed issue is never overdue.
+    def overdue?(item, today:)
+      return false if item.status == :done
+
+      due = DueDate.for(item.issue)
+      !due.nil? && due < today
     end
   end
 end

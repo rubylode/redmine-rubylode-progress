@@ -16,29 +16,30 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module RubylodeProgress
-  # The four numbers on the summary tiles, counted over every item in the scope (never a filtered subset).
-  class Tally
-    def self.from(items)
-      new(items.map(&:status))
+  # The names the "How statuses are decided" panel prints: the statuses the effective settings treat as in progress and
+  # as waiting, and the Next limit. One query for both lists, so the panel tells the truth for this project.
+  class StatusLegend
+    def initialize(settings)
+      @settings = settings
     end
 
-    def initialize(statuses)
-      @statuses = statuses
-    end
+    def in_progress_names = names_for(@settings.in_progress_status_ids)
 
-    def done_count = count(:done)
+    def waiting_names = names_for(@settings.waiting_status_ids)
 
-    def next_count = count(:next)
-
-    def needs_you_count = count(:needs_you)
-
-    # Everything not Done, so Next up and Needs you are part of it.
-    def still_open_count = @statuses.size - done_count
+    def next_issue_limit = @settings.next_issue_limit
 
     private
 
-    def count(status)
-      @statuses.count(status)
+    def names_for(status_ids)
+      status_ids.filter_map { |status_id| names_by_id[status_id.to_i] }
+    end
+
+    def names_by_id
+      @names_by_id ||= begin
+        ids = (@settings.in_progress_status_ids + @settings.waiting_status_ids).map(&:to_i).uniq
+        ids.empty? ? {} : IssueStatus.where(id: ids).pluck(:id, :name).to_h
+      end
     end
   end
 end

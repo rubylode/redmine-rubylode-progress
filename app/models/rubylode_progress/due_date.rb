@@ -15,27 +15,19 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-require File.expand_path("../test_helper", __dir__)
+module RubylodeProgress
+  # The day an issue is due: its own, else its version's. The checklist's Overdue filter and the dates on the rows both
+  # read it, so the two always agree.
+  module DueDate
+    module_function
 
-class TallyTest < ActiveSupport::TestCase
-  Item = RubylodeProgress::ProjectProgress::Item
+    def for(issue)
+      issue.due_date || issue.fixed_version&.effective_date
+    end
 
-  def items_with(*statuses)
-    statuses.map { |status| Item.new(issue: nil, status: status, step_number: "1.1") }
-  end
-
-  test "Still open counts everything not Done" do
-    tally = RubylodeProgress::Tally.from(items_with(:done, :done, :next, :needs_you, :waiting, :to_do))
-
-    assert_equal 2, tally.done_count
-    assert_equal 1, tally.next_count
-    assert_equal 1, tally.needs_you_count
-    assert_equal 4, tally.still_open_count
-  end
-
-  test "an empty scope tallies zero everywhere" do
-    tally = RubylodeProgress::Tally.from([])
-
-    assert_equal [0, 0, 0, 0], [tally.done_count, tally.next_count, tally.needs_you_count, tally.still_open_count]
+    # Whole days from today to the date, negative when it has passed.
+    def days_until(date, today)
+      (date - today).to_i
+    end
   end
 end
