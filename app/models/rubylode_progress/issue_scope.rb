@@ -24,10 +24,13 @@ module RubylodeProgress
     ISSUE_PRELOADS = [:status, :priority, :assigned_to, :category, :parent, :fixed_version,
                       { relations_to: { issue_from: :status } }, { custom_values: :custom_field }].freeze
 
-    def initialize(project:, viewer:, settings:)
+    # The cross-project page passes a short preload list and column list, as it reads only status and version.
+    def initialize(project:, viewer:, settings:, issue_preloads: ISSUE_PRELOADS, issue_columns: nil)
       @project = project
       @viewer = viewer
       @settings = settings
+      @issue_preloads = issue_preloads
+      @issue_columns = issue_columns
     end
 
     def versions
@@ -41,10 +44,13 @@ module RubylodeProgress
 
     # Every issue here belongs to a candidate version that holds it, so each one's version is in #versions.
     def issues
-      @issues ||= Issue.visible(@viewer)
-                       .where(project_id: tree_project_ids, fixed_version_id: candidate_versions.map(&:id))
-                       .preload(*ISSUE_PRELOADS)
-                       .to_a
+      @issues ||= begin
+        relation = Issue.visible(@viewer)
+                        .where(project_id: tree_project_ids, fixed_version_id: candidate_versions.map(&:id))
+                        .preload(*@issue_preloads)
+        relation = relation.select(*@issue_columns.map { |column| Issue.arel_table[column] }) if @issue_columns
+        relation.to_a
+      end
     end
 
     def viewer_group_ids
