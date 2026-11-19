@@ -20,7 +20,7 @@ the viewer may see.
    - ~~`04-issue-scope.md`~~ done 2026-11-18 (a705062; versions with nothing visible of ours never become stages).
 3. The project page and its filters: ~~`05-project-page.md`~~ done 2026-11-18 (86d9bef), ~~`06-filters.md`~~ done 2026-11-18 (8aa9a93); then the quick-edit pencil and the
    new-issue plus: `13-edit-and-add-modals.md`.
-4. Settings, plugin-wide and per project: `07-settings.md`.
+4. Settings, plugin-wide and per project: ~~`07-settings.md`~~ done 2026-11-18 (6ea5ea4).
 5. The cross-project page at `/progress`: `08-all-projects-page.md`.
 6. Query count and the per-viewer rail cache, then the look and accessibility: `09-performance.md`,
    `10-look-and-accessibility.md`.
