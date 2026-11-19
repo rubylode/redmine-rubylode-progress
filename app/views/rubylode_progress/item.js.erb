@@ -4,6 +4,12 @@
 $('#ajax-modal').html('<div class="rubylode-progress-item-content"><%= j l("rubylode_progress.item.loading") %></div>');
 showModal('ajax-modal', '960px', <%= raw "##{@issue.id} #{@issue.subject}".to_json %>);
 <%= rubylode_progress_close_on_outside_click_script %>
+<%# The dialog opens around a one-line "Loading" text and the issue arrives later and grows it. A dialog centred on the
+    short text would then hang below the screen, so it hangs from the top instead, before and after the content loads. %>
+var hangFromTop = function () {
+  $('#ajax-modal').dialog('option', 'position', { my: 'center top', at: 'center top+40', of: window });
+};
+hangFromTop();
 fetch(<%= raw issue_path(@issue, back_url: project_rubylode_progress_path(@project)).to_json %>,
       { credentials: 'same-origin', headers: { Accept: 'text/html' } })
   .then(function (response) {
@@ -14,6 +20,7 @@ fetch(<%= raw issue_path(@issue, back_url: project_rubylode_progress_path(@proje
     var content = new DOMParser().parseFromString(html, 'text/html').querySelector('#content');
     if (!content) { throw new Error('no content'); }
     $('#ajax-modal .rubylode-progress-item-content').html(content.innerHTML);
+    hangFromTop();
   })
   .catch(function () {
     $('#ajax-modal .rubylode-progress-item-content').text(<%= raw l("rubylode_progress.item.failed").to_json %>);

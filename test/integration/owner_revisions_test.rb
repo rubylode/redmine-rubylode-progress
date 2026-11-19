@@ -91,6 +91,7 @@ class OwnerRevisionsTest < Redmine::IntegrationTest
     assert_includes response.body, "#ajax-modal"
     assert_includes response.body, "showModal("
     assert_includes response.body, ".ui-widget-overlay", "a click outside the modal closes it"
+    assert_includes response.body, "center top", "the modal hangs from the top, so loaded content cannot push it down"
     assert_not_includes response.body, "iframe", "only the issue's own content goes in the modal, not the whole site"
     assert_includes response.body, "/issues/#{@started_issue.id}"
     assert_includes response.body, "#content"
