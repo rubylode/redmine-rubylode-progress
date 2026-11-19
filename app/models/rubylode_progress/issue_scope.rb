@@ -22,7 +22,7 @@ module RubylodeProgress
   # a version shared in from elsewhere with nothing of ours, or one of a hidden subproject, never becomes a stage.
   class IssueScope
     ISSUE_PRELOADS = [:status, :priority, :assigned_to, :category, :parent, :fixed_version,
-                      { relations_to: { issue_from: :status } }].freeze
+                      { relations_to: { issue_from: :status } }, { custom_values: :custom_field }].freeze
 
     def initialize(project:, viewer:, settings:)
       @project = project

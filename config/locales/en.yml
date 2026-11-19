@@ -3,4 +3,31 @@ en:
   permission_view_rubylode_progress: View progress
   label_rubylode_progress: Progress
 
-  rubylode_progress: {}
+  rubylode_progress:
+    no_category: No category
+    no_parent: No parent
+    nothing_to_track: There is nothing to track yet. Add a version with issues to start the stages.
+    last_change: "Last change %{date}"
+    stage_position: "Stage %{number} of %{total}"
+    all_stages_done: "All %{total} stages done"
+    track_label: "%{percent}% done, %{finished} of %{total} stages finished"
+    stage_summary:
+      done:
+        one: "%{count} step done"
+        other: "%{count} steps done"
+      upcoming:
+        one: "%{count} step planned"
+        other: "%{count} steps planned"
+      current: "%{done} of %{total} steps done"
+      partial: "%{done} of %{total} steps done, %{left} left"
+    tiles:
+      done: Done
+      next: Next up
+      needs_you: Needs you
+      still_open: Still open
+    status:
+      done: Done
+      needs_you: Needs you
+      waiting: Waiting
+      next: Next
+      to_do: To do

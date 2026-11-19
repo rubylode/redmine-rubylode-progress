@@ -1,0 +1,31 @@
+<% current_stage = progress.current_stage %>
+<section class="rubylode-progress-tracker">
+  <p class="rubylode-progress-tracker__position">
+    <% if current_stage %>
+      <%= l("rubylode_progress.stage_position", number: current_stage.number, total: progress.stages.size) %>
+    <% else %>
+      <%= l("rubylode_progress.all_stages_done", total: progress.stages.size) %>
+    <% end %>
+  </p>
+  <% if current_stage %>
+    <h3 class="rubylode-progress-tracker__headline"><%= current_stage.version.name %></h3>
+    <% if current_stage.version.description.present? %>
+      <p class="rubylode-progress-tracker__description"><%= current_stage.version.description %></p>
+    <% end %>
+  <% end %>
+
+  <div class="rubylode-progress-tracker__bar">
+    <ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: progress.percent, finished: progress.finished_stage_count, total: progress.stages.size) %>">
+      <% progress.stages.each do |stage| %>
+        <li class="rubylode-progress-track__dot rubylode-progress-track__dot--<%= stage.state %>"></li>
+      <% end %>
+    </ol>
+    <span class="rubylode-progress-tracker__percent"><%= progress.percent %>%</span>
+  </div>
+
+  <ol class="rubylode-progress-stages">
+    <% progress.stages.each do |stage| %>
+      <%= render "stage", stage: stage %>
+    <% end %>
+  </ol>
+</section>

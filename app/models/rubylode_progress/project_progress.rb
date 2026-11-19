@@ -40,6 +40,10 @@ module RubylodeProgress
 
     def percent = PercentRule.percent_for(stages)
 
+    def finished_stage_count = stage_list.finished_stage_count
+
+    def all_done? = stage_list.all_done?
+
     def items
       @items ||= stages.flat_map do |stage|
         stage.steps.map { |step| Item.new(issue: step.issue, status: status_for(step.issue), step_number: step.number) }

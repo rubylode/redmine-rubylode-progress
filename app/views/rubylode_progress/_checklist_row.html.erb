@@ -1,0 +1,10 @@
+<% issue = item.issue %>
+<li class="rubylode-progress-row rubylode-progress-row--<%= item.status.to_s.dasherize %>" id="rubylode-progress-item-<%= issue.id %>">
+  <span class="rubylode-progress-row__mark" aria-hidden="true"></span>
+  <span class="rubylode-progress-row__title"><%= issue.subject %></span>
+  <span class="rubylode-progress-pill rubylode-progress-pill--<%= item.status.to_s.dasherize %>"><%= rubylode_progress_status_label(item.status) %></span>
+  <%= link_to "##{issue.id}", issue_path(issue), class: "rubylode-progress-row__number" %>
+  <% date = rubylode_progress_item_date(item) %>
+  <% if date %><span class="rubylode-progress-row__date"><%= date %></span><% end %>
+  <% if note.present? %><p class="rubylode-progress-row__note"><%= note %></p><% end %>
+</li>

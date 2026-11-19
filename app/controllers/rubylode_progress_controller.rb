@@ -1,23 +1,17 @@
-# Rubylode Progress: a progress page for Redmine projects
-# Copyright (C) 2026  Nick Gorbikoff
-#
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
+
 
 class RubylodeProgressController < ApplicationController
   menu_item :rubylode_progress
   before_action :find_project, :authorize
 
+  # The Open filter is the only one until the filters arrive: everything not Done.
   def show
+    @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
+    @filter = "open"
+    @tally = RubylodeProgress::Tally.from(@progress.items)
+    @checklist_items = @progress.items.reject { |item| item.status == :done }
+    @sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @progress.settings.checklist_grouping)
+    @item_notes = RubylodeProgress::ItemNotes.for(@checklist_items.map(&:issue), viewer: User.current,
+                                                  settings: @progress.settings)
   end
 end

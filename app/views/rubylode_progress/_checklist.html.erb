@@ -1,0 +1,17 @@
+<section class="rubylode-progress-checklist">
+  <% sections.each do |section| %>
+    <div class="rubylode-progress-section">
+      <% if section.title %>
+        <h3 class="rubylode-progress-section__title">
+          <%= section.title %>
+          <span class="rubylode-progress-section__tally"><%= section.done_count %>/<%= section.items.size %></span>
+        </h3>
+      <% end %>
+      <ul class="rubylode-progress-rows">
+        <% section.items.each do |item| %>
+          <%= render "checklist_row", item: item, note: item_notes[item.issue.id] %>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+</section>

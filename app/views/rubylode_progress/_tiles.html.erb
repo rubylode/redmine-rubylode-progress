@@ -1,0 +1,8 @@
+<ul class="rubylode-progress-tiles">
+  <% { done: tally.done_count, next: tally.next_count, needs_you: tally.needs_you_count, still_open: tally.still_open_count }.each do |key, count| %>
+    <li class="rubylode-progress-tile rubylode-progress-tile--<%= key.to_s.dasherize %>">
+      <span class="rubylode-progress-tile__number"><%= count %></span>
+      <span class="rubylode-progress-tile__label"><%= l("rubylode_progress.tiles.#{key}") %></span>
+    </li>
+  <% end %>
+</ul>

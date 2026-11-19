@@ -1,0 +1,22 @@
+<li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>">
+  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %>>
+    <summary>
+      <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>
+      <% if stage.version.effective_date %>
+        <span class="rubylode-progress-stage__date"><%= format_date(stage.version.effective_date) %></span>
+      <% end %>
+      <span class="rubylode-progress-stage__summary"><%= rubylode_progress_stage_summary(stage) %></span>
+    </summary>
+    <ul class="rubylode-progress-steps">
+      <% stage.steps.each do |step| %>
+        <li class="rubylode-progress-step rubylode-progress-step--<%= step.done? ? "done" : "open" %>">
+          <span class="rubylode-progress-step__mark" aria-hidden="true"></span>
+          <%= link_to step.issue.subject, issue_path(step.issue) %>
+          <% if step.issue.assigned_to %>
+            <span class="rubylode-progress-step__assignee"><%= step.issue.assigned_to.name %></span>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </details>
+</li>

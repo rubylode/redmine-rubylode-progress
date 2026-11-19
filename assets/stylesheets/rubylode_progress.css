@@ -1,0 +1,18 @@
+.rubylode-progress-title__last-change,.rubylode-progress-stage__date,.rubylode-progress-step__assignee,.rubylode-progress-row__note,.rubylode-progress-tracker__description{color:#666}
+.rubylode-progress-tracker__position{margin:0;text-transform:uppercase;font-size:.8em;color:#666}
+.rubylode-progress-tracker__headline{font-size:1.6em;margin:.1em 0}
+.rubylode-progress-tracker__bar{display:flex;align-items:center;gap:1em}
+.rubylode-progress-track{display:flex;flex:1;gap:.5em;list-style:none;margin:0;padding:0}
+.rubylode-progress-track__dot{width:1em;height:1em;border-radius:50%;border:2px solid #628db6;box-sizing:border-box}
+.rubylode-progress-track__dot--done{background:#628db6}
+.rubylode-progress-track__dot--partial{background:linear-gradient(90deg,#628db6 50%,transparent 50%)}
+.rubylode-progress-track__dot--current{background:#fff;border-width:4px}
+.rubylode-progress-tracker__percent,.rubylode-progress-tile__number{font-family:ui-monospace,Menlo,monospace;font-size:1.4em}
+.rubylode-progress-stages,.rubylode-progress-steps,.rubylode-progress-rows,.rubylode-progress-tiles{list-style:none;margin:0;padding:0}
+.rubylode-progress-step__mark,.rubylode-progress-row__mark{display:inline-block;width:.8em;height:.8em;border:2px solid #628db6;margin-right:.4em}
+.rubylode-progress-step--done .rubylode-progress-step__mark,.rubylode-progress-row--done .rubylode-progress-row__mark{background:#628db6}
+.rubylode-progress-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.8em;margin:1em 0}
+.rubylode-progress-tile{display:flex;flex-direction:column;border:1px solid #ddd;padding:.6em}
+.rubylode-progress-pill{border:1px solid #bbb;border-radius:1em;padding:0 .6em;font-size:.8em}
+.rubylode-progress-section__tally{color:#666;font-weight:normal;font-size:.8em}
+@media (max-width:640px){.rubylode-progress-tiles{grid-template-columns:repeat(2,1fr)}}

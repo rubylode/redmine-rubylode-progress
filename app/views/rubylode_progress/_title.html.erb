@@ -1,0 +1,6 @@
+<div class="rubylode-progress-title">
+  <h2><%= project.name %></h2>
+  <% if last_change_on %>
+    <p class="rubylode-progress-title__last-change"><%= l("rubylode_progress.last_change", date: format_date(last_change_on)) %></p>
+  <% end %>
+</div>

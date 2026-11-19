@@ -1,1 +1,13 @@
-<h2><%= @project.name %></h2>
+<% content_for :header_tags do %>
+  <%= stylesheet_link_tag "rubylode_progress", plugin: "redmine_rubylode_progress" %>
+<% end %>
+
+<%= render "title", project: @project, last_change_on: @progress.last_change_on %>
+
+<% if @progress.stages.empty? %>
+  <p class="rubylode-progress-empty"><%= l("rubylode_progress.nothing_to_track") %></p>
+<% else %>
+  <%= render "tracker_panel", progress: @progress %>
+  <%= render "tiles", tally: @tally %>
+  <%= render "checklist", sections: @sections, item_notes: @item_notes %>
+<% end %>
