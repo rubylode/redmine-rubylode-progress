@@ -3,17 +3,19 @@
   <%= javascript_include_tag "progress_filters", plugin: "redmine_rubylode_progress", type: "module" %>
 <% end %>
 
-<%= render "title", project: @project, last_change_on: @progress.last_change_on %>
+<div class="rubylode-progress">
+  <%= render "title", project: @project, last_change_on: @progress.last_change_on %>
 
-<% if @progress.stages.empty? %>
-  <p class="rubylode-progress-empty"><%= l("rubylode_progress.nothing_to_track") %></p>
-<% else %>
-  <%= render "tracker_panel", progress: @progress %>
-  <%= render "tiles", tally: @tally %>
-  <div data-controller="rubylode-progress-filters">
-    <%= render "filters", project: @project, current_filter: @filter %>
-    <div data-rubylode-progress-filters-target="checklist">
-      <%= render "checklist", sections: @sections, item_notes: @item_notes %>
+  <% if @progress.stages.empty? %>
+    <p class="rubylode-progress-empty"><%= l("rubylode_progress.nothing_to_track") %></p>
+  <% else %>
+    <%= render "tracker_panel", progress: @progress %>
+    <%= render "tiles", tally: @tally %>
+    <div data-controller="rubylode-progress-filters">
+      <%= render "filters", project: @project, current_filter: @filter %>
+      <div data-rubylode-progress-filters-target="checklist">
+        <%= render "checklist", sections: @sections, item_notes: @item_notes %>
+      </div>
     </div>
-  </div>
-<% end %>
+  <% end %>
+</div>

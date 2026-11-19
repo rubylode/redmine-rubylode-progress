@@ -1,21 +1,413 @@
-.rubylode-progress-title__last-change,.rubylode-progress-stage__date,.rubylode-progress-step__assignee,.rubylode-progress-row__note,.rubylode-progress-tracker__description{color:#666}
-.rubylode-progress-tracker__position{margin:0;text-transform:uppercase;font-size:.8em;color:#666}
-.rubylode-progress-tracker__headline{font-size:1.6em;margin:.1em 0}
-.rubylode-progress-tracker__bar{display:flex;align-items:center;gap:1em}
-.rubylode-progress-track{display:flex;flex:1;gap:.5em;list-style:none;margin:0;padding:0}
-.rubylode-progress-track__dot{width:1em;height:1em;border-radius:50%;border:2px solid #628db6;box-sizing:border-box}
-.rubylode-progress-track__dot--done{background:#628db6}
-.rubylode-progress-track__dot--partial{background:linear-gradient(90deg,#628db6 50%,transparent 50%)}
-.rubylode-progress-track__dot--current{background:#fff;border-width:4px}
-.rubylode-progress-tracker__percent,.rubylode-progress-tile__number{font-family:ui-monospace,Menlo,monospace;font-size:1.4em}
-.rubylode-progress-stages,.rubylode-progress-steps,.rubylode-progress-rows,.rubylode-progress-tiles{list-style:none;margin:0;padding:0}
-.rubylode-progress-step__mark,.rubylode-progress-row__mark{display:inline-block;width:.8em;height:.8em;border:2px solid #628db6;margin-right:.4em}
-.rubylode-progress-step--done .rubylode-progress-step__mark,.rubylode-progress-row--done .rubylode-progress-row__mark{background:#628db6}
-.rubylode-progress-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.8em;margin:1em 0}
-.rubylode-progress-tile{display:flex;flex-direction:column;border:1px solid #ddd;padding:.6em}
-.rubylode-progress-pill{border:1px solid #bbb;border-radius:1em;padding:0 .6em;font-size:.8em}
-.rubylode-progress-section__tally{color:#666;font-weight:normal;font-size:.8em}
-@media (max-width:640px){.rubylode-progress-tiles{grid-template-columns:repeat(2,1fr)}}
-.rubylode-progress-all-projects{display:flex;flex-direction:column;gap:1em}
-.rubylode-progress-compact-tracker__name{margin:0 0 .3em}
-.rubylode-progress-compact-tracker__stage,.rubylode-progress-compact-tracker__empty{margin:.3em 0 0;color:#666}
+/*
+ * Rubylode Progress. Every colour and size is a --rubylode-progress-* custom property, set here on :where(:root), which
+ * has no specificity, so a theme wins whenever it sets a property. The defaults are light; a dark theme sets the
+ * properties (docs/theming.md has a block to paste). Every rule is under .rubylode-progress.
+ */
+:where(:root) {
+  --rubylode-progress-surface: #ffffff;
+  --rubylode-progress-text-color: #1f2933;
+  --rubylode-progress-muted-text-color: #5d6672;
+  --rubylode-progress-line-color: #d9dee5;
+  --rubylode-progress-accent-color: #1f5f8b;
+  --rubylode-progress-focus-color: #1f5f8b;
+  --rubylode-progress-done-color: #1b6e34;
+  --rubylode-progress-done-background: #e3f4e7;
+  --rubylode-progress-next-color: #1a5fa0;
+  --rubylode-progress-next-background: #e4eefa;
+  --rubylode-progress-needs-you-color: #8a5200;
+  --rubylode-progress-needs-you-background: #fdf0d5;
+  --rubylode-progress-waiting-color: #4a5360;
+  --rubylode-progress-waiting-background: #eceff3;
+  --rubylode-progress-to-do-color: #4a5360;
+  --rubylode-progress-to-do-background: #f4f5f7;
+
+  --rubylode-progress-column-width: 1100px;
+  --rubylode-progress-radius: 8px;
+  --rubylode-progress-panel-padding: 1em 1.2em;
+  --rubylode-progress-gap: 1em;
+  --rubylode-progress-space-small: 0.4em;
+  --rubylode-progress-mark-size: 1em;
+  --rubylode-progress-track-dot-size: 1em;
+  --rubylode-progress-tile-number-size: 1.6em;
+  --rubylode-progress-percent-size: 1.6em;
+  --rubylode-progress-small-text-size: 0.85em;
+  --rubylode-progress-monospace-font: ui-monospace, Menlo, monospace;
+}
+
+.rubylode-progress {
+  box-sizing: border-box;
+  max-width: var(--rubylode-progress-column-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rubylode-progress-gap);
+}
+
+.rubylode-progress-title__last-change,
+.rubylode-progress-stage__date,
+.rubylode-progress-step__assignee,
+.rubylode-progress-row__note,
+.rubylode-progress-row__date,
+.rubylode-progress-tracker__description,
+.rubylode-progress-section__tally,
+.rubylode-progress-compact-tracker__stage,
+.rubylode-progress-compact-tracker__empty,
+.rubylode-progress-empty {
+  color: var(--rubylode-progress-muted-text-color);
+}
+
+.rubylode-progress-title h2,
+.rubylode-progress-title__last-change {
+  margin: 0;
+}
+
+/* Panels set their own background and text, so a theme that restyles #content still sees a coherent panel. */
+.rubylode-progress-tracker,
+.rubylode-progress-tile,
+.rubylode-progress-checklist,
+.rubylode-progress-compact-tracker {
+  box-sizing: border-box;
+  background: var(--rubylode-progress-surface);
+  color: var(--rubylode-progress-text-color);
+  border: 1px solid var(--rubylode-progress-line-color);
+  border-radius: var(--rubylode-progress-radius);
+  padding: var(--rubylode-progress-panel-padding);
+}
+
+.rubylode-progress-tracker__position {
+  margin: 0;
+  text-transform: uppercase;
+  font-size: var(--rubylode-progress-small-text-size);
+  color: var(--rubylode-progress-muted-text-color);
+}
+
+.rubylode-progress-tracker__headline {
+  font-size: 1.6em;
+  margin: 0.1em 0;
+}
+
+.rubylode-progress-tracker__description {
+  margin: 0 0 var(--rubylode-progress-space-small);
+}
+
+.rubylode-progress-tracker__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--rubylode-progress-gap);
+  margin: var(--rubylode-progress-gap) 0;
+}
+
+.rubylode-progress-track {
+  display: flex;
+  flex: 1;
+  gap: 0.5em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rubylode-progress-track__dot {
+  width: var(--rubylode-progress-track-dot-size);
+  height: var(--rubylode-progress-track-dot-size);
+  border-radius: 50%;
+  border: 2px solid var(--rubylode-progress-accent-color);
+  box-sizing: border-box;
+}
+
+.rubylode-progress-track__dot--done {
+  background: var(--rubylode-progress-accent-color);
+}
+
+.rubylode-progress-track__dot--partial {
+  background: linear-gradient(90deg, var(--rubylode-progress-accent-color) 50%, transparent 50%);
+}
+
+.rubylode-progress-track__dot--current {
+  background: var(--rubylode-progress-surface);
+  border-width: 4px;
+}
+
+.rubylode-progress-tracker__percent,
+.rubylode-progress-tile__number {
+  font-family: var(--rubylode-progress-monospace-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.rubylode-progress-tracker__percent {
+  font-size: var(--rubylode-progress-percent-size);
+}
+
+.rubylode-progress-tile__number {
+  font-size: var(--rubylode-progress-tile-number-size);
+}
+
+.rubylode-progress-stages,
+.rubylode-progress-steps,
+.rubylode-progress-rows,
+.rubylode-progress-tiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rubylode-progress-stage-item {
+  border-top: 1px solid var(--rubylode-progress-line-color);
+  padding: var(--rubylode-progress-space-small) 0;
+}
+
+.rubylode-progress-stage summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2em 0.8em;
+  align-items: baseline;
+}
+
+.rubylode-progress-stage__name {
+  font-weight: bold;
+}
+
+.rubylode-progress-stage__summary {
+  margin-left: auto;
+  color: var(--rubylode-progress-muted-text-color);
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-steps {
+  padding: var(--rubylode-progress-space-small) 0 0 1.4em;
+}
+
+.rubylode-progress-step {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2em 0.5em;
+  padding: 0.15em 0;
+}
+
+/* Marks: done a filled circle with a check, next a ring with a dot, needs you a ring, waiting a dashed ring, to do a
+   plain ring. The ring colour comes from --mark-color, the fill from --mark-fill. */
+.rubylode-progress-step__mark,
+.rubylode-progress-row__mark {
+  --mark-color: var(--rubylode-progress-to-do-color);
+  --mark-fill: transparent;
+  position: relative;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--rubylode-progress-mark-size);
+  height: var(--rubylode-progress-mark-size);
+  border: 2px solid var(--mark-color);
+  border-radius: 50%;
+  background: var(--mark-fill);
+}
+
+.rubylode-progress-step--done .rubylode-progress-step__mark,
+.rubylode-progress-row--done .rubylode-progress-row__mark {
+  --mark-color: var(--rubylode-progress-done-color);
+  --mark-fill: var(--rubylode-progress-done-color);
+}
+
+.rubylode-progress-step--done .rubylode-progress-step__mark::after,
+.rubylode-progress-row--done .rubylode-progress-row__mark::after {
+  content: "";
+  position: absolute;
+  left: 25%;
+  top: 6%;
+  width: 22%;
+  height: 46%;
+  border: solid var(--rubylode-progress-surface);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.rubylode-progress-row--next .rubylode-progress-row__mark {
+  --mark-color: var(--rubylode-progress-next-color);
+}
+
+.rubylode-progress-row--next .rubylode-progress-row__mark::after {
+  content: "";
+  position: absolute;
+  inset: 20%;
+  border-radius: 50%;
+  background: var(--rubylode-progress-next-color);
+}
+
+.rubylode-progress-row--needs-you .rubylode-progress-row__mark {
+  --mark-color: var(--rubylode-progress-needs-you-color);
+}
+
+.rubylode-progress-row--waiting .rubylode-progress-row__mark {
+  --mark-color: var(--rubylode-progress-waiting-color);
+  border-style: dashed;
+}
+
+.rubylode-progress-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--rubylode-progress-gap);
+}
+
+.rubylode-progress-tile {
+  display: flex;
+  flex-direction: column;
+}
+
+.rubylode-progress-tile__label {
+  color: var(--rubylode-progress-muted-text-color);
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-tile--done .rubylode-progress-tile__number {
+  color: var(--rubylode-progress-done-color);
+}
+
+.rubylode-progress-tile--next .rubylode-progress-tile__number {
+  color: var(--rubylode-progress-next-color);
+}
+
+.rubylode-progress-tile--needs-you .rubylode-progress-tile__number {
+  color: var(--rubylode-progress-needs-you-color);
+}
+
+.rubylode-progress-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-space-small);
+  margin-bottom: var(--rubylode-progress-gap);
+}
+
+.rubylode-progress-filter {
+  border: 1px solid var(--rubylode-progress-line-color);
+  border-radius: 1em;
+  padding: 0.15em 0.9em;
+  text-decoration: none;
+  color: var(--rubylode-progress-text-color);
+  background: var(--rubylode-progress-surface);
+}
+
+.rubylode-progress-filter[aria-pressed="true"] {
+  background: var(--rubylode-progress-accent-color);
+  border-color: var(--rubylode-progress-accent-color);
+  color: var(--rubylode-progress-surface);
+}
+
+.rubylode-progress-section + .rubylode-progress-section {
+  margin-top: var(--rubylode-progress-gap);
+}
+
+.rubylode-progress-section__title {
+  margin: 0 0 var(--rubylode-progress-space-small);
+}
+
+.rubylode-progress-section__tally {
+  font-weight: normal;
+  font-size: var(--rubylode-progress-small-text-size);
+  font-family: var(--rubylode-progress-monospace-font);
+  font-variant-numeric: tabular-nums;
+}
+
+.rubylode-progress-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2em 0.6em;
+  padding: 0.45em 0;
+  border-top: 1px solid var(--rubylode-progress-line-color);
+}
+
+.rubylode-progress-row__title {
+  flex: 1 1 12em;
+  min-width: 0;
+}
+
+.rubylode-progress-row__number,
+.rubylode-progress-row__date {
+  font-family: var(--rubylode-progress-monospace-font);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-row__note {
+  flex: 0 0 100%;
+  margin: 0 0 0 1.6em;
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-pill {
+  border: 1px solid currentColor;
+  border-radius: 1em;
+  padding: 0 0.6em;
+  font-size: var(--rubylode-progress-small-text-size);
+  white-space: nowrap;
+}
+
+.rubylode-progress-pill--done {
+  color: var(--rubylode-progress-done-color);
+  background: var(--rubylode-progress-done-background);
+}
+
+.rubylode-progress-pill--next {
+  color: var(--rubylode-progress-next-color);
+  background: var(--rubylode-progress-next-background);
+}
+
+.rubylode-progress-pill--needs-you {
+  color: var(--rubylode-progress-needs-you-color);
+  background: var(--rubylode-progress-needs-you-background);
+}
+
+.rubylode-progress-pill--waiting {
+  color: var(--rubylode-progress-waiting-color);
+  background: var(--rubylode-progress-waiting-background);
+}
+
+.rubylode-progress-pill--to-do {
+  color: var(--rubylode-progress-to-do-color);
+  background: var(--rubylode-progress-to-do-background);
+}
+
+.rubylode-progress-compact-tracker__name {
+  margin: 0 0 var(--rubylode-progress-space-small);
+}
+
+.rubylode-progress-compact-tracker__stage,
+.rubylode-progress-compact-tracker__empty {
+  margin: var(--rubylode-progress-space-small) 0 0;
+}
+
+.rubylode-progress-all-projects {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rubylode-progress-gap);
+}
+
+.rubylode-progress a:focus-visible,
+.rubylode-progress-filter:focus-visible,
+.rubylode-progress summary:focus-visible {
+  outline: 2px solid var(--rubylode-progress-focus-color);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .rubylode-progress-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rubylode-progress-tracker__bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rubylode-progress-track {
+    flex-wrap: wrap;
+  }
+
+  .rubylode-progress-row__title {
+    flex-basis: calc(100% - 2em);
+  }
+
+  .rubylode-progress-stage__summary {
+    margin-left: 0;
+  }
+}
