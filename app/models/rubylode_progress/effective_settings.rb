@@ -18,12 +18,14 @@
 require "digest"
 
 module RubylodeProgress
-  # The settings that apply to one project, frozen. For now the plugin-wide values; the project's own row will be laid
-  # over them once projects can override.
+  # The settings that apply to one project, frozen: the plugin-wide values with the project's filled overrides laid over
+  # them (an empty override falls back).
   EffectiveSettings = Data.define(:counted_versions, :version_name_prefix, :checklist_grouping,
                                   :in_progress_status_ids, :waiting_status_ids, :next_issue_limit,
                                   :note_custom_field_id) do
-    def self.for(_project, plugin_settings: Settings.new)
+    def self.for(project, plugin_settings: Settings.new)
+      row = project.rubylode_progress_setting
+      plugin_settings = plugin_settings.with_overrides(row.overrides) if row
       new(counted_versions: plugin_settings.counted_versions,
           version_name_prefix: plugin_settings.version_name_prefix.freeze,
           checklist_grouping: plugin_settings.checklist_grouping,

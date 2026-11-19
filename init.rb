@@ -14,6 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 
+require_relative "lib/rubylode_progress/project_patch"
+require_relative "lib/rubylode_progress/projects_helper_patch"
+
 Redmine::Plugin.register :redmine_rubylode_progress do
   name "Rubylode Progress"
   author "Rubylode"
@@ -21,7 +24,7 @@ Redmine::Plugin.register :redmine_rubylode_progress do
   version "0.1.0"
   requires_redmine version_or_higher: "7.0.0"
 
-  settings default: RubylodeProgress::Settings::DEFAULTS
+  settings default: RubylodeProgress::Settings::DEFAULTS, partial: "settings/rubylode_progress_settings"
 
   project_module :rubylode_progress do
     permission :view_rubylode_progress, { rubylode_progress: [:show, :checklist] }, read: true
@@ -30,4 +33,10 @@ Redmine::Plugin.register :redmine_rubylode_progress do
   menu :project_menu, :rubylode_progress,
        { controller: "rubylode_progress", action: "show" },
        caption: :label_rubylode_progress, after: :roadmap, param: :id
+end
+
+# Redmine runs this file again on every code reload, so each patch goes in only once.
+Project.include(RubylodeProgress::ProjectPatch) unless Project.include?(RubylodeProgress::ProjectPatch)
+unless ProjectsHelper.ancestors.include?(RubylodeProgress::ProjectsHelperPatch)
+  ProjectsHelper.prepend(RubylodeProgress::ProjectsHelperPatch)
 end

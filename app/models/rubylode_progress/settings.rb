@@ -64,6 +64,16 @@ module RubylodeProgress
       match && Integer(match[1], 10)
     end
 
+    # The note source as the settings form names it: "latest_note" or "custom_field_<id>".
+    def note_source
+      note_custom_field_id ? "custom_field_#{note_custom_field_id}" : DEFAULTS["note_source"]
+    end
+
+    # The same settings with a project's filled overrides laid over them.
+    def with_overrides(overrides)
+      self.class.new(@values.merge(overrides.to_h.stringify_keys))
+    end
+
     private
 
     def choice(key, choices)
