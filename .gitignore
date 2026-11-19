@@ -1,8 +1,9 @@
 .claude/
 .DS_Store
 tmp/
-node_modules/
+node_modules
 .env
 .overmind.sock
 log/
 coverage/
+package-lock.json
