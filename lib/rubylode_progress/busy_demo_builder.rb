@@ -168,4 +168,7 @@ module RubylodeProgress
     end
     module_function :build_busy
   end
+
+  # Zeitwerk expects this file to define a constant named after it; the builder lives in DemoData beside the other one.
+  BusyDemoBuilder = DemoData::BusyBuilder
 end
