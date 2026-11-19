@@ -17,7 +17,7 @@ the viewer may see.
      `redmine_rubylode_progress`, namespace, prefixes, docs, and the Gitea and GitHub repositories.~~ done 2026-11-18;
      the local data volumes were carried over.
    - ~~`03-item-status.md`~~ done 2026-11-18 (84717b6).
-   - `04-issue-scope.md`.
+   - ~~`04-issue-scope.md`~~ done 2026-11-18 (a705062; versions with nothing visible of ours never become stages).
 3. The project page and its filters: `05-project-page.md`, `06-filters.md`; then the quick-edit pencil and the
    new-issue plus: `13-edit-and-add-modals.md`.
 4. Settings, plugin-wide and per project: `07-settings.md`.
