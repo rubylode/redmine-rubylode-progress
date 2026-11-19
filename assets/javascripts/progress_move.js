@@ -15,7 +15,8 @@ import { application } from "controllers/application"
 
 const DROP_TARGET_SELECTOR = "[data-version-id], [data-refuse-reason]"
 const DRAGGED_CLASS = "rubylode-progress-dragged"
-const DROP_OVER_CLASS = "rubylode-progress-drop-over"\nconst DROP_REFUSED_CLASS = "rubylode-progress-drop-refused"
+const DROP_OVER_CLASS = "rubylode-progress-drop-over"
+const DROP_REFUSED_CLASS = "rubylode-progress-drop-refused"
 
 class ProgressMoveController extends Controller {
   static targets = ["message"]
