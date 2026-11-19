@@ -21,7 +21,7 @@ module RubylodeProgress
   # here, or belong to this project's tree in a project whose issues the viewer may see (owner's ruling, 2026-11-18): so
   # a version shared in from elsewhere with nothing of ours, or one of a hidden subproject, never becomes a stage.
   class IssueScope
-    ISSUE_PRELOADS = [:project, :status, :priority, :assigned_to, :category, :parent, :fixed_version,
+    ISSUE_PRELOADS = [:project, :status, :priority, :assigned_to, :author, :category, :parent, :fixed_version,
                       { relations_to: { issue_from: :status } }, { custom_values: :custom_field }].freeze
 
     # The cross-project page passes a short preload list and column list, as it reads only status and version.

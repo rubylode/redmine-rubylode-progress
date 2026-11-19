@@ -100,6 +100,24 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     refute_equal before, unchanged_time
   end
 
+  test "the key changes when one issue enters an in-progress status, even if its update time did not move" do
+    settings = RubylodeProgress::EffectiveSettings.for(Project.find(@project.id),
+                                                       plugin_settings: RubylodeProgress::Settings.new("in_progress_status_ids" => ["2"]))
+    @issue.update_column(:updated_on, Time.utc(2000, 1, 1))
+    @other_issue.update_column(:updated_on, Time.utc(2000, 1, 1))
+    before = key_for(settings: settings)
+    @issue.update_columns(status_id: 2, updated_on: Time.utc(2000, 1, 1))
+
+    refute_equal before, key_for(settings: settings)
+  end
+
+  test "the key changes when an author is renamed, though no issue changed" do
+    before = key_for
+    @manager.update_column(:lastname, "Renamed")
+
+    refute_equal before, key_for
+  end
+
   test "the key changes with the version" do
     before = key_for
     @version.update_column(:updated_on, 1.hour.from_now)

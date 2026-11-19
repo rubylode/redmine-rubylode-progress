@@ -1,18 +1,21 @@
 <section class="rubylode-progress-checklist">
   <% sections.each do |section| %>
-    <div class="rubylode-progress-section">
-      <% if section.title %>
+    <details class="rubylode-progress-section" open>
+      <summary class="rubylode-progress-section__summary">
+        <span class="rubylode-progress-chevron" aria-hidden="true"></span>
         <h3 class="rubylode-progress-section__title">
-          <%= section.title %>
+          <%= section.title || l("rubylode_progress.other_section") %>
           <span class="rubylode-progress-section__tally"><%= section.done_count %>/<%= section.items.size %></span>
         </h3>
-      <% end %>
+        <%= render "meter", percent: section_percents.fetch(section.title, section.percent) %>
+      </summary>
       <ul class="rubylode-progress-rows">
         <% section.items.each do |item| %>
           <%= render "checklist_row", item: item, note: item_notes[item.issue.id],
-                                       project: project, editable_issue_ids: progress.editable_issue_ids, filter: filter %>
+                                       project: project, editable_issue_ids: progress.editable_issue_ids, filter: filter,
+                                       settings: progress.settings %>
         <% end %>
       </ul>
-    </div>
+    </details>
   <% end %>
 </section>

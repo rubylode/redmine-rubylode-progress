@@ -2,23 +2,29 @@
 <li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>">
   <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %>>
     <summary>
+      <span class="rubylode-progress-chevron" aria-hidden="true"></span>
       <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>
       <% if stage.version.effective_date %>
-        <span class="rubylode-progress-stage__date"><%= format_date(stage.version.effective_date) %></span>
+        <span class="rubylode-progress-stage__date"><%= l("rubylode_progress.stage_due", date: format_date(stage.version.effective_date)) %></span>
       <% end %>
+      <%= render "meter", percent: rubylode_progress_stage_percent(stage) %>
       <span class="rubylode-progress-stage__summary"><%= rubylode_progress_stage_summary(stage) %></span>
     </summary>
     <ul class="rubylode-progress-steps">
       <% stage.steps.each do |step| %>
-        <li class="rubylode-progress-step rubylode-progress-step--<%= step.done? ? "done" : "open" %>">
+        <li class="rubylode-progress-step rubylode-progress-step--<%= rubylode_progress_mark_state(step.issue, settings) %>">
           <span class="rubylode-progress-step__mark" aria-hidden="true"></span>
-          <%= link_to step.issue.subject, issue_path(step.issue) %>
+          <%= render "item_title_link", project: project, issue: step.issue %>
+          <% if step.issue.author %>
+            <span class="rubylode-progress-step__author"><%= step.issue.author.name %></span>
+          <% end %>
           <% if step.issue.assigned_to %>
             <span class="rubylode-progress-step__assignee"><%= step.issue.assigned_to.name %></span>
           <% end %>
           <% if editable_issue_ids.include?(step.issue.id) %>
             <%= render "quick_edit_link", project: project, issue: step.issue %>
           <% end %>
+          <%= render "new_tab_link", issue: step.issue %>
         </li>
       <% end %>
     </ul>

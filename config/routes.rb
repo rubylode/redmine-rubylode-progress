@@ -23,3 +23,5 @@ get "projects/:id/progress/issues/:issue_id/quick_edit", to: "rubylode_progress#
                                                          as: "project_rubylode_progress_quick_edit"
 get "projects/:id/progress/versions/:version_id/new_issue", to: "rubylode_progress#new_issue",
                                                             as: "project_rubylode_progress_new_issue"
+get "projects/:id/progress/issues/:issue_id/item", to: "rubylode_progress#item",
+                                                    as: "project_rubylode_progress_item"

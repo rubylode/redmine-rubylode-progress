@@ -32,6 +32,20 @@ class RubylodeProgressController < ApplicationController
     render partial: "rubylode_progress/checklist", locals: checklist_locals, layout: false
   end
 
+  # Redmine's own issue page for one item, framed in Redmine's modal. The frame's address is built here from the issue's
+  # id; the page inside is Redmine's, so it decides again what the viewer sees. Without a script request the viewer
+  # goes straight to the issue.
+  def item
+    @issue = Issue.visible(User.current).where(project_id: @project.self_and_descendants.select(:id))
+                  .find_by(id: params[:issue_id])
+    return render_404 unless @issue
+
+    respond_to do |format|
+      format.html { redirect_to issue_path(@issue) }
+      format.js
+    end
+  end
+
   # The modal's form. The save goes to Redmine's own issue update, which decides again what this viewer may change.
   def quick_edit
     @issue = Issue.visible(User.current).where(project_id: @project.self_and_descendants.select(:id))
@@ -75,7 +89,8 @@ class RubylodeProgressController < ApplicationController
   end
 
   def checklist_locals
-    { sections: @sections, item_notes: @item_notes, project: @project, progress: @progress, filter: @filter }
+    { sections: @sections, section_percents: @section_percents, item_notes: @item_notes, project: @project,
+      progress: @progress, filter: @filter }
   end
 
   def load_progress_and_filter
@@ -98,10 +113,22 @@ class RubylodeProgressController < ApplicationController
     preferences.save
   end
 
+  # Each section's closed share over all its items, so a filter that hides the closed ones does not empty the bar.
+  def section_percents
+    all_sections = if @checklist_items.size == @progress.items.size
+                     @sections
+                   else
+                     RubylodeProgress::ChecklistSections.group(@progress.items, by: @progress.settings.checklist_grouping,
+                                                                                viewer: User.current)
+                   end
+    all_sections.to_h { |section| [section.title, section.percent] }
+  end
+
   def load_checklist
     @checklist_items = RubylodeProgress::ChecklistFilter.apply(@filter, @progress.items)
     @sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @progress.settings.checklist_grouping,
                                                                   viewer: User.current)
+    @section_percents = section_percents
     @item_notes = RubylodeProgress::ItemNotes.for(@checklist_items.map(&:issue), viewer: User.current,
                                                   settings: @progress.settings)
   end

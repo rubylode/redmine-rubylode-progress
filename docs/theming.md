@@ -38,7 +38,9 @@ Sizes and type:
 | `--rubylode-progress-gap` | `1em` | space between panels and tiles |
 | `--rubylode-progress-space-small` | `0.4em` | small spacing |
 | `--rubylode-progress-mark-size` | `1em` | the status marks |
-| `--rubylode-progress-track-dot-size` | `1em` | the dots of the stage track |
+| `--rubylode-progress-track-dot-size` | `1em` | the stage markers on the top bar |
+| `--rubylode-progress-bar-height` | `0.6em` | the thickness of the top bar |
+| `--rubylode-progress-meter-width` | `7em` | the small progress bar beside a stage or section name |
 | `--rubylode-progress-tile-number-size` | `1.6em` | the big numbers in the tiles |
 | `--rubylode-progress-percent-size` | `1.6em` | the percent beside the track |
 | `--rubylode-progress-small-text-size` | `0.85em` | pills, dates, labels |

@@ -1,5 +1,13 @@
-<ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: percent, finished: stages.count(&:done?), total: stages.size) %>">
-  <% stages.each do |stage| %>
-    <li class="rubylode-progress-track__dot rubylode-progress-track__dot--<%= stage.state %>"></li>
-  <% end %>
-</ol>
+<%# One continuous bar for the overall percent, with a marker at each stage boundary; the labels are optional. %>
+<div class="rubylode-progress-bar">
+  <div class="rubylode-progress-bar__rail"><div class="rubylode-progress-bar__fill" style="width: <%= percent %>%"></div></div>
+  <ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: percent, finished: stages.count(&:done?), total: stages.size) %>">
+    <% stages.each do |stage| %>
+      <li class="rubylode-progress-track__marker rubylode-progress-track__marker--<%= stage.state %>">
+        <% if local_assigns[:labels] %>
+          <span class="rubylode-progress-track__label"><%= stage.version.name %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</div>

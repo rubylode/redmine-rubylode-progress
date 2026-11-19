@@ -18,7 +18,12 @@
 module RubylodeProgress
   # Splits the checklist rows under headings. Grouping only changes the headings, never which items appear.
   module ChecklistSections
-    Section = Struct.new(:title, :items, :done_count, keyword_init: true)
+    Section = Struct.new(:title, :items, :done_count, keyword_init: true) do
+      # The closed share of the items, rounded.
+      def percent
+        items.empty? ? 0 : Rational(done_count * 100, items.size).round
+      end
+    end
 
     module_function
 

@@ -23,6 +23,8 @@ module RubylodeProgress
   # It does not name the viewer's role: visibility also depends on the person (own issues, private issues). The ids of
   # the closed steps are in it too, because updated_on is only stored to the second: closing one of several issues inside
   # the second of the last change would otherwise leave the state and the ids unchanged.
+  # The round marks, the author and the stage's own percent are in the fragment too: the in-progress set and the authors'
+  # names are digested into the key; the percent follows the closed steps, already in it.
   # The pencils and the plus sit in the cached fragment, so the key also carries what decides them: a digest of the ids of
   # the stage's issues this viewer may edit, what the plus does for this viewer (none, modal or full form, which holds
   # the add-issues right), and the version's status. A role that loses a right changes the key on the next view.
@@ -33,7 +35,19 @@ module RubylodeProgress
       ["rubylode_progress/stage", project.id, viewer.id, stage.version.id, precise(stage.version.updated_on), stage.number,
        stage.state, digest_of_ids(step_issues), digest_of_ids(stage.steps.select(&:done?).map(&:issue)),
        precise(step_issues.filter_map(&:updated_on).max), settings.cache_digest, I18n.locale,
-       stage.version.status, digest_of_ids(editable_step_issues), new_issue_mode]
+       stage.version.status, digest_of_ids(editable_step_issues), new_issue_mode,
+       digest_of_ids(in_progress_issues(step_issues, settings)), digest_of_authors(step_issues)]
+    end
+
+    # The half-filled marks: open issues in one of the settings' in-progress statuses. updated_on is stored to the
+    # second, so the set is in the key itself, like the closed steps.
+    def self.in_progress_issues(issues, settings)
+      issues.select { |issue| !issue.closed? && settings.in_progress_status_ids.include?(issue.status_id) }
+    end
+
+    # The authors' names are in the fragment but not on the issue, so a renamed person must change the key.
+    def self.digest_of_authors(issues)
+      Digest::SHA256.hexdigest(issues.map { |issue| "#{issue.id}:#{issue.author&.id}:#{issue.author&.name}" }.sort.join(","))
     end
 
     def self.digest_of_ids(issues)

@@ -1,0 +1,3 @@
+<% label = l("rubylode_progress.item.open_in_new_tab", number: issue.id) %>
+<%= link_to sprite_icon("link", label, icon_only: true), issue_path(issue), target: "_blank", rel: "noopener",
+            class: "icon-only rubylode-progress-new-tab", title: label, aria: { label: label } %>

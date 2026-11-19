@@ -27,6 +27,23 @@ module RubylodeProgressHelper
     date && format_date(date)
   end
 
+  # The round mark's state for one issue: done when closed, in progress when its status is one of the settings' in
+  # progress statuses, else open. It never reads the derived status, so the cached stage fragment stays valid.
+  def rubylode_progress_mark_state(issue, settings)
+    if issue.closed?
+      "done"
+    elsif settings.in_progress_status_ids.include?(issue.status_id)
+      "in-progress"
+    else
+      "open"
+    end
+  end
+
+  # The fold's percentage, as the percent rule counts a stage.
+  def rubylode_progress_stage_percent(stage)
+    RubylodeProgress::PercentRule.percent_of(stage)
+  end
+
   def rubylode_progress_stage_summary(stage)
     if stage.current?
       l("rubylode_progress.stage_summary.current", done: stage.done_step_count, total: stage.step_count)

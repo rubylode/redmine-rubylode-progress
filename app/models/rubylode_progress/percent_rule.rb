@@ -28,6 +28,11 @@ module RubylodeProgress
       (total * 100 / stages.size).round
     end
 
+    # One stage's own percent, rounded, counted the same way as its share of the page's percent.
+    def percent_of(stage)
+      (contribution(stage) * 100).round
+    end
+
     def contribution(stage)
       return 1r if stage.done?
       return(stage.current? ? 1/2r : 0r) if stage.empty?

@@ -12,6 +12,13 @@ en:
     stage_position: "Stage %{number} of %{total}"
     all_stages_done: "All %{total} stages done"
     track_label: "%{percent}% done, %{finished} of %{total} stages finished"
+    other_section: Other
+    stage_due: "Due %{date}"
+    percent_done: "%{percent}% done"
+    item:
+      open_in_new_tab: "Open #%{number} in a new tab"
+      frame_title: "Issue #%{number}: %{subject}"
+      author: "Author: %{name}"
     quick_edit:
       title: "Quick edit #%{number}: %{subject}"
       link_label: "Quick edit #%{number}"

@@ -1,0 +1,2 @@
+$('#ajax-modal').html('<%= escape_javascript(render(partial: "rubylode_progress/item_frame", formats: [:html], locals: { issue: @issue })) %>');
+showModal('ajax-modal', '960px', '<%= escape_javascript("##{@issue.id} #{@issue.subject}") %>');

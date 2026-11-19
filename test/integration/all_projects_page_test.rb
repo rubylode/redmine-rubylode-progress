@@ -47,7 +47,7 @@ class AllProjectsPageTest < Redmine::IntegrationTest
     assert_response :success
     assert_select ".rubylode-progress-compact-tracker" do
       assert_select "a[href=?]", "/projects/#{@project.identifier}/progress", text: "Tracked project"
-      assert_select ".rubylode-progress-track__dot", count: 2
+      assert_select ".rubylode-progress-track__marker", count: 2
       assert_select ".rubylode-progress-tracker__percent", text: "25%"
       assert_select ".rubylode-progress-compact-tracker__stage", text: "Alpha stage"
     end

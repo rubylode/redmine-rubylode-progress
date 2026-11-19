@@ -15,7 +15,7 @@
   <% end %>
 
   <div class="rubylode-progress-tracker__bar">
-    <%= render "track", stages: progress.stages, percent: progress.percent %>
+    <%= render "track", stages: progress.stages, percent: progress.percent, labels: true %>
     <span class="rubylode-progress-tracker__percent"><%= progress.percent %>%</span>
   </div>
 

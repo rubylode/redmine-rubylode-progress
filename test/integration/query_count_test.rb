@@ -24,15 +24,16 @@ class QueryCountTest < Redmine::IntegrationTest
 
   CLOSED_STATUS_ID = 5
 
-  # What a project page costs once the preloads are in, whatever the issue count: 48 statements, measured on 2026-11-19 (45 before the edit and add controls).
+  # What a project page costs once the preloads are in, whatever the issue count: 49 statements, measured on 2026-11-19 (45 before the edit and add controls, 48 before the author preload).
   # Redmine's own request: the session user and their preferences, the settings (read a few times each), the project, its
   # modules, memberships and roles, the menu's module and tracker checks (wiki, boards, repositories). The plugin's:
   # the project's setting row, the viewer's group ids, the project tree, the versions (own and shared), the issues, then
   # one preload each for statuses, priorities, assignees (users and groups), versions, relations, parents, custom values
   # and their fields, and one for the latest notes. The edit and add controls added three, none per issue: the project's
   # trackers, one query for required custom fields and one for workflow-required fields across all the trackers (the
-  # issues' projects load in one preload with the rest).
-  PROJECT_PAGE_QUERY_CEILING = 48
+  # issues' projects load in one preload with the rest). The owner's revisions added one, the issues' authors, again one
+  # preload for all of them.
+  PROJECT_PAGE_QUERY_CEILING = 49
 
   setup do
     @manager = User.find(2)
