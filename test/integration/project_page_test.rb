@@ -73,26 +73,28 @@ class ProjectPageTest < Redmine::IntegrationTest
     assert_select "ol.rubylode-progress-track[aria-label=?]", "50% done, 1 of 3 stages finished"
   end
 
-  test "the current stage is open with N of M steps done; the others are folded" do
+  test "the current stage is open with N of M closed; the others are folded" do
     build_three_stages
 
     open_progress_as("jsmith")
 
     assert_select "details.rubylode-progress-stage[open]", count: 1
-    assert_select "details.rubylode-progress-stage[open] .rubylode-progress-stage__summary", text: "1 of 2 steps done"
-    assert_select "details.rubylode-progress-stage:not([open]) .rubylode-progress-stage__summary", text: "1 step done"
-    assert_select "details.rubylode-progress-stage:not([open]) .rubylode-progress-stage__summary", text: "1 step planned"
+    assert_select "details.rubylode-progress-stage[open] .rubylode-progress-stage__summary", text: "1 of 2 closed"
+    assert_select "details.rubylode-progress-stage:not([open]) .rubylode-progress-stage__summary", text: "1 issue closed"
+    assert_select "details.rubylode-progress-stage:not([open]) .rubylode-progress-stage__summary", text: "1 issue planned"
   end
 
-  test "the four tiles carry the counts of the scope" do
+  test "the pills carry the counts of the scope, and no tiles are drawn" do
     build_three_stages
 
     open_progress_as("jsmith")
 
-    assert_select ".rubylode-progress-tile--done .rubylode-progress-tile__number", text: "2"
-    assert_select ".rubylode-progress-tile--next .rubylode-progress-tile__number", text: "1"
-    assert_select ".rubylode-progress-tile--needs-you .rubylode-progress-tile__number", text: "0"
-    assert_select ".rubylode-progress-tile--still-open .rubylode-progress-tile__number", text: "2"
+    assert_select ".rubylode-progress-tile", count: 0
+    assert_select "[data-filter-name=done] .rubylode-progress-filter__count", text: "2"
+    assert_select "[data-filter-name=next] .rubylode-progress-filter__count", text: "1"
+    assert_select "[data-filter-name=needs_you] .rubylode-progress-filter__count", text: "0"
+    assert_select "[data-filter-name=open] .rubylode-progress-filter__count", text: "2"
+    assert_select "[data-filter-name=all] .rubylode-progress-filter__count", text: "4"
   end
 
   test "a project without counted versions says there is nothing to track yet and shows no track" do
@@ -102,19 +104,26 @@ class ProjectPageTest < Redmine::IntegrationTest
     assert_select "ol.rubylode-progress-track", count: 0
   end
 
-  test "the item date is the due date, else the closed date for a done item" do
-    version = Version.generate!(project: @project, effective_date: Date.new(2026, 2, 15))
-    open_issue = Issue.generate!(project: @project, fixed_version: version, author: @manager, due_date: Date.new(2026, 3, 5))
-    done_issue = Issue.generate!(project: @project, fixed_version: version, author: @manager, status_id: CLOSED_STATUS_ID)
-    done_issue.update_column(:closed_on, Time.utc(2026, 2, 20, 12))
+  test "the row date is the plain due date, a weekday and days when within a week, or Overdue with the days" do
+    today = User.current.today
+    version = Version.generate!(project: @project, effective_date: today + 90)
+    far = Issue.generate!(project: @project, fixed_version: version, author: @manager, due_date: today + 30)
+    soon = Issue.generate!(project: @project, fixed_version: version, author: @manager, due_date: today + 3)
+    late = Issue.generate!(project: @project, fixed_version: version, author: @manager, due_date: today - 45)
+    inherited = Issue.generate!(project: @project, fixed_version: Version.generate!(project: @project, effective_date: today - 10),
+                                author: @manager)
+    undated = Issue.generate!(project: @project, fixed_version: Version.generate!(project: @project), author: @manager)
 
     open_progress_as("jsmith")
 
-    assert_select "#rubylode-progress-item-#{open_issue.id} .rubylode-progress-row__date", text: "03/05/2026"
-    assert_select "#rubylode-progress-item-#{done_issue.id}", count: 0
+    assert_select "#rubylode-progress-item-#{far.id} .rubylode-progress-row__date", text: format_date_for_test(today + 30)
+    assert_select "#rubylode-progress-item-#{soon.id} .rubylode-progress-row__date--soon", text: "#{(today + 3).strftime("%a %m/%d")}, 3d"
+    assert_select "#rubylode-progress-item-#{late.id} .rubylode-progress-row__date--overdue", text: "Overdue 45d"
+    assert_select "#rubylode-progress-item-#{inherited.id} .rubylode-progress-row__date--overdue", text: "Overdue 10d"
+    assert_select "#rubylode-progress-item-#{undated.id} .rubylode-progress-row__date", text: "-"
   end
 
-  test "the item date is the closed date for a done item" do
+  test "a done issue shows Closed and its date" do
     version = Version.generate!(project: @project, effective_date: Date.new(2026, 2, 15))
     done_issue = Issue.generate!(project: @project, fixed_version: version, author: @manager, status_id: CLOSED_STATUS_ID)
     done_issue.update_column(:closed_on, Time.utc(2026, 3, 5, 12))
@@ -123,7 +132,9 @@ class ProjectPageTest < Redmine::IntegrationTest
     get "#{progress_path}?filter=all"
     assert_response :success
 
-    assert_select "#rubylode-progress-item-#{done_issue.id} .rubylode-progress-row__date", text: "03/05/2026"
+    assert_select "#rubylode-progress-item-#{done_issue.id} .rubylode-progress-row__date", text: "Closed 03/05"
+    get "#{progress_path}?filter=open"
+    assert_select "#rubylode-progress-item-#{done_issue.id}", count: 0
   end
 
   test "the open issues of a closed version still show under Open" do
@@ -136,7 +147,7 @@ class ProjectPageTest < Redmine::IntegrationTest
     assert_select "#rubylode-progress-item-#{left_behind.id}"
   end
 
-  test "an issue assigned to a group the viewer is in shows as Needs you and counts in the tile" do
+  test "an issue assigned to a group the viewer is in shows as Needs you and counts on the pill" do
     version = Version.generate!(project: @project, effective_date: Date.new(2026, 2, 15))
     group = Group.generate!
     group.users << @developer
@@ -148,7 +159,7 @@ class ProjectPageTest < Redmine::IntegrationTest
     open_progress_as("dlopper")
 
     assert_select "#rubylode-progress-item-#{issue.id} .rubylode-progress-pill", text: "Needs you"
-    assert_select ".rubylode-progress-tile--needs-you .rubylode-progress-tile__number", text: "1"
+    assert_select "[data-filter-name=needs_you] .rubylode-progress-filter__count", text: "1"
   end
 
   test "a private note is never the item note for a viewer without View private notes" do
@@ -185,5 +196,9 @@ class ProjectPageTest < Redmine::IntegrationTest
       assert_select "#rubylode-progress-item-#{issue.id}"
       assert_select "#rubylode-progress-item-#{issue.id} .rubylode-progress-row__note", count: 0
     end
+  end
+
+  def format_date_for_test(date)
+    ApplicationController.new.helpers.format_date(date)
   end
 end

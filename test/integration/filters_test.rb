@@ -65,7 +65,7 @@ class FiltersTest < Redmine::IntegrationTest
     assert_select ".rubylode-progress-row", count: 1
     assert_select ".rubylode-progress-row", text: /Finished thing/
     assert_select "[data-filter-name=done][aria-pressed=true]"
-    assert_select "[aria-pressed=true]", count: 1
+    assert_select ".rubylode-progress-filter[aria-pressed=true]", count: 1
   end
 
   test "an unknown filter in the address shows Open" do

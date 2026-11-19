@@ -1,0 +1,11 @@
+<%# The button in the checklist heading: the same new-issue address as the plus on the stage, for the current stage. %>
+<% title = l("rubylode_progress.new_issue.link_label", version: version.name) %>
+<% if full_form %>
+  <%= link_to l("rubylode_progress.checklist.new_issue"),
+              new_project_issue_path(project, issue: { fixed_version_id: version.id }, back_url: project_rubylode_progress_path(project)),
+              class: "rubylode-progress-new-issue-button", title: title %>
+<% else %>
+  <%= link_to l("rubylode_progress.checklist.new_issue"),
+              project_rubylode_progress_new_issue_path(project, version_id: version.id, filter: filter),
+              remote: true, class: "rubylode-progress-new-issue-button", title: title %>
+<% end %>

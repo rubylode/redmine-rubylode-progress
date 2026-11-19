@@ -28,24 +28,96 @@ en:
       link_label: "New issue in %{version}"
     stage_summary:
       done:
-        one: "%{count} step done"
-        other: "%{count} steps done"
+        one: "%{count} issue closed"
+        other: "%{count} issues closed"
       upcoming:
-        one: "%{count} step planned"
-        other: "%{count} steps planned"
-      current: "%{done} of %{total} steps done"
-      partial: "%{done} of %{total} steps done, %{left} left"
+        one: "%{count} issue planned"
+        other: "%{count} issues planned"
+      current: "%{done} of %{total} closed"
+      partial: "%{done} of %{total} closed, %{left} left"
+    stage_state:
+      done: Done
+      partial: Behind
+      current: Current
+      upcoming: Upcoming
+    row_more: "More actions for #%{number}"
+    show_closed: "Show %{count} closed"
+    blocking:
+      one: "Blocking: %{title} #%{id}"
+      other: "%{count} open issues"
+    closed_of_total: "%{closed} of %{total} issues closed"
+    days:
+      one: "%{count} day"
+      other: "%{count} days"
+    notices:
+      behind: "%{stage} is %{days} overdue: %{open}"
+      behind_more: "%{stage} is %{days} overdue: %{open}, and %{count} more"
+      due_soon: "%{stage}: %{open}, %{days} left"
+      due_today: "%{stage}: %{open}, due today"
+      open_issues:
+        one: "%{count} open issue"
+        other: "%{count} open issues"
+      open_count: "%{count} open"
+    track_dates:
+      done: "Done %{date}"
+      done_without_date: Done
+      overdue: "Overdue, due %{date}"
+      due_in: "Due %{date}, %{days}"
+      due_today: "Due %{date}, today"
+      due: "Due %{date}"
+    row_dates:
+      overdue: "Overdue %{days}d"
+      due_soon: "%{date}, %{days}d"
+      closed: "Closed %{date}"
+      none: "-"
     filters:
       label: Checklist filter
       open: Open
       needs_you: Needs you
+      overdue: Overdue
+      next: Next up
       done: Done
       all: All
-    tiles:
-      done: Done
-      next: Next up
-      needs_you: Needs you
-      still_open: Still open
+    checklist:
+      title:
+        open: Open work
+        needs_you: Needs you
+        overdue: Overdue
+        next: Next up
+        done: Done
+        all: All issues
+      count:
+        one: "%{count} issue"
+        other: "%{count} issues"
+      by: "by %{grouping}"
+      section_tally: "%{done} of %{total} closed"
+      issue_query: Open as issue query
+      new_issue: New issue
+      empty:
+        needs_you: Nothing is waiting on you
+        other: No issues match this filter
+    group:
+      label: Group by
+      select_label: Group the checklist by
+      apply: Apply
+      version: Version
+      category: Category
+      parent: Parent issue
+      project_default: project default
+      just_for_you: "just for you, project default: %{grouping}"
+    rules:
+      summary: How statuses are decided
+      intro: "The first rule that matches decides, in this order."
+      done: Closed.
+      needs_you: Assigned to you, or to a group you are in.
+      waiting: Blocked by an open issue, or in a waiting status
+      waiting_statuses: "(%{names})"
+      next: In an in-progress status, or one of the first %{count} other open issues of the current stage by priority, due date and number
+      next_statuses: "In progress: %{names}."
+      to_do: Everything else.
+      no_statuses: none set
+      half_filled_note: The half-filled circle means an in-progress status.
+      change_settings: Change in project settings
     status:
       done: Done
       needs_you: Needs you

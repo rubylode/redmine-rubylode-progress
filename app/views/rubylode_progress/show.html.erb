@@ -9,13 +9,13 @@
   <% if @progress.stages.empty? %>
     <p class="rubylode-progress-empty"><%= l("rubylode_progress.nothing_to_track") %></p>
   <% else %>
-    <%= render "tracker_panel", progress: @progress %>
-    <%= render "tiles", tally: @tally %>
-    <div data-controller="rubylode-progress-filters">
-      <%= render "filters", project: @project, current_filter: @filter %>
-      <div data-rubylode-progress-filters-target="checklist">
-        <%= render "checklist", sections: @sections, section_percents: @section_percents, item_notes: @item_notes, project: @project,
-                                    progress: @progress, filter: @filter %>
+    <%= render "tracker_panel", progress: @progress, today: @today %>
+    <div class="rubylode-progress-columns">
+      <%= render "stage_list", progress: @progress, project: @project %>
+      <div class="rubylode-progress-checklist-column" data-controller="rubylode-progress-filters">
+        <div data-rubylode-progress-filters-target="checklist">
+          <%= render partial: "checklist", locals: checklist_locals %>
+        </div>
       </div>
     </div>
   <% end %>

@@ -1,19 +1,47 @@
+<%# The whole panel is what a filter or grouping choice swaps in, so the heading, the pills and the counts stay in step. %>
+<% current_stage = progress.current_stage %>
+<% new_issue_mode = current_stage ? progress.new_issue_mode_for(current_stage.version) : :none %>
 <section class="rubylode-progress-checklist">
+  <div class="rubylode-progress-checklist__heading">
+    <div class="rubylode-progress-checklist__titles">
+      <h3 class="rubylode-progress-checklist__title"><%= l("rubylode_progress.checklist.title.#{filter}") %></h3>
+      <span class="rubylode-progress-checklist__count"><%= l("rubylode_progress.checklist.count", count: shown_count) %></span>
+      <span class="rubylode-progress-checklist__by"><%= l("rubylode_progress.checklist.by", grouping: l("rubylode_progress.group.#{grouping}").downcase) %></span>
+    </div>
+    <div class="rubylode-progress-checklist__actions">
+      <%= link_to l("rubylode_progress.checklist.issue_query"), rubylode_progress_issue_query_path(project, filter, progress.stages),
+                  class: "rubylode-progress-issue-query" %>
+      <% unless new_issue_mode == :none %>
+        <%= render "new_issue_button", project: project, version: current_stage.version, full_form: new_issue_mode == :full_form, filter: filter %>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render "filters", project: project, current_filter: filter, counts: counts, grouping: grouping, default_grouping: default_grouping %>
+
+  <div class="rubylode-progress-checklist__controls">
+    <%= render "group_by", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping %>
+    <%= render "status_rules", progress: progress, project: project %>
+  </div>
+
+  <% if sections.empty? %>
+    <p class="rubylode-progress-checklist__empty"><%= l("rubylode_progress.checklist.empty.#{filter == "needs_you" ? "needs_you" : "other"}") %></p>
+  <% end %>
   <% sections.each do |section| %>
     <details class="rubylode-progress-section" open>
       <summary class="rubylode-progress-section__summary">
         <span class="rubylode-progress-chevron" aria-hidden="true"></span>
         <h3 class="rubylode-progress-section__title">
           <%= section.title || l("rubylode_progress.other_section") %>
-          <span class="rubylode-progress-section__tally"><%= section.done_count %>/<%= section.items.size %></span>
+          <span class="rubylode-progress-section__tally"><%= l("rubylode_progress.checklist.section_tally", done: section.total_done_count, total: section.total_count) %></span>
         </h3>
-        <%= render "meter", percent: section_percents.fetch(section.title, section.percent) %>
+        <%= render "meter", percent: section.percent %>
       </summary>
       <ul class="rubylode-progress-rows">
         <% section.items.each do |item| %>
           <%= render "checklist_row", item: item, note: item_notes[item.issue.id],
                                        project: project, editable_issue_ids: progress.editable_issue_ids, filter: filter,
-                                       settings: progress.settings %>
+                                       settings: progress.settings, today: today %>
         <% end %>
       </ul>
     </details>

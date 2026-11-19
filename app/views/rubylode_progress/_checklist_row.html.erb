@@ -1,15 +1,23 @@
 <% issue = item.issue %>
+<% date_kind, date_text = rubylode_progress_row_date(item, today) %>
 <li class="rubylode-progress-row rubylode-progress-row--<%= rubylode_progress_mark_state(issue, settings) %> rubylode-progress-row--<%= item.status.to_s.dasherize %>" id="rubylode-progress-item-<%= issue.id %>">
   <span class="rubylode-progress-row__mark" aria-hidden="true"></span>
-  <span class="rubylode-progress-row__title"><%= render "item_title_link", project: project, issue: issue %></span>
-  <% if issue.author %><span class="rubylode-progress-row__author"><%= issue.author.name %></span><% end %>
-  <span class="rubylode-progress-pill rubylode-progress-pill--<%= item.status.to_s.dasherize %>"><%= rubylode_progress_status_label(item.status) %></span>
-  <% if editable_issue_ids.include?(issue.id) %>
-    <%= render "quick_edit_link", project: project, issue: issue, filter: filter %>
-  <% end %>
-  <%= render "new_tab_link", issue: issue %>
+  <div class="rubylode-progress-row__main">
+    <span class="rubylode-progress-row__title"><%= render "item_title_link", project: project, issue: issue %></span>
+    <% if issue.author %><span class="rubylode-progress-row__author"><%= issue.author.name %></span><% end %>
+    <% if note.present? %><p class="rubylode-progress-row__note"><%= note %></p><% end %>
+  </div>
+  <%# Open on a wide screen; the controller folds it on a phone, where the button opens it again. %>
+  <details class="rubylode-progress-more" open>
+    <summary class="rubylode-progress-more__button" aria-label="<%= l("rubylode_progress.row_more", number: issue.id) %>"><span aria-hidden="true">&hellip;</span></summary>
+    <span class="rubylode-progress-hover-actions rubylode-progress-more__links">
+      <% if editable_issue_ids.include?(issue.id) %>
+        <%= render "quick_edit_link", project: project, issue: issue, filter: filter %>
+      <% end %>
+      <%= render "new_tab_link", issue: issue %>
+    </span>
+  </details>
   <%= link_to "##{issue.id}", issue_path(issue), class: "rubylode-progress-row__number" %>
-  <% date = rubylode_progress_item_date(item) %>
-  <% if date %><span class="rubylode-progress-row__date"><%= date %></span><% end %>
-  <% if note.present? %><p class="rubylode-progress-row__note"><%= note %></p><% end %>
+  <span class="rubylode-progress-pill rubylode-progress-pill--<%= item.status.to_s.dasherize %>"><%= rubylode_progress_status_label(item.status) %></span>
+  <span class="rubylode-progress-row__date rubylode-progress-row__date--<%= date_kind %>"><%= date_text %></span>
 </li>

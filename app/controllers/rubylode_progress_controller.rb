@@ -20,9 +20,9 @@ class RubylodeProgressController < ApplicationController
   before_action :find_project, :authorize
   before_action :load_progress_and_filter, only: [:show, :checklist]
   before_action :load_progress_for_modal, only: [:quick_edit, :new_issue]
+  helper_method :checklist_locals
 
   def show
-    @tally = RubylodeProgress::Tally.from(@progress.items)
     load_checklist
   end
 
@@ -88,14 +88,19 @@ class RubylodeProgressController < ApplicationController
     @back_url = project_rubylode_progress_path(@project, filter: @filter)
   end
 
+  # Everything the checklist panel reads. The counts on the pills are taken over every issue, so they match the rows each
+  # filter would show whatever filter is chosen now.
   def checklist_locals
-    { sections: @sections, section_percents: @section_percents, item_notes: @item_notes, project: @project,
-      progress: @progress, filter: @filter }
+    { sections: @sections, item_notes: @item_notes, project: @project, progress: @progress, filter: @filter,
+      grouping: @grouping, default_grouping: @progress.settings.checklist_grouping, counts: @counts,
+      shown_count: @checklist_items.size, today: @today }
   end
 
   def load_progress_and_filter
     @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
     @filter = RubylodeProgress::ChecklistFilter.resolve(requested: params[:filter], remembered: remembered_filter)
+    @grouping = requested_grouping
+    @today = User.current.today
     remember_filter
   end
 
@@ -113,22 +118,22 @@ class RubylodeProgressController < ApplicationController
     preferences.save
   end
 
-  # Each section's closed share over all its items, so a filter that hides the closed ones does not empty the bar.
-  def section_percents
-    all_sections = if @checklist_items.size == @progress.items.size
-                     @sections
-                   else
-                     RubylodeProgress::ChecklistSections.group(@progress.items, by: @progress.settings.checklist_grouping,
-                                                                                viewer: User.current)
-                   end
-    all_sections.to_h { |section| [section.title, section.percent] }
+  # Only a known grouping is taken from the address; anything else falls back to the project's setting. It is not
+  # remembered: it lasts for the visit.
+  def requested_grouping
+    requested = params[:group].to_s
+    if RubylodeProgress::Settings::CHECKLIST_GROUPING_CHOICES.include?(requested)
+      requested
+    else
+      @progress.settings.checklist_grouping
+    end
   end
 
   def load_checklist
-    @checklist_items = RubylodeProgress::ChecklistFilter.apply(@filter, @progress.items)
-    @sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @progress.settings.checklist_grouping,
-                                                                  viewer: User.current)
-    @section_percents = section_percents
+    @counts = RubylodeProgress::ChecklistFilter.counts(@progress.items, today: @today)
+    @checklist_items = RubylodeProgress::ChecklistFilter.apply(@filter, @progress.items, today: @today)
+    @sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @grouping, viewer: User.current,
+                                                                            scope_items: @progress.items)
     @item_notes = RubylodeProgress::ItemNotes.for(@checklist_items.map(&:issue), viewer: User.current,
                                                   settings: @progress.settings)
   end

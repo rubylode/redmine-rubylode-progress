@@ -16,6 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 class RubylodeProgressAllProjectsController < ApplicationController
+  helper :rubylode_progress
   before_action :require_progress_project
 
   def index

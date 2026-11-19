@@ -60,11 +60,20 @@ class StylesheetTest < ActiveSupport::TestCase
   def assert_readable(tokens, label)
     pairs = [%w[text-color surface], %w[muted-text-color surface], %w[surface accent-color]]
     pairs += STATUSES.map { |status| ["#{status}-color", "#{status}-background"] }
+    pairs << %w[behind-color behind-background]
     pairs.each do |foreground, background|
       foreground_hex = tokens.fetch("--rubylode-progress-#{foreground}")
       background_hex = tokens.fetch("--rubylode-progress-#{background}")
       ratio = contrast_ratio(foreground_hex, background_hex)
       assert_operator ratio, :>=, 4.5, "#{label}: #{foreground} on #{background} is #{ratio.round(2)}:1"
+    end
+  end
+
+  # The marks and the filled line carry meaning, so they need 3:1 against the surface, in either block.
+  def assert_marks_visible(tokens, label)
+    %w[done-color behind-color accent-color muted-text-color].each do |name|
+      ratio = contrast_ratio(tokens.fetch("--rubylode-progress-#{name}"), tokens.fetch("--rubylode-progress-surface"))
+      assert_operator ratio, :>=, 3.0, "#{label}: #{name} on the surface is #{ratio.round(2)}:1"
     end
   end
 
@@ -105,11 +114,61 @@ class StylesheetTest < ActiveSupport::TestCase
     end
   end
 
-  test "phone width puts the tiles two by two and stacks the panel" do
+  test "marks and the filled line reach 3:1 on the surface, in both blocks" do
+    assert_marks_visible(light_tokens, "light")
+    assert_marks_visible(dark_tokens, "dark")
+  end
+
+  test "the new theme properties have their light defaults" do
+    assert_equal "#b3261e", light_tokens.fetch("--rubylode-progress-behind-color")
+    assert_equal "#fdecea", light_tokens.fetch("--rubylode-progress-behind-background")
+    assert_equal "#d5dbe2", light_tokens.fetch("--rubylode-progress-track-empty-color")
+    assert_equal "4px", light_tokens.fetch("--rubylode-progress-rail-width")
+    assert_equal "1.6em", light_tokens.fetch("--rubylode-progress-stage-mark-size")
+    assert_equal "1.4em", light_tokens.fetch("--rubylode-progress-rail-mark-size")
+    assert_equal "none", light_tokens.fetch("--rubylode-progress-column-width")
+  end
+
+  test "the layout classes of the design review are styled: marks, rail, tracker, pills, rows" do
+    selectors = rules.flat_map { |selector_text, _| selector_text.split(",").map(&:strip) }.join(" ")
+
+    %w[.rubylode-progress-stage-mark--done .rubylode-progress-stage-mark--partial .rubylode-progress-stage-mark--current
+       .rubylode-progress-track__segment .rubylode-progress-stage-item::after .rubylode-progress-stage-item:first-child::before
+       .rubylode-progress-notice--behind .rubylode-progress-notice--due-soon .rubylode-progress-filter--behind
+       .rubylode-progress-filter--empty .rubylode-progress-group__button .rubylode-progress-rules .rubylode-progress-closed-fold
+       .rubylode-progress-row__date--overdue .rubylode-progress-hover-actions .rubylode-progress-columns].each do |name|
+      assert_includes selectors, name
+    end
+  end
+
+  test "the rail line and the tracker segment are gradients of the inline share and colour properties" do
+    gradients = rules.select { |selector, _| selector.include?("stage-item::after") || selector.include?("track__segment") }.map(&:last).join
+
+    assert_match(/linear-gradient\(180deg, var\(--rubylode-progress-colour-into-next\) var\(--rubylode-progress-share-into-next\)/m, gradients)
+    assert_match(/linear-gradient\(90deg, var\(--rubylode-progress-segment-color\) var\(--rubylode-progress-share\)/m, gradients)
+  end
+
+  test "the stage list and the checklist are a wrapping flex row with the sizes of the plan, and no sticky or 100vh" do
+    assert_match(/\.rubylode-progress-columns\s*\{[^}]*flex-wrap: wrap/, comment_free_stylesheet)
+    assert_match(/\.rubylode-progress-stage-list\s*\{[^}]*flex: 1 1 34em;[^}]*min-width: 0/, comment_free_stylesheet)
+    assert_match(/\.rubylode-progress-checklist-column\s*\{[^}]*flex: 1 1 30em;[^}]*min-width: 0/, comment_free_stylesheet)
+    assert_no_match(/position: sticky|100vh/, comment_free_stylesheet)
+  end
+
+  test "the pencil and the new-tab link show on hover and focus, always on touch screens" do
+    assert_match(/\.rubylode-progress-row:focus-within \.rubylode-progress-hover-actions/, comment_free_stylesheet)
+    assert_match(/@media \(hover: none\)\s*\{\s*\.rubylode-progress-hover-actions\s*\{\s*opacity: 1/, comment_free_stylesheet)
+  end
+
+  test "phone width stacks the columns, scrolls the pills sideways, swaps the group buttons for a select and sizes touch targets" do
     phone_block = comment_free_stylesheet[/@media \(max-width: 640px\)\s*\{(.*)\}\s*\z/m, 1]
 
-    assert_match(/\.rubylode-progress-tiles\s*\{[^}]*repeat\(2, 1fr\)/, phone_block)
-    assert_match(/\.rubylode-progress-tracker__bar\s*\{[^}]*flex-direction: column/, phone_block)
+    assert_match(/\.rubylode-progress-columns\s*\{[^}]*flex-direction: column/, phone_block)
+    assert_match(/\.rubylode-progress-stage-list\s*\{[^}]*order: 2/, phone_block)
+    assert_match(/\.rubylode-progress-filters\s*\{[^}]*overflow-x: auto/, phone_block)
+    assert_match(/\.rubylode-progress-group__buttons\s*\{[^}]*display: none/, phone_block)
+    assert_match(/\.rubylode-progress-group__select-form\s*\{[^}]*display: block/, phone_block)
+    assert_match(/\.rubylode-progress-more__button\s*\{[^}]*min-height: 44px/, phone_block)
   end
 
   test "a focus-visible rule covers links, the filters and summary" do

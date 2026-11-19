@@ -1,0 +1,31 @@
+<div class="rubylode-progress-group">
+  <span class="rubylode-progress-group__label" id="rubylode-progress-group-label"><%= l("rubylode_progress.group.label") %></span>
+  <span class="rubylode-progress-group__buttons" role="group" aria-labelledby="rubylode-progress-group-label">
+    <% RubylodeProgress::Settings::CHECKLIST_GROUPING_CHOICES.each do |choice| %>
+      <% choice_params = rubylode_progress_checklist_params(filter: filter, grouping: choice, default_grouping: default_grouping) %>
+      <%= link_to l("rubylode_progress.group.#{choice}"), project_rubylode_progress_path(project, **choice_params),
+                  class: "rubylode-progress-group__button",
+                  aria: { pressed: (choice == grouping).to_s },
+                  data: { group_name: choice,
+                          checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, only_path: true, **choice_params),
+                          action: "click->rubylode-progress-filters#choose" } %>
+    <% end %>
+  </span>
+  <%# On a phone the three buttons give way to a select. Without a script its form still works through the button. %>
+  <%= form_tag project_rubylode_progress_path(project), method: :get, class: "rubylode-progress-group__select-form",
+                data: { checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, only_path: true, filter: filter),
+                        action: "change->rubylode-progress-filters#chooseGroup" } do %>
+    <%= hidden_field_tag :filter, filter, id: nil %>
+    <%= select_tag :group, options_for_select(RubylodeProgress::Settings::CHECKLIST_GROUPING_CHOICES.map { |choice| [l("rubylode_progress.group.#{choice}"), choice] }, grouping),
+                   class: "rubylode-progress-group__select", id: "rubylode-progress-group-select",
+                   aria: { label: l("rubylode_progress.group.select_label") } %>
+    <noscript><%= submit_tag l("rubylode_progress.group.apply"), name: nil %></noscript>
+  <% end %>
+  <span class="rubylode-progress-group__note">
+    <% if grouping == default_grouping %>
+      <%= l("rubylode_progress.group.project_default") %>
+    <% else %>
+      <%= l("rubylode_progress.group.just_for_you", grouping: l("rubylode_progress.group.#{default_grouping}")) %>
+    <% end %>
+  </span>
+</div>

@@ -50,7 +50,7 @@ module RubylodeProgress
       ["Raise the first tower", :closed, "Structure"], ["Raise the second tower", :closed, "Structure"],
       ["Hang the main cables", :closed, "Structure"], ["Fit the cable clamps", :closed, "Structure"],
       ["Inspect the welds", :closed, "Safety"], ["Paint the primer coat", :closed, "Surface"],
-      ["Repair the damaged railing post", "New", "Safety", { assignee: "alan.turing", note: "Waiting on the new part." }]
+      ["Repair the damaged railing post", "New", "Safety", { assignee: "alan.turing", due_in: -12, note: "Waiting on the new part." }]
     ].freeze
     DECKING = [
       ["Lay the first deck panels", :closed, "Structure"], ["Lay the second deck panels", :closed, "Structure"],

@@ -1,12 +1,16 @@
 <nav class="rubylode-progress-filters" aria-label="<%= l("rubylode_progress.filters.label") %>">
   <% RubylodeProgress::ChecklistFilter::NAMES.each do |name| %>
-    <%= link_to l("rubylode_progress.filters.#{name}"),
-                project_rubylode_progress_path(project, filter: name),
-                class: "rubylode-progress-filter",
+    <% count = counts.fetch(name) %>
+    <% pill_params = rubylode_progress_checklist_params(filter: name, grouping: grouping, default_grouping: default_grouping) %>
+    <%= link_to project_rubylode_progress_path(project, **pill_params),
+                class: ["rubylode-progress-filter", ("rubylode-progress-filter--empty" if count.zero?),
+                        ("rubylode-progress-filter--behind" if name == "overdue" && count.positive?)].compact.join(" "),
                 aria: { pressed: (name == current_filter).to_s },
                 data: { filter_name: name,
-                        checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, filter: name, only_path: true),
-                        "rubylode-progress-filters-target": "filter",
-                        action: "click->rubylode-progress-filters#choose" } %>
+                        checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, only_path: true, **pill_params),
+                        action: "click->rubylode-progress-filters#choose" } do %>
+      <span class="rubylode-progress-filter__count"><%= count %></span>
+      <span class="rubylode-progress-filter__label"><%= l("rubylode_progress.filters.#{name}") %></span>
+    <% end %>
   <% end %>
 </nav>

@@ -47,8 +47,8 @@ class AllProjectsPageTest < Redmine::IntegrationTest
     assert_response :success
     assert_select ".rubylode-progress-compact-tracker" do
       assert_select "a[href=?]", "/projects/#{@project.identifier}/progress", text: "Tracked project"
-      assert_select ".rubylode-progress-track__marker", count: 2
-      assert_select ".rubylode-progress-tracker__percent", text: "25%"
+      assert_select ".rubylode-progress-track__stage", count: 2
+      assert_select ".rubylode-progress-compact-tracker__percent", text: "25%"
       assert_select ".rubylode-progress-compact-tracker__stage", text: "Alpha stage"
     end
     assert_select "#top-menu a", text: "Progress"
@@ -73,12 +73,12 @@ class AllProjectsPageTest < Redmine::IntegrationTest
 
     log_user("dlopper", "foo")
     get "/progress"
-    assert_select ".rubylode-progress-tracker__percent", text: "100%"
+    assert_select ".rubylode-progress-compact-tracker__percent", text: "100%"
 
     post "/logout"
     log_user("jsmith", "jsmith")
     get "/progress"
-    assert_select ".rubylode-progress-tracker__percent", text: "50%"
+    assert_select ".rubylode-progress-compact-tracker__percent", text: "50%"
   end
 
   test "someone with no such project gets 403 and sees no Progress link in the top menu" do

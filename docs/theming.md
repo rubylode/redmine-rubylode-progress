@@ -11,44 +11,54 @@ Colors:
 
 | Property | Default | Used for |
 |---|---|---|
-| `--rubylode-progress-surface` | `#ffffff` | the panels: tracker, tiles, checklist, compact trackers |
+| `--rubylode-progress-surface` | `#ffffff` | the panels: tracker, stage list, checklist, compact trackers |
 | `--rubylode-progress-text-color` | `#1f2933` | panel text |
-| `--rubylode-progress-muted-text-color` | `#5d6672` | dates, notes, assignees, tile labels, the tally |
+| `--rubylode-progress-muted-text-color` | `#5d6672` | dates, notes, assignees, the tally, the ring of an upcoming stage |
 | `--rubylode-progress-line-color` | `#d9dee5` | panel borders and row dividers |
-| `--rubylode-progress-accent-color` | `#1f5f8b` | the stage dots and the pressed filter |
+| `--rubylode-progress-accent-color` | `#1f5f8b` | the current stage's mark and line, the pressed pill and group button |
 | `--rubylode-progress-focus-color` | `#1f5f8b` | the keyboard focus outline |
-| `--rubylode-progress-done-color` | `#1b6e34` | Done: mark, pill text, tile number |
+| `--rubylode-progress-done-color` | `#1b6e34` | Done: marks, the line of a finished stage, pill text |
 | `--rubylode-progress-done-background` | `#e3f4e7` | the Done pill |
-| `--rubylode-progress-next-color` | `#1a5fa0` | Next: mark, pill text, tile number |
+| `--rubylode-progress-next-color` | `#1a5fa0` | Next: mark, pill text |
 | `--rubylode-progress-next-background` | `#e4eefa` | the Next pill |
-| `--rubylode-progress-needs-you-color` | `#8a5200` | Needs you: mark, pill text, tile number |
-| `--rubylode-progress-needs-you-background` | `#fdf0d5` | the Needs you pill |
+| `--rubylode-progress-needs-you-color` | `#8a5200` | Needs you: mark, pill text; also Due soon (the notice and the dates within a week) |
+| `--rubylode-progress-needs-you-background` | `#fdf0d5` | the Needs you pill and the Due soon notice |
 | `--rubylode-progress-waiting-color` | `#4a5360` | Waiting: mark and pill text |
 | `--rubylode-progress-waiting-background` | `#eceff3` | the Waiting pill |
 | `--rubylode-progress-to-do-color` | `#4a5360` | To do: mark and pill text |
 | `--rubylode-progress-to-do-background` | `#f4f5f7` | the To do pill |
+| `--rubylode-progress-behind-color` | `#b3261e` | Behind: the mark and line of a stage left behind with open issues, overdue dates, the Behind notice, the Overdue pill |
+| `--rubylode-progress-behind-background` | `#fdecea` | the Behind notice and the Overdue pill |
+| `--rubylode-progress-track-empty-color` | `#d5dbe2` | the unfilled part of the tracker and the rail (decoration: the filled part and the marks carry the meaning) |
 
 Sizes and type:
 
 | Property | Default | Used for |
 |---|---|---|
-| `--rubylode-progress-column-width` | `1100px` | widest the centred column grows |
+| `--rubylode-progress-column-width` | `none` | widest the page grows; `none` fills Redmine's content area, a theme can set a width such as `1100px` |
 | `--rubylode-progress-radius` | `8px` | panel corners |
 | `--rubylode-progress-panel-padding` | `1em 1.2em` | inside a panel |
-| `--rubylode-progress-gap` | `1em` | space between panels and tiles |
+| `--rubylode-progress-gap` | `1em` | space between panels |
 | `--rubylode-progress-space-small` | `0.4em` | small spacing |
 | `--rubylode-progress-mark-size` | `1em` | the status marks |
-| `--rubylode-progress-track-dot-size` | `1em` | the stage markers on the top bar |
-| `--rubylode-progress-bar-height` | `0.6em` | the thickness of the top bar |
+| `--rubylode-progress-stage-mark-size` | `1.6em` | the stage marks on the top tracker |
+| `--rubylode-progress-rail-mark-size` | `1.4em` | the stage marks on the vertical rail |
+| `--rubylode-progress-rail-width` | `4px` | the thickness of the tracker line and of the rail |
+| `--rubylode-progress-bar-height` | `0.6em` | the thickness of the small progress bars |
 | `--rubylode-progress-meter-width` | `7em` | the small progress bar beside a stage or section name |
-| `--rubylode-progress-tile-number-size` | `1.6em` | the big numbers in the tiles |
-| `--rubylode-progress-percent-size` | `1.6em` | the percent beside the track |
+| `--rubylode-progress-percent-size` | `2.4em` | the big overall percent in the header |
 | `--rubylode-progress-small-text-size` | `0.85em` | pills, dates, labels |
-| `--rubylode-progress-monospace-font` | `ui-monospace, Menlo, monospace` | the percent, tile numbers, issue numbers |
+| `--rubylode-progress-monospace-font` | `ui-monospace, Menlo, monospace` | percents, counts, issue numbers, dates |
+
+The page also sets six properties inline, per stage, to draw the tracker and the rail. They are not theme properties and
+have no default; a theme has no reason to set them: `--rubylode-progress-share` and `--rubylode-progress-segment-color`
+(one segment of the top tracker), `--rubylode-progress-share-into-next` and `--rubylode-progress-colour-into-next` (the
+rail line below a stage, filled to the next stage's share), with `--rubylode-progress-share-into-self` and
+`--rubylode-progress-colour-into-self` for the short lead-in above the first stage.
 
 Each status also has its own mark shape (done a filled circle with a check, next a ring with a dot, needs you a ring,
-waiting a dashed ring, to do a plain ring) and prints its label, so colour is never the only signal. Text contrast is at
-least 4.5:1 for the defaults and for the dark block below.
+waiting a dashed ring, to do a plain ring; a stage mark is a tick when done, an exclamation mark when left behind, a ring with a dot when current, a plain ring when upcoming) and prints its label, so colour is never the only signal. Text contrast is at
+least 4.5:1 for the defaults and for the dark block below; the marks and the filled line reach 3:1.
 
 ## Dark theme
 
@@ -72,5 +82,8 @@ Paste this into a dark theme's stylesheet:
   --rubylode-progress-waiting-background: #262c34;
   --rubylode-progress-to-do-color: #b4bcc6;
   --rubylode-progress-to-do-background: #20252c;
+  --rubylode-progress-behind-color: #ff9b94;
+  --rubylode-progress-behind-background: #3d1a17;
+  --rubylode-progress-track-empty-color: #3a424d;
 }
 ```

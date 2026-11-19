@@ -16,15 +16,24 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 module RubylodeProgressHelper
+  # The colour a stage state draws its line and mark in, as a custom property.
+  STATE_COLOR_PROPERTIES = {
+    done: "--rubylode-progress-done-color", partial: "--rubylode-progress-behind-color",
+    current: "--rubylode-progress-accent-color", upcoming: "--rubylode-progress-track-empty-color"
+  }.freeze
+  DUE_SOON_DAYS = 7
+
   def rubylode_progress_status_label(status)
     l("rubylode_progress.status.#{status}")
   end
 
-  # The due date, else the day a done item was closed.
-  def rubylode_progress_item_date(item)
-    issue = item.issue
-    date = issue.due_date || (item.status == :done ? issue.closed_on : nil)
-    date && format_date(date)
+  # "11/24": a short date, for the lines under the marks and on the rows.
+  def rubylode_progress_short_date(date)
+    date && I18n.l(date.to_date, format: "%m/%d")
+  end
+
+  def rubylode_progress_days(count)
+    l("rubylode_progress.days", count: count)
   end
 
   # The round mark's state for one issue: done when closed, in progress when its status is one of the settings' in
@@ -55,5 +64,123 @@ module RubylodeProgressHelper
     else
       l("rubylode_progress.stage_summary.upcoming", count: stage.step_count)
     end
+  end
+
+  def rubylode_progress_stage_state_label(stage)
+    l("rubylode_progress.stage_state.#{stage.state}")
+  end
+
+  # The one line under a stage's mark in the top tracker, as [kind, text], or nil when there is nothing to say.
+  def rubylode_progress_stage_date_line(stage, today)
+    date = stage.version.effective_date
+    if stage.done?
+      closed_on = stage.steps.filter_map { |step| step.issue.closed_on }.max
+      return [:done, closed_on ? l("rubylode_progress.track_dates.done", date: rubylode_progress_short_date(closed_on)) : l("rubylode_progress.track_dates.done_without_date")]
+    end
+    return nil unless date
+
+    formatted = rubylode_progress_short_date(date)
+    days = RubylodeProgress::DueDate.days_until(date, today)
+    if days.negative? && (stage.partial? || stage.current?)
+      [:overdue, l("rubylode_progress.track_dates.overdue", date: formatted)]
+    elsif days.zero?
+      [:due, l("rubylode_progress.track_dates.due_today", date: formatted)]
+    elsif days.positive?
+      [:due, l("rubylode_progress.track_dates.due_in", date: formatted, days: rubylode_progress_days(days))]
+    else
+      [:due, l("rubylode_progress.track_dates.due", date: formatted)]
+    end
+  end
+
+  # The share a stage's segment and rail line are filled to: the percent rule's number for the stage.
+  def rubylode_progress_stage_share(stage)
+    rubylode_progress_stage_percent(stage)
+  end
+
+  # Inline properties for one segment of the top tracker.
+  def rubylode_progress_segment_style(stage)
+    "--rubylode-progress-share: #{rubylode_progress_stage_share(stage)}%; " \
+      "--rubylode-progress-segment-color: var(#{STATE_COLOR_PROPERTIES.fetch(stage.state)})"
+  end
+
+  # Inline properties for a stage's item on the rail. The line below a stage's mark runs into the next stage's mark, so
+  # it is filled to the next stage's share in the next stage's colour; the first stage also gets a short lead-in above
+  # its mark, filled to its own share. They sit on the uncached wrapper so the cached fragment never reads a neighbour.
+  def rubylode_progress_rail_style(stages, index)
+    parts = []
+    following = stages[index + 1]
+    if following
+      parts << "--rubylode-progress-share-into-next: #{rubylode_progress_stage_share(following)}%"
+      parts << "--rubylode-progress-colour-into-next: var(#{STATE_COLOR_PROPERTIES.fetch(following.state)})"
+    end
+    if index.zero?
+      parts << "--rubylode-progress-share-into-self: #{rubylode_progress_stage_share(stages[index])}%"
+      parts << "--rubylode-progress-colour-into-self: var(#{STATE_COLOR_PROPERTIES.fetch(stages[index].state)})"
+    end
+    parts.join("; ")
+  end
+
+  # The sentence of one notice in the tracker header.
+  def rubylode_progress_notice_text(notice)
+    open_text = if notice.kind == :behind
+                  l("rubylode_progress.notices.open_issues", count: notice.open_count)
+                else
+                  l("rubylode_progress.notices.open_count", count: notice.open_count)
+                end
+    if notice.kind == :behind
+      key = notice.more_count.positive? ? "behind_more" : "behind"
+      l("rubylode_progress.notices.#{key}", stage: notice.stage_name, days: rubylode_progress_days(notice.days),
+                                          open: open_text, count: notice.more_count)
+    elsif notice.days.zero?
+      l("rubylode_progress.notices.due_today", stage: notice.stage_name, open: open_text)
+    else
+      l("rubylode_progress.notices.due_soon", stage: notice.stage_name, open: open_text, days: rubylode_progress_days(notice.days))
+    end
+  end
+
+  # What a folded partial stage says under its name: its one open issue, or how many there are.
+  def rubylode_progress_blocking_text(stage)
+    open_steps = stage.steps.reject(&:done?)
+    return nil if open_steps.empty?
+
+    if open_steps.one?
+      issue = open_steps.first.issue
+      l("rubylode_progress.blocking", count: 1, title: issue.subject, id: issue.id)
+    else
+      l("rubylode_progress.blocking", count: open_steps.size)
+    end
+  end
+
+  # A row's date as [kind, text]: Closed for a done issue, then overdue, due within a week (with the weekday and the days
+  # left), the plain date, or a dash.
+  def rubylode_progress_row_date(item, today)
+    issue = item.issue
+    if item.status == :done
+      return [:none, l("rubylode_progress.row_dates.none")] unless issue.closed_on
+
+      return [:closed, l("rubylode_progress.row_dates.closed", date: rubylode_progress_short_date(issue.closed_on))]
+    end
+
+    due = RubylodeProgress::DueDate.for(issue)
+    return [:none, l("rubylode_progress.row_dates.none")] unless due
+
+    days = RubylodeProgress::DueDate.days_until(due, today)
+    if days.negative?
+      [:overdue, l("rubylode_progress.row_dates.overdue", days: -days)]
+    elsif days <= DUE_SOON_DAYS
+      [:soon, l("rubylode_progress.row_dates.due_soon", date: I18n.l(due.to_date, format: "%a %m/%d"), days: days)]
+    else
+      [:plain, format_date(due)]
+    end
+  end
+
+  # Where "Open as issue query" goes: Redmine's issue list, built from the project and the filter.
+  def rubylode_progress_issue_query_path(project, filter, stages)
+    project_issues_path(project, **RubylodeProgress::IssueQuery.parameters_for(filter, version_ids: stages.map { |stage| stage.version.id }))
+  end
+
+  # The checklist's own address with its filter and, only when it differs from the project's setting, the grouping.
+  def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:)
+    { filter: filter, group: (grouping == default_grouping ? nil : grouping) }.compact
   end
 end

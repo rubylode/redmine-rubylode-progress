@@ -1,13 +1,23 @@
-<%# One continuous bar for the overall percent, with a marker at each stage boundary; the labels are optional. %>
-<div class="rubylode-progress-bar">
-  <div class="rubylode-progress-bar__rail"><div class="rubylode-progress-bar__fill" style="width: <%= percent %>%"></div></div>
-  <ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: percent, finished: stages.count(&:done?), total: stages.size) %>">
-    <% stages.each do |stage| %>
-      <li class="rubylode-progress-track__marker rubylode-progress-track__marker--<%= stage.state %>">
-        <% if local_assigns[:labels] %>
-          <span class="rubylode-progress-track__label"><%= stage.version.name %></span>
-        <% end %>
-      </li>
-    <% end %>
-  </ol>
-</div>
+<%# The stage tracker: one segment per stage, each ending in its mark. The segment running into a mark is filled to that
+    stage's closed share, so the line is continuous. The marks are decoration; each label says the state in words. %>
+<ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: percent, finished: stages.count(&:done?), total: stages.size) %>">
+  <% stages.each do |stage| %>
+    <li class="rubylode-progress-track__stage rubylode-progress-track__stage--<%= stage.state %>" style="<%= rubylode_progress_segment_style(stage) %>">
+      <span class="rubylode-progress-track__line">
+        <span class="rubylode-progress-track__segment"></span>
+        <%= render "rubylode_progress/stage_mark", state: stage.state %>
+      </span>
+      <% if local_assigns[:labels] %>
+        <% date_line = rubylode_progress_stage_date_line(stage, today) %>
+        <span class="rubylode-progress-track__label">
+          <span class="rubylode-progress-track__name"><%= stage.version.name %></span>
+          <span class="rubylode-progress-track__percent"><%= rubylode_progress_stage_percent(stage) %>%</span>
+          <% if date_line %>
+            <span class="rubylode-progress-track__date rubylode-progress-track__date--<%= date_line.first %>"><%= date_line.last %></span>
+          <% end %>
+          <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_stage_state_label(stage) %></span>
+        </span>
+      <% end %>
+    </li>
+  <% end %>
+</ol>

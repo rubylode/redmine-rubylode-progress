@@ -1,0 +1,30 @@
+<%# The legend: the derived status rules in order, first match wins, each with its own pill. It reads the effective
+    settings of this project. %>
+<% legend = RubylodeProgress::StatusLegend.new(progress.settings) %>
+<% in_progress_names = legend.in_progress_names %>
+<% waiting_names = legend.waiting_names %>
+<details class="rubylode-progress-rules">
+  <summary class="rubylode-progress-rules__summary"><%= l("rubylode_progress.rules.summary") %></summary>
+  <p class="rubylode-progress-rules__intro"><%= l("rubylode_progress.rules.intro") %></p>
+  <ol class="rubylode-progress-rules__list">
+    <li><span class="rubylode-progress-pill rubylode-progress-pill--done"><%= rubylode_progress_status_label(:done) %></span> <%= l("rubylode_progress.rules.done") %></li>
+    <li><span class="rubylode-progress-pill rubylode-progress-pill--needs-you"><%= rubylode_progress_status_label(:needs_you) %></span> <%= l("rubylode_progress.rules.needs_you") %></li>
+    <li>
+      <span class="rubylode-progress-pill rubylode-progress-pill--waiting"><%= rubylode_progress_status_label(:waiting) %></span>
+      <%= l("rubylode_progress.rules.waiting") %>
+      <span class="rubylode-progress-rules__statuses"><%= l("rubylode_progress.rules.waiting_statuses", names: waiting_names.any? ? waiting_names.join(", ") : l("rubylode_progress.rules.no_statuses")) %></span>
+    </li>
+    <li>
+      <span class="rubylode-progress-pill rubylode-progress-pill--next"><%= rubylode_progress_status_label(:next) %></span>
+      <%= l("rubylode_progress.rules.next", count: legend.next_issue_limit) %>.
+      <span class="rubylode-progress-rules__statuses"><%= l("rubylode_progress.rules.next_statuses", names: in_progress_names.any? ? in_progress_names.join(", ") : l("rubylode_progress.rules.no_statuses")) %></span>
+    </li>
+    <li><span class="rubylode-progress-pill rubylode-progress-pill--to-do"><%= rubylode_progress_status_label(:to_do) %></span> <%= l("rubylode_progress.rules.to_do") %></li>
+  </ol>
+  <p class="rubylode-progress-rules__note"><%= l("rubylode_progress.rules.half_filled_note") %></p>
+  <% if User.current.allowed_to?(:edit_project, project) %>
+    <p class="rubylode-progress-rules__settings">
+      <%= link_to l("rubylode_progress.rules.change_settings"), settings_project_path(project, tab: "rubylode_progress") %>
+    </p>
+  <% end %>
+</details>

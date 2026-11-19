@@ -20,18 +20,22 @@
   --rubylode-progress-waiting-background: #eceff3;
   --rubylode-progress-to-do-color: #4a5360;
   --rubylode-progress-to-do-background: #f4f5f7;
+  --rubylode-progress-behind-color: #b3261e;
+  --rubylode-progress-behind-background: #fdecea;
+  --rubylode-progress-track-empty-color: #d5dbe2;
 
-  --rubylode-progress-column-width: 1100px;
+  --rubylode-progress-column-width: none;
   --rubylode-progress-radius: 8px;
   --rubylode-progress-panel-padding: 1em 1.2em;
   --rubylode-progress-gap: 1em;
   --rubylode-progress-space-small: 0.4em;
   --rubylode-progress-mark-size: 1em;
-  --rubylode-progress-track-dot-size: 1em;
+  --rubylode-progress-rail-width: 4px;
+  --rubylode-progress-stage-mark-size: 1.6em;
+  --rubylode-progress-rail-mark-size: 1.4em;
   --rubylode-progress-bar-height: 0.6em;
   --rubylode-progress-meter-width: 7em;
-  --rubylode-progress-tile-number-size: 1.6em;
-  --rubylode-progress-percent-size: 1.6em;
+  --rubylode-progress-percent-size: 2.4em;
   --rubylode-progress-small-text-size: 0.85em;
   --rubylode-progress-monospace-font: ui-monospace, Menlo, monospace;
 }
@@ -45,17 +49,35 @@
   gap: var(--rubylode-progress-gap);
 }
 
+.rubylode-progress-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
 .rubylode-progress-title__last-change,
 .rubylode-progress-stage__date,
+.rubylode-progress-stage__blocking,
 .rubylode-progress-step__assignee,
 .rubylode-progress-step__author,
 .rubylode-progress-row__author,
 .rubylode-progress-row__note,
 .rubylode-progress-row__date,
 .rubylode-progress-tracker__description,
+.rubylode-progress-tracker__closed,
 .rubylode-progress-section__tally,
+.rubylode-progress-checklist__count,
+.rubylode-progress-checklist__by,
 .rubylode-progress-compact-tracker__stage,
 .rubylode-progress-compact-tracker__empty,
+.rubylode-progress-checklist__empty,
+.rubylode-progress-group__note,
+.rubylode-progress-rules__note,
+.rubylode-progress-rules__statuses,
 .rubylode-progress-empty {
   color: var(--rubylode-progress-muted-text-color);
 }
@@ -67,7 +89,7 @@
 
 /* Panels set their own background and text, so a theme that restyles #content still sees a coherent panel. */
 .rubylode-progress-tracker,
-.rubylode-progress-tile,
+.rubylode-progress-stage-list,
 .rubylode-progress-checklist,
 .rubylode-progress-compact-tracker {
   box-sizing: border-box;
@@ -76,6 +98,24 @@
   border: 1px solid var(--rubylode-progress-line-color);
   border-radius: var(--rubylode-progress-radius);
   padding: var(--rubylode-progress-panel-padding);
+}
+
+/* The header: the tracker on the left, the overall figure and the notices on the right; they stack when narrow. */
+.rubylode-progress-tracker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-gap) 2em;
+  align-items: flex-start;
+}
+
+.rubylode-progress-tracker__main {
+  flex: 3 1 28em;
+  min-width: 0;
+}
+
+.rubylode-progress-tracker__summary {
+  flex: 1 1 14em;
+  min-width: 0;
 }
 
 .rubylode-progress-tracker__position {
@@ -94,112 +134,293 @@
   margin: 0 0 var(--rubylode-progress-space-small);
 }
 
-.rubylode-progress-tracker__bar {
+.rubylode-progress-tracker__percent {
+  margin: 0;
+  font-family: var(--rubylode-progress-monospace-font);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--rubylode-progress-percent-size);
+  line-height: 1.1;
+}
+
+.rubylode-progress-tracker__closed {
+  margin: 0 0 var(--rubylode-progress-space-small);
+}
+
+.rubylode-progress-notices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rubylode-progress-space-small);
+}
+
+.rubylode-progress-notice {
+  display: flex;
+  gap: 0.5em;
+  align-items: flex-start;
+  padding: 0.35em 0.6em;
+  border-radius: var(--rubylode-progress-radius);
+}
+
+.rubylode-progress-notice--behind {
+  color: var(--rubylode-progress-behind-color);
+  background: var(--rubylode-progress-behind-background);
+}
+
+.rubylode-progress-notice--due-soon {
+  color: var(--rubylode-progress-needs-you-color);
+  background: var(--rubylode-progress-needs-you-background);
+}
+
+.rubylode-progress-notice__icon {
+  flex: none;
+  position: relative;
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 0.1em;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+.rubylode-progress-notice__icon::after {
+  content: "!";
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
-  gap: var(--rubylode-progress-gap);
-  margin: var(--rubylode-progress-gap) 0;
+  justify-content: center;
+  font-size: 0.75em;
+  font-weight: bold;
+  line-height: 1;
 }
 
-.rubylode-progress-bar {
-  flex: 1;
-  min-width: 0;
+/* The stage marks, shared by the top tracker and the rail. A done stage is a filled circle with a tick, a partial one
+   (left behind with open issues) a filled circle with an exclamation mark, the current one a ring with a dot and a halo,
+   an upcoming one a plain ring. */
+.rubylode-progress-stage-mark {
+  --stage-mark-color: var(--rubylode-progress-muted-text-color);
+  --stage-mark-fill: var(--rubylode-progress-surface);
+  --stage-mark-size: var(--rubylode-progress-stage-mark-size);
+  position: relative;
+  display: inline-block;
+  flex: none;
+  box-sizing: border-box;
+  width: var(--stage-mark-size);
+  height: var(--stage-mark-size);
+  border: 2px solid var(--stage-mark-color);
+  border-radius: 50%;
+  background: var(--stage-mark-fill);
 }
 
-.rubylode-progress-bar__rail {
-  height: var(--rubylode-progress-bar-height);
-  border-radius: var(--rubylode-progress-bar-height);
-  background: var(--rubylode-progress-line-color);
-  overflow: hidden;
+.rubylode-progress-stage-mark--done {
+  --stage-mark-color: var(--rubylode-progress-done-color);
+  --stage-mark-fill: var(--rubylode-progress-done-color);
 }
 
-.rubylode-progress-bar__fill {
-  height: 100%;
+.rubylode-progress-stage-mark--done::after {
+  content: "";
+  position: absolute;
+  left: 30%;
+  top: 10%;
+  width: 24%;
+  height: 50%;
+  border: solid var(--rubylode-progress-surface);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.rubylode-progress-stage-mark--partial {
+  --stage-mark-color: var(--rubylode-progress-behind-color);
+  --stage-mark-fill: var(--rubylode-progress-behind-color);
+}
+
+.rubylode-progress-stage-mark--partial::after {
+  content: "!";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rubylode-progress-surface);
+  font-size: calc(var(--stage-mark-size) * 0.7);
+  font-weight: bold;
+  line-height: 1;
+}
+
+.rubylode-progress-stage-mark--current {
+  --stage-mark-color: var(--rubylode-progress-accent-color);
+  box-shadow: 0 0 0 0.3em color-mix(in srgb, var(--rubylode-progress-accent-color) 22%, transparent);
+}
+
+.rubylode-progress-stage-mark--current::after {
+  content: "";
+  position: absolute;
+  inset: 25%;
+  border-radius: 50%;
   background: var(--rubylode-progress-accent-color);
 }
 
-/* One segment per stage, each ending in its marker, which sits on the bar. */
+/* The top tracker: one segment per stage on a grid of equal columns, each ending in its mark, so the line is
+   continuous. The segment is filled to the stage's closed share. */
 .rubylode-progress-track {
-  display: flex;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   list-style: none;
-  margin: calc((var(--rubylode-progress-bar-height) - var(--rubylode-progress-track-dot-size)) / 2) 0 0;
-  padding: 0;
+  margin: var(--rubylode-progress-gap) 0 0;
+  padding: 0 0.4em 0 0;
 }
 
-.rubylode-progress-track__marker {
+.rubylode-progress-track__stage {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rubylode-progress-track__line {
+  display: flex;
+  align-items: center;
+}
+
+.rubylode-progress-track__segment {
   flex: 1;
+  height: var(--rubylode-progress-rail-width);
+  background: linear-gradient(90deg, var(--rubylode-progress-segment-color) var(--rubylode-progress-share),
+                              var(--rubylode-progress-track-empty-color) var(--rubylode-progress-share));
+}
+
+.rubylode-progress-track__label {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   min-width: 0;
-}
-
-.rubylode-progress-track__marker::before {
-  content: "";
-  width: var(--rubylode-progress-track-dot-size);
-  height: var(--rubylode-progress-track-dot-size);
-  border-radius: 50%;
-  border: 2px solid var(--rubylode-progress-accent-color);
-  background: var(--rubylode-progress-surface);
-  box-sizing: border-box;
-}
-
-.rubylode-progress-track__marker--done::before {
-  background: var(--rubylode-progress-accent-color);
-}
-
-.rubylode-progress-track__marker--partial::before {
-  background: linear-gradient(90deg, var(--rubylode-progress-accent-color) 50%, var(--rubylode-progress-surface) 50%);
-}
-
-.rubylode-progress-track__marker--current::before {
-  border-width: 4px;
-}
-
-.rubylode-progress-track__label {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-top: 0.3em;
+  text-align: right;
   font-size: var(--rubylode-progress-small-text-size);
   color: var(--rubylode-progress-muted-text-color);
 }
 
-.rubylode-progress-track__marker--current .rubylode-progress-track__label {
-  font-weight: bold;
+.rubylode-progress-track__name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--rubylode-progress-text-color);
 }
 
-.rubylode-progress-tracker__percent,
-.rubylode-progress-tile__number {
+.rubylode-progress-track__stage--current .rubylode-progress-track__name {
+  font-weight: bold;
+}
+
+.rubylode-progress-track__percent {
   font-family: var(--rubylode-progress-monospace-font);
   font-variant-numeric: tabular-nums;
 }
 
-.rubylode-progress-tracker__percent {
-  font-size: var(--rubylode-progress-percent-size);
+.rubylode-progress-track__date--overdue {
+  color: var(--rubylode-progress-behind-color);
+  font-weight: bold;
 }
 
-.rubylode-progress-tile__number {
-  font-size: var(--rubylode-progress-tile-number-size);
+.rubylode-progress-compact-tracker .rubylode-progress-track {
+  margin-top: var(--rubylode-progress-space-small);
+}
+
+.rubylode-progress-compact-tracker .rubylode-progress-stage-mark {
+  --stage-mark-size: 1em;
+}
+
+.rubylode-progress-compact-tracker__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--rubylode-progress-gap);
+}
+
+.rubylode-progress-compact-tracker__summary .rubylode-progress-track {
+  flex: 1;
+  min-width: 0;
+}
+
+.rubylode-progress-compact-tracker__percent {
+  font-family: var(--rubylode-progress-monospace-font);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Below the header: the stage list and the checklist side by side, stacked when there is no room. */
+.rubylode-progress-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-gap);
+  align-items: flex-start;
+}
+
+.rubylode-progress-stage-list {
+  flex: 1 1 34em;
+  min-width: 0;
+}
+
+.rubylode-progress-checklist-column {
+  flex: 1 1 30em;
+  min-width: 0;
 }
 
 .rubylode-progress-stages,
 .rubylode-progress-steps,
-.rubylode-progress-rows,
-.rubylode-progress-tiles {
+.rubylode-progress-rows {
   list-style: none;
   margin: 0;
   padding: 0;
 }
 
+/* The rail: each stage item holds its mark, and a line runs down from the mark to the next one. The line is a
+   gradient of two properties set on the item, so the cached stage never reads its neighbour. */
 .rubylode-progress-stage-item {
-  border-top: 1px solid var(--rubylode-progress-line-color);
-  padding: var(--rubylode-progress-space-small) 0;
+  --rail-offset: 0.55em;
+  --rail-mark-size: var(--rubylode-progress-rail-mark-size);
+  --rail-line-left: calc((var(--rail-mark-size) - var(--rubylode-progress-rail-width)) / 2);
+  position: relative;
+  padding: 0.5em 0 0.5em calc(var(--rail-mark-size) + 0.9em);
+}
+
+.rubylode-progress-stage-item > .rubylode-progress-stage-mark {
+  --stage-mark-size: var(--rail-mark-size);
+  position: absolute;
+  left: 0;
+  top: var(--rail-offset);
+  z-index: 1;
+}
+
+.rubylode-progress-stage-item::after {
+  content: "";
+  position: absolute;
+  left: var(--rail-line-left);
+  width: var(--rubylode-progress-rail-width);
+  top: calc(var(--rail-offset) + var(--rail-mark-size));
+  bottom: calc(-1 * var(--rail-offset));
+  background: linear-gradient(180deg, var(--rubylode-progress-colour-into-next) var(--rubylode-progress-share-into-next),
+                              var(--rubylode-progress-track-empty-color) var(--rubylode-progress-share-into-next));
+}
+
+.rubylode-progress-stage-item:last-child::after {
+  display: none;
+}
+
+.rubylode-progress-stage-item:first-child::before {
+  content: "";
+  position: absolute;
+  left: var(--rail-line-left);
+  width: var(--rubylode-progress-rail-width);
+  top: 0;
+  height: var(--rail-offset);
+  background: linear-gradient(180deg, var(--rubylode-progress-colour-into-self) var(--rubylode-progress-share-into-self),
+                              var(--rubylode-progress-track-empty-color) var(--rubylode-progress-share-into-self));
 }
 
 .rubylode-progress-stage summary,
-.rubylode-progress-section__summary {
+.rubylode-progress-section__summary,
+.rubylode-progress-closed-fold summary {
   cursor: pointer;
   display: flex;
   flex-wrap: wrap;
@@ -209,7 +430,9 @@
 }
 
 .rubylode-progress-stage summary::-webkit-details-marker,
-.rubylode-progress-section__summary::-webkit-details-marker {
+.rubylode-progress-section__summary::-webkit-details-marker,
+.rubylode-progress-closed-fold summary::-webkit-details-marker,
+.rubylode-progress-rules__summary::-webkit-details-marker {
   display: none;
 }
 
@@ -265,8 +488,28 @@
   font-size: var(--rubylode-progress-small-text-size);
 }
 
+/* A folded partial stage says what holds it up under its name; open, the list says it. */
+.rubylode-progress-stage__blocking {
+  flex: 0 0 100%;
+  padding-left: 1.3em;
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-stage[open] .rubylode-progress-stage__blocking {
+  display: none;
+}
+
 .rubylode-progress-steps {
   padding: var(--rubylode-progress-space-small) 0 0 1.4em;
+}
+
+.rubylode-progress-closed-fold {
+  margin: var(--rubylode-progress-space-small) 0 0 1.4em;
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-closed-fold summary {
+  color: var(--rubylode-progress-muted-text-color);
 }
 
 .rubylode-progress-step {
@@ -319,43 +562,56 @@
   transform: rotate(45deg);
 }
 
-.rubylode-progress-tiles {
-
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--rubylode-progress-gap);
-}
-
-.rubylode-progress-tile {
+/* The checklist panel. */
+.rubylode-progress-checklist__heading {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-space-small) var(--rubylode-progress-gap);
+  align-items: baseline;
+  justify-content: space-between;
 }
 
-.rubylode-progress-tile__label {
-  color: var(--rubylode-progress-muted-text-color);
-  font-size: var(--rubylode-progress-small-text-size);
+.rubylode-progress-checklist__titles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.7em;
+  align-items: baseline;
 }
 
-.rubylode-progress-tile--done .rubylode-progress-tile__number {
-  color: var(--rubylode-progress-done-color);
+.rubylode-progress-checklist__title {
+  margin: 0;
+  font-size: 1.2em;
 }
 
-.rubylode-progress-tile--next .rubylode-progress-tile__number {
-  color: var(--rubylode-progress-next-color);
+.rubylode-progress-checklist__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-space-small) var(--rubylode-progress-gap);
+  align-items: center;
 }
 
-.rubylode-progress-tile--needs-you .rubylode-progress-tile__number {
-  color: var(--rubylode-progress-needs-you-color);
+.rubylode-progress-new-issue-button {
+  display: inline-block;
+  padding: 0.2em 0.9em;
+  border: 1px solid var(--rubylode-progress-accent-color);
+  border-radius: var(--rubylode-progress-radius);
+  background: var(--rubylode-progress-accent-color);
+  color: var(--rubylode-progress-surface);
+  text-decoration: none;
 }
 
 .rubylode-progress-filters {
   display: flex;
   flex-wrap: wrap;
   gap: var(--rubylode-progress-space-small);
-  margin-bottom: var(--rubylode-progress-gap);
+  margin: var(--rubylode-progress-space-small) 0 var(--rubylode-progress-gap);
 }
 
 .rubylode-progress-filter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  flex: none;
   border: 1px solid var(--rubylode-progress-line-color);
   border-radius: 1em;
   padding: 0.15em 0.9em;
@@ -364,10 +620,108 @@
   background: var(--rubylode-progress-surface);
 }
 
+.rubylode-progress-filter__count {
+  font-family: var(--rubylode-progress-monospace-font);
+  font-variant-numeric: tabular-nums;
+  font-weight: bold;
+}
+
+.rubylode-progress-filter--empty {
+  color: var(--rubylode-progress-muted-text-color);
+}
+
+.rubylode-progress-filter--empty .rubylode-progress-filter__count {
+  font-weight: normal;
+}
+
+.rubylode-progress-filter--behind {
+  color: var(--rubylode-progress-behind-color);
+  background: var(--rubylode-progress-behind-background);
+  border-color: var(--rubylode-progress-behind-color);
+}
+
 .rubylode-progress-filter[aria-pressed="true"] {
   background: var(--rubylode-progress-accent-color);
   border-color: var(--rubylode-progress-accent-color);
   color: var(--rubylode-progress-surface);
+}
+
+.rubylode-progress-checklist__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-space-small) var(--rubylode-progress-gap);
+  align-items: flex-start;
+  margin-bottom: var(--rubylode-progress-gap);
+}
+
+.rubylode-progress-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-space-small);
+  align-items: center;
+}
+
+.rubylode-progress-group__buttons {
+  display: inline-flex;
+}
+
+.rubylode-progress-group__button {
+  padding: 0.1em 0.8em;
+  border: 1px solid var(--rubylode-progress-line-color);
+  margin-left: -1px;
+  text-decoration: none;
+  color: var(--rubylode-progress-text-color);
+  background: var(--rubylode-progress-surface);
+}
+
+.rubylode-progress-group__button:first-child {
+  margin-left: 0;
+  border-radius: var(--rubylode-progress-radius) 0 0 var(--rubylode-progress-radius);
+}
+
+.rubylode-progress-group__button:last-child {
+  border-radius: 0 var(--rubylode-progress-radius) var(--rubylode-progress-radius) 0;
+}
+
+.rubylode-progress-group__button[aria-pressed="true"] {
+  background: var(--rubylode-progress-accent-color);
+  border-color: var(--rubylode-progress-accent-color);
+  color: var(--rubylode-progress-surface);
+}
+
+.rubylode-progress-group__select-form {
+  display: none;
+  margin: 0;
+}
+
+.rubylode-progress-group__note {
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-rules {
+  margin-left: auto;
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-rules[open] {
+  flex: 1 0 100%;
+}
+
+.rubylode-progress-rules__summary {
+  cursor: pointer;
+  list-style: none;
+  text-align: right;
+  color: var(--rubylode-progress-accent-color);
+  text-decoration: underline;
+}
+
+.rubylode-progress-rules__list {
+  margin: var(--rubylode-progress-space-small) 0;
+  padding-left: 1.4em;
+}
+
+.rubylode-progress-rules__list li {
+  padding: 0.15em 0;
 }
 
 .rubylode-progress-section + .rubylode-progress-section {
@@ -376,6 +730,7 @@
 
 .rubylode-progress-section__title {
   margin: 0;
+  font-size: 1em;
 }
 
 .rubylode-progress-section__summary {
@@ -396,22 +751,26 @@
 .rubylode-progress-section__tally {
   font-weight: normal;
   font-size: var(--rubylode-progress-small-text-size);
-  font-family: var(--rubylode-progress-monospace-font);
   font-variant-numeric: tabular-nums;
 }
 
+/* A checklist row: mark, title with its note, the hover actions, the number in a fixed column, the status pill, the date. */
 .rubylode-progress-row {
-  display: flex;
-  flex-wrap: wrap;
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto 4.5em 6.5em 7.5em;
   align-items: center;
   gap: 0.2em 0.6em;
   padding: 0.45em 0;
   border-top: 1px solid var(--rubylode-progress-line-color);
 }
 
-.rubylode-progress-row__title {
-  flex: 1 1 12em;
+.rubylode-progress-row__main {
   min-width: 0;
+}
+
+.rubylode-progress-row__author {
+  margin-left: 0.5em;
 }
 
 .rubylode-progress-row__number,
@@ -421,9 +780,26 @@
   font-size: var(--rubylode-progress-small-text-size);
 }
 
+.rubylode-progress-row__number {
+  text-align: right;
+}
+
+.rubylode-progress-row__date {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.rubylode-progress-row__date--soon {
+  color: var(--rubylode-progress-needs-you-color);
+}
+
+.rubylode-progress-row__date--overdue {
+  color: var(--rubylode-progress-behind-color);
+  font-weight: bold;
+}
+
 .rubylode-progress-row__note {
-  flex: 0 0 100%;
-  margin: 0 0 0 1.6em;
+  margin: 0;
   font-size: var(--rubylode-progress-small-text-size);
 }
 
@@ -433,6 +809,11 @@
   padding: 0 0.6em;
   font-size: var(--rubylode-progress-small-text-size);
   white-space: nowrap;
+  text-align: center;
+}
+
+.rubylode-progress-row .rubylode-progress-pill {
+  justify-self: center;
 }
 
 .rubylode-progress-pill--done {
@@ -476,12 +857,36 @@
 }
 
 .rubylode-progress-edit,
-.rubylode-progress-new-tab,
-.rubylode-progress-add {
+.rubylode-progress-new-tab {
   display: inline-flex;
   align-items: center;
   margin-left: var(--rubylode-progress-space-small);
   color: var(--rubylode-progress-muted-text-color);
+}
+
+.rubylode-progress-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  color: var(--rubylode-progress-accent-color);
+}
+
+/* The pencil and the new-tab link show when the row is hovered or has the keyboard; always on a touch screen. */
+.rubylode-progress-hover-actions {
+  display: inline-flex;
+  opacity: 0;
+}
+
+.rubylode-progress-row:hover .rubylode-progress-hover-actions,
+.rubylode-progress-row:focus-within .rubylode-progress-hover-actions,
+.rubylode-progress-step:hover .rubylode-progress-hover-actions,
+.rubylode-progress-step:focus-within .rubylode-progress-hover-actions {
+  opacity: 1;
+}
+
+/* On a phone the two links sit behind a button. On a wide screen the group is open and the button is hidden. */
+.rubylode-progress-more__button {
+  display: none;
 }
 
 .rubylode-progress-stage__add {
@@ -496,18 +901,110 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 640px) {
-  .rubylode-progress-tiles {
-    grid-template-columns: repeat(2, 1fr);
+@media (hover: none) {
+  .rubylode-progress-hover-actions {
+    opacity: 1;
   }
+}
 
-  .rubylode-progress-tracker__bar {
+@media (max-width: 640px) {
+  .rubylode-progress-columns {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .rubylode-progress-row__title {
-    flex-basis: calc(100% - 2em);
+  .rubylode-progress-stage-list {
+    order: 2;
+    flex-basis: auto;
+  }
+
+  .rubylode-progress-checklist-column {
+    flex-basis: auto;
+  }
+
+  .rubylode-progress-tracker__main,
+  .rubylode-progress-tracker__summary {
+    flex-basis: 100%;
+  }
+
+  /* The tracker keeps its segments and marks; only the first, current and last stage keep a label, and only the
+     current one its date. */
+  .rubylode-progress-track__stage:not(:first-child):not(:last-child):not(.rubylode-progress-track__stage--current) .rubylode-progress-track__label,
+  .rubylode-progress-track__stage:not(.rubylode-progress-track__stage--current) .rubylode-progress-track__date {
+    display: none;
+  }
+
+  .rubylode-progress-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .rubylode-progress-filter,
+  .rubylode-progress-new-issue-button,
+  .rubylode-progress-issue-query,
+  .rubylode-progress-stage summary,
+  .rubylode-progress-section__summary,
+  .rubylode-progress-rules__summary {
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .rubylode-progress-filter,
+  .rubylode-progress-new-issue-button {
+    align-items: center;
+  }
+
+  .rubylode-progress-group__buttons {
+    display: none;
+  }
+
+  .rubylode-progress-group__select-form {
+    display: block;
+  }
+
+  .rubylode-progress-group__select {
+    min-height: 44px;
+  }
+
+  .rubylode-progress-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3em 0.6em;
+  }
+
+  .rubylode-progress-row__main {
+    flex: 1 1 calc(100% - 6em);
+  }
+
+  .rubylode-progress-row__number {
+    margin-left: 1.6em;
+  }
+
+  .rubylode-progress-more__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .rubylode-progress-more {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-left: auto;
+  }
+
+  .rubylode-progress-more__links a {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .rubylode-progress-hover-actions {
+    opacity: 1;
   }
 
   .rubylode-progress-stage__summary {

@@ -1,38 +1,44 @@
+<%# The item is outside the cache and carries the rail's share and colour properties, which read the neighbouring stage.
+    The cached part below depends on this stage alone. %>
+<li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>" style="<%= rail_style %>">
 <% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode) do %>
-<li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>">
+  <%= render "stage_mark", state: stage.state %>
+  <% folds_closed = (stage.current? || stage.partial?) && stage.steps.any?(&:done?) %>
   <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %>>
     <summary>
       <span class="rubylode-progress-chevron" aria-hidden="true"></span>
       <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>
+      <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_stage_state_label(stage) %></span>
       <% if stage.version.effective_date %>
         <span class="rubylode-progress-stage__date"><%= l("rubylode_progress.stage_due", date: format_date(stage.version.effective_date)) %></span>
       <% end %>
       <%= render "meter", percent: rubylode_progress_stage_percent(stage) %>
       <span class="rubylode-progress-stage__summary"><%= rubylode_progress_stage_summary(stage) %></span>
+      <% blocking_text = stage.partial? ? rubylode_progress_blocking_text(stage) : nil %>
+      <% if blocking_text %>
+        <span class="rubylode-progress-stage__blocking"><%= blocking_text %></span>
+      <% end %>
     </summary>
     <ul class="rubylode-progress-steps">
-      <% stage.steps.each do |step| %>
-        <li class="rubylode-progress-step rubylode-progress-step--<%= rubylode_progress_mark_state(step.issue, settings) %>">
-          <span class="rubylode-progress-step__mark" aria-hidden="true"></span>
-          <%= render "item_title_link", project: project, issue: step.issue %>
-          <% if step.issue.author %>
-            <span class="rubylode-progress-step__author"><%= step.issue.author.name %></span>
-          <% end %>
-          <% if step.issue.assigned_to %>
-            <span class="rubylode-progress-step__assignee"><%= step.issue.assigned_to.name %></span>
-          <% end %>
-          <% if editable_issue_ids.include?(step.issue.id) %>
-            <%= render "quick_edit_link", project: project, issue: step.issue %>
-          <% end %>
-          <%= render "new_tab_link", issue: step.issue %>
-        </li>
+      <% (folds_closed ? stage.steps.reject(&:done?) : stage.steps).each do |step| %>
+        <%= render "stage_step", step: step, project: project, settings: settings, editable_issue_ids: editable_issue_ids %>
       <% end %>
     </ul>
+    <% if folds_closed %>
+      <details class="rubylode-progress-closed-fold">
+        <summary><%= l("rubylode_progress.show_closed", count: stage.done_step_count) %></summary>
+        <ul class="rubylode-progress-steps">
+          <% stage.steps.select(&:done?).each do |step| %>
+            <%= render "stage_step", step: step, project: project, settings: settings, editable_issue_ids: editable_issue_ids %>
+          <% end %>
+        </ul>
+      </details>
+    <% end %>
     <% unless new_issue_mode == :none %>
       <p class="rubylode-progress-stage__add">
         <%= render "new_issue_link", project: project, version: stage.version, full_form: new_issue_mode == :full_form %>
       </p>
     <% end %>
   </details>
-</li>
 <% end %>
+</li>

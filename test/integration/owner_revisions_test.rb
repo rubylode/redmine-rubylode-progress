@@ -144,20 +144,19 @@ class OwnerRevisionsTest < Redmine::IntegrationTest
     assert_select ".rubylode-progress-stage__date", text: "Due #{format_date_for_test(Date.new(2026, 4, 1))}"
   end
 
-  test "the top bar carries the overall percent and a marker per stage" do
+  test "the top tracker carries the overall percent and a mark per stage" do
     second = Version.generate!(project: @project, name: "Launch", effective_date: Date.new(2026, 4, 1))
     Issue.generate!(project: @project, fixed_version: second, author: @manager)
 
     open_progress
 
-    assert_select ".rubylode-progress-tracker .rubylode-progress-bar .rubylode-progress-bar__fill[style*=?]", "%"
     assert_select ".rubylode-progress-tracker .rubylode-progress-tracker__percent", text: /\d+%/
-    assert_select ".rubylode-progress-tracker ol.rubylode-progress-track[aria-label] li.rubylode-progress-track__marker", count: 2
+    assert_select ".rubylode-progress-tracker ol.rubylode-progress-track[aria-label] li.rubylode-progress-track__stage", count: 2
     assert_select ".rubylode-progress-tracker .rubylode-progress-track__label", count: 2
-    assert_select ".rubylode-progress-track__marker--current", count: 1
+    assert_select ".rubylode-progress-track__stage--current", count: 1
 
     get "/progress"
-    assert_select ".rubylode-progress-compact-tracker .rubylode-progress-bar"
+    assert_select ".rubylode-progress-compact-tracker .rubylode-progress-track__segment"
     assert_select ".rubylode-progress-compact-tracker .rubylode-progress-track__label", count: 0
   end
 
