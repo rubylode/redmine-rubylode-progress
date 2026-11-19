@@ -20,7 +20,7 @@ module RubylodeProgress
   # section's tally and percent count all of its issues, however the rows are filtered, so a heading never says "0/3"
   # beside a full meter.
   module ChecklistSections
-    Section = Struct.new(:title, :items, :done_count, :total_count, :total_done_count, keyword_init: true) do
+    Section = Struct.new(:title, :version, :items, :done_count, :total_count, :total_done_count, keyword_init: true) do
       # The closed share of all the section's issues, rounded.
       def percent
         total_count.to_i.zero? ? 0 : Rational(total_done_count * 100, total_count).round
@@ -37,23 +37,26 @@ module RubylodeProgress
       case by
       when "category"
         grouped(scope_items, shown, key: ->(issue) { issue.category&.name }, title: ->(issue) { issue.category.name },
-                                    order: :sorted, missing_key: "no_category")
+                                    order: :sorted, missing_key: "no_category", version: nil)
       when "parent"
         grouped(scope_items, shown, key: ->(issue) { issue.parent&.id }, title: ->(issue) { parent_title(issue.parent, viewer) },
-                                    order: :sorted, missing_key: "no_parent")
+                                    order: :sorted, missing_key: "no_parent", version: nil)
       else
         grouped(scope_items, shown, key: ->(issue) { issue.fixed_version }, title: ->(issue) { issue.fixed_version.name },
-                                    order: :arrival, missing_key: nil)
+                                    order: :arrival, missing_key: nil, version: ->(issue) { issue.fixed_version })
       end
     end
 
-    def grouped(scope_items, shown, key:, title:, order:, missing_key:)
+    def grouped(scope_items, shown, key:, title:, order:, missing_key:, version:)
       owned, missing = scope_items.partition { |item| key.call(item.issue) }
       groups = owned.group_by { |item| key.call(item.issue) }
       keys = order == :sorted ? groups.keys.sort : groups.keys
-      sections = keys.map { |group_key| section(title.call(groups.fetch(group_key).first.issue), groups.fetch(group_key), shown) }
+      sections = keys.map do |group_key|
+        first_issue = groups.fetch(group_key).first.issue
+        section(title.call(first_issue), groups.fetch(group_key), shown, version: version&.call(first_issue))
+      end
       missing_title = missing_key ? I18n.t("rubylode_progress.#{missing_key}") : nil
-      sections << section(missing_title, missing, shown) if missing.any?
+      sections << section(missing_title, missing, shown, version: nil) if missing.any?
       sections.reject { |built| built.items.empty? }
     end
 
@@ -62,9 +65,9 @@ module RubylodeProgress
       parent.visible?(viewer) ? "##{parent.id} #{parent.subject}" : "##{parent.id}"
     end
 
-    def section(title, scope_items, shown)
+    def section(title, scope_items, shown, version:)
       rows = scope_items.select { |item| shown.include?(item) }
-      Section.new(title: title, items: rows, done_count: rows.count { |item| item.status == :done },
+      Section.new(title: title, version: version, items: rows, done_count: rows.count { |item| item.status == :done },
                   total_count: scope_items.size, total_done_count: scope_items.count { |item| item.status == :done })
     end
   end

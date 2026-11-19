@@ -17,6 +17,7 @@ Colors:
 | `--rubylode-progress-line-color` | `#d9dee5` | panel borders and row dividers |
 | `--rubylode-progress-accent-color` | `#1f5f8b` | the current stage's mark and line, the pressed pill and group button |
 | `--rubylode-progress-focus-color` | `#1f5f8b` | the keyboard focus outline |
+| `--rubylode-progress-drop-target-color` | the accent colour | the outline of a stage or section an issue is dragged over |
 | `--rubylode-progress-done-color` | `#1b6e34` | Done: marks, the line of a finished stage, pill text |
 | `--rubylode-progress-done-background` | `#e3f4e7` | the Done pill |
 | `--rubylode-progress-next-color` | `#1a5fa0` | Next: mark, pill text |
@@ -72,6 +73,7 @@ Paste this into a dark theme's stylesheet:
   --rubylode-progress-line-color: #2f3742;
   --rubylode-progress-accent-color: #6cb2eb;
   --rubylode-progress-focus-color: #6cb2eb;
+  --rubylode-progress-drop-target-color: #6cb2eb;
   --rubylode-progress-done-color: #7ee08f;
   --rubylode-progress-done-background: #17301f;
   --rubylode-progress-next-color: #8cc4f5;

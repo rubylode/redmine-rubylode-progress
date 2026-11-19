@@ -67,9 +67,20 @@ module RubylodeProgress
     # project needs fields the modal does not show, so the plus links to Redmine's own new-issue form). Redmine files
     # an issue only in an open version shared with the project, and only for a viewer who may add issues.
     def new_issue_mode_for(version)
-      return :none unless version.open? && @scope.shared_version_ids.include?(version.id)
+      return :none unless accepts_issues?(version)
 
       new_issue_mode
+    end
+
+    # Whether an issue may be filed in, or moved into, this version: it is open and shared with the project, which is
+    # what Redmine's own Target version list holds. It is only a convenience for the page: Redmine's update decides.
+    def accepts_issues?(version)
+      version.open? && @scope.shared_version_ids.include?(version.id)
+    end
+
+    # Whether anything on the page can be dragged: an issue the viewer may edit and a stage that takes it.
+    def draggable_issues?
+      editable_issue_ids.any? && stages.any? { |stage| accepts_issues?(stage.version) }
     end
 
     # Taken over every counted issue, so it does not move when the checklist is filtered.

@@ -1,3 +1,38 @@
+/* Drag an issue to another stage: a grab cursor on the rows that can be dragged, the dragged row dimmed, the stage or
+   section under it outlined, and the message Redmine's answer is shown in. */
+.rubylode-progress-hint {
+  margin: 0 0 var(--rubylode-progress-space-small);
+  color: var(--rubylode-progress-muted-text-color);
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-step[draggable="true"],
+.rubylode-progress-row[draggable="true"] {
+  cursor: grab;
+}
+
+.rubylode-progress-dragged {
+  opacity: 0.5;
+}
+
+.rubylode-progress-drop-over {
+  outline: 2px solid var(--rubylode-progress-drop-target-color);
+  outline-offset: 2px;
+  border-radius: var(--rubylode-progress-radius);
+}
+
+.rubylode-progress-move-message {
+  margin: 0 0 var(--rubylode-progress-gap);
+  padding: 0.5em 0.8em;
+  color: var(--rubylode-progress-behind-color);
+  background: var(--rubylode-progress-behind-background);
+  border-radius: var(--rubylode-progress-radius);
+}
+
+.rubylode-progress-move-message[hidden] {
+  display: none;
+}
+
 /*
  * Rubylode Progress. Every colour and size is a --rubylode-progress-* custom property, set here on :where(:root), which
  * has no specificity, so a theme wins whenever it sets a property. The defaults are light; a dark theme sets the
@@ -10,6 +45,7 @@
   --rubylode-progress-line-color: #d9dee5;
   --rubylode-progress-accent-color: #1f5f8b;
   --rubylode-progress-focus-color: #1f5f8b;
+  --rubylode-progress-drop-target-color: var(--rubylode-progress-accent-color);
   --rubylode-progress-done-color: #1b6e34;
   --rubylode-progress-done-background: #e3f4e7;
   --rubylode-progress-next-color: #1a5fa0;

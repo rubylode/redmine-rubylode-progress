@@ -1,6 +1,9 @@
 <% issue = item.issue %>
 <% date_kind, date_text = rubylode_progress_row_date(item, today) %>
-<li class="rubylode-progress-row rubylode-progress-row--<%= rubylode_progress_mark_state(issue, settings) %> rubylode-progress-row--<%= item.status.to_s.dasherize %>" id="rubylode-progress-item-<%= issue.id %>">
+<%# Draggable only where the viewer may edit the issue and the checklist is grouped by version (its sections are the drop targets). %>
+<% movable = grouping == "version" && editable_issue_ids.include?(issue.id) %>
+<li class="rubylode-progress-row rubylode-progress-row--<%= rubylode_progress_mark_state(issue, settings) %> rubylode-progress-row--<%= item.status.to_s.dasherize %>" id="rubylode-progress-item-<%= issue.id %>"
+    <%= tag.attributes(draggable: "true", data: { issue_id: issue.id, current_version_id: issue.fixed_version_id, update_path: issue_path(issue) }) if movable %>>
   <span class="rubylode-progress-row__mark" aria-hidden="true"></span>
   <div class="rubylode-progress-row__main">
     <span class="rubylode-progress-row__title"><%= render "item_title_link", project: project, issue: issue %></span>

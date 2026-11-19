@@ -1,9 +1,13 @@
 <section class="rubylode-progress-stage-list">
+  <% if progress.draggable_issues? %>
+    <p class="rubylode-progress-hint"><%= l("rubylode_progress.drag_hint") %></p>
+  <% end %>
   <ol class="rubylode-progress-stages">
     <% progress.stages.each_with_index do |stage, index| %>
       <%= render "stage", stage: stage, project: project, settings: progress.settings,
                           editable_issue_ids: progress.editable_issue_ids,
                           new_issue_mode: progress.new_issue_mode_for(stage.version),
+                          accepts_issues: progress.accepts_issues?(stage.version),
                           rail_style: rubylode_progress_rail_style(progress.stages, index) %>
     <% end %>
   </ol>

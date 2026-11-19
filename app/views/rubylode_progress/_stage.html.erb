@@ -1,10 +1,10 @@
 <%# The item is outside the cache and carries the rail's share and colour properties, which read the neighbouring stage.
     The cached part below depends on this stage alone. %>
 <li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>" style="<%= rail_style %>">
-<% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode) do %>
+<% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode, accepts_issues: accepts_issues) do %>
   <%= render "stage_mark", state: stage.state %>
   <% folds_closed = (stage.current? || stage.partial?) && stage.steps.any?(&:done?) %>
-  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %>>
+  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %>>
     <summary>
       <span class="rubylode-progress-chevron" aria-hidden="true"></span>
       <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>

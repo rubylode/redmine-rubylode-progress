@@ -45,7 +45,22 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     stage = progress.stages.first
     RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: viewer, settings: settings,
                                         editable_issue_ids: progress.editable_issue_ids,
-                                        new_issue_mode: progress.new_issue_mode_for(stage.version))
+                                        new_issue_mode: progress.new_issue_mode_for(stage.version),
+                                        accepts_issues: progress.accepts_issues?(stage.version))
+  end
+
+  test "the key changes with whether the stage is a drop target for the viewer" do
+    project = Project.find(@project.id)
+    settings = RubylodeProgress::EffectiveSettings.for(project)
+    progress = RubylodeProgress::ProjectProgress.new(project: project, viewer: @manager, settings: settings)
+    stage = progress.stages.first
+    keys = [true, false].map do |accepts_issues|
+      RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: @manager, settings: settings,
+                                          editable_issue_ids: progress.editable_issue_ids, new_issue_mode: :none,
+                                          accepts_issues: accepts_issues)
+    end
+
+    refute_equal keys.first, keys.last
   end
 
   test "it does not change on a second identical build" do

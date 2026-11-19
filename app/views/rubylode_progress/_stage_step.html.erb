@@ -1,4 +1,7 @@
-<li class="rubylode-progress-step rubylode-progress-step--<%= rubylode_progress_mark_state(step.issue, settings) %>">
+<%# Draggable only where the viewer may edit the issue (the pencil's rule). The script reads these attributes; Redmine's update decides the move. %>
+<% movable = editable_issue_ids.include?(step.issue.id) %>
+<li class="rubylode-progress-step rubylode-progress-step--<%= rubylode_progress_mark_state(step.issue, settings) %>"
+    <%= tag.attributes(draggable: "true", data: { issue_id: step.issue.id, current_version_id: step.issue.fixed_version_id, update_path: issue_path(step.issue) }) if movable %>>
   <span class="rubylode-progress-step__mark" aria-hidden="true"></span>
   <%= render "item_title_link", project: project, issue: step.issue %>
   <% if step.issue.author %>

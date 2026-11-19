@@ -180,6 +180,20 @@ class StylesheetTest < ActiveSupport::TestCase
     assert_match(/--rubylode-progress-focus-color/, rules.map(&:last).join)
   end
 
+  test "the drag and drop look: the drop-target property follows the accent, the dark block gives it a value, the classes are styled" do
+    assert_equal "var(--rubylode-progress-accent-color)", light_tokens.fetch("--rubylode-progress-drop-target-color")
+    assert_equal "#6cb2eb", dark_tokens.fetch("--rubylode-progress-drop-target-color")
+    ratio = contrast_ratio(dark_tokens.fetch("--rubylode-progress-drop-target-color"), dark_tokens.fetch("--rubylode-progress-surface"))
+    assert_operator ratio, :>=, 3.0
+    selectors = rules.flat_map { |selector_text, _| selector_text.split(",").map(&:strip) }.join(" ")
+
+    %w[.rubylode-progress-hint .rubylode-progress-dragged .rubylode-progress-drop-over .rubylode-progress-move-message].each do |name|
+      assert_includes selectors, name
+    end
+    assert_match(/\.rubylode-progress-drop-over\s*\{[^}]*var\(--rubylode-progress-drop-target-color\)/, comment_free_stylesheet)
+    assert_match(/\.rubylode-progress-row\[draggable="true"\]\s*\{[^}]*cursor: grab/, comment_free_stylesheet)
+  end
+
   test "every --rubylode-progress- property in the stylesheet is listed in docs/theming.md" do
     used = comment_free_stylesheet.scan(/--rubylode-progress-[a-z-]+/).uniq
 

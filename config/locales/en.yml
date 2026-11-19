@@ -20,6 +20,10 @@ en:
       loading: "Loading…"
       failed: "The issue could not be loaded. Open it in a new tab instead."
       author: "Author: %{name}"
+    drag_hint: Drag an issue to another stage to move it.
+    move:
+      refused: "Redmine did not move the issue."
+      failed: "The issue could not be moved. Reload the page and try again."
     quick_edit:
       title: "Quick edit #%{number}: %{subject}"
       link_label: "Quick edit #%{number}"
