@@ -8,7 +8,7 @@ First release. Needs Redmine 7.0 or newer.
 
 ### Added
 
-- A Progress tab on every project that has the module "Rubylode Progress" enabled, at `/projects/:id/progress`, behind the permission "View progress". It shows the project's versions as stages on a track, with the current stage, the percent done and the steps of each stage.
+- A Progress tab on every project that has the module "Rubylode Progress" enabled, at `/projects/:id/progress`, behind the permission "View progress". It shows the project's versions as stages on a track, with the current stage, the percent done and the issues of each stage.
 - The stage list: every stage with its date, a progress bar and its issues as a compact checklist, folded when finished or still to come. A stage left behind with open issues shows as behind, and a notice names the overdue and the soon due stages.
 - A checklist of every issue in the counted versions, with a status pill (Done, Needs you, Waiting, Next, To do), the assignee, the due date and the latest note or a custom field. A "How statuses are decided" box lists the rules in order.
 - Filters: Open, Needs you, Overdue, Next up, Done and All. Each is a link that works without JavaScript, and the choice is remembered per person.

@@ -152,7 +152,7 @@ All of it saves through Redmine's own issue forms, so its permissions, workflow,
 apply exactly as on the issue page, and you land back on the Progress page with the same filter. Each control shows only when
 the viewer may use it.
 
-- Pencil: after each step and each row. A modal with the status (only what the workflow allows), the assignee, % done, the
+- Pencil: after each issue in a stage and each checklist row. A modal with the status (only what the workflow allows), the assignee, % done, the
   target version and a note, and a "Full edit" link to the issue's own edit page.
 - New issue: the plus on each open stage, and the New issue button above the checklist. A modal with tracker, subject,
   assignee and description, with the version set to that stage. If the project has a required custom field the modal does not
