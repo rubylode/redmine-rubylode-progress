@@ -23,7 +23,7 @@ the viewer may see.
 4. Settings, plugin-wide and per project: ~~`07-settings.md`~~ done 2026-11-18 (6ea5ea4).
 5. The cross-project page at `/progress`: ~~`08-all-projects-page.md`~~ done 2026-11-18 (0e6b5d7).
 6. Query count and the per-viewer rail cache, then the look and accessibility: ~~`09-performance.md`~~ done 2026-11-18 (ce8b166, 8bed01e),
-   `10-look-and-accessibility.md`.
+   ~~`10-look-and-accessibility.md`~~ done 2026-11-18 (0dec454).
 7. Demo data and `bin/demo`: `11-demo.md`.
 8. Screenshots, README, CHANGELOG, the redmine.org listing text, then release v1.0.0 with `/rubylode:prepare-release`
    through the Gitea origin: `12-release.md`.
