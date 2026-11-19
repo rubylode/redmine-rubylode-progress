@@ -238,4 +238,10 @@ test "every --rubylode-progress- property in the stylesheet is listed in docs/th
 
     assert_empty(used.reject { |name| THEMING.include?("`#{name}`") })
   end
+
+  # A wrapping column leaves the checklist as tall as the whole page on a phone, with a blank gap before the stage list.
+  test "the two columns stack without wrapping on a phone" do
+    phone_rules = comment_free_stylesheet[/@media \(max-width: 640px\) \{(.*)/m, 1]
+    assert_match(/\.rubylode-progress-columns \{[^}]*flex-direction: column;[^}]*flex-wrap: nowrap;/m, phone_rules)
+  end
 end

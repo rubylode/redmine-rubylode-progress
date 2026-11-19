@@ -1140,6 +1140,7 @@
 @media (max-width: 640px) {
   .rubylode-progress-columns {
     flex-direction: column;
+    flex-wrap: nowrap;
     align-items: stretch;
   }
 
