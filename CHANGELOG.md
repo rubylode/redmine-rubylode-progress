@@ -17,6 +17,7 @@ First release. Needs Redmine 7.0 or newer.
 - Plugin-wide settings (Administration, Plugins, Configure) and a Progress tab in each project's Settings that overrides them: which versions count, how the checklist groups, which statuses mean in progress and waiting, how many issues are Next, and where the item note comes from. Anyone who may edit the project can save the project's tab.
 - Editing from the page: a pencil for a quick edit of status, assignee, % done and a note, a New issue button on every open stage and above the checklist, and a modal that shows the issue when its title is clicked. All of it saves through Redmine's own issue forms, so permissions, workflow and notifications apply.
 - Drag an issue to another open stage to move it. Closed and locked versions refuse it and say why. On a touch screen, the pencil's Target version field does the same.
+- Change a version's status from the page: the status tag of a stage is a button for a viewer with "Manage versions" in the version's project, opening a modal to choose open, locked or closed. The save is Redmine's own version update.
 - Every number, row and percent follows what the viewer may see.
 - Styling through CSS custom properties, with a dark block to paste into a dark theme (`docs/theming.md`), and a layout for a phone.
 - A throwaway demo Redmine with made-up projects (`ruby bin/demo up`), the README screenshots from it, and unit and integration tests (`bin/test`).

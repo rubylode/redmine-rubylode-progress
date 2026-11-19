@@ -72,6 +72,8 @@ delete the folder and restart.
 1. In the project, open Settings, Modules, and check "Rubylode Progress".
 2. In Administration, Roles and permissions, give the roles that may look at the page the permission "View progress"
    (it sits under the module's name). Without it, a non-member gets a 403, and the tab does not show.
+   Changing a version's status from the page also needs Redmine's own "Manage versions" permission (see
+   [Editing from the page](#editing-from-the-page)).
 
 The Progress tab then appears in the project menu, after Roadmap.
 
@@ -162,6 +164,14 @@ the viewer may use it.
   move is allowed. On a touch screen, where there is no dragging, use the pencil's Target version.
 
 Without JavaScript, the pencil and the plus are plain links to Redmine's edit and new issue pages.
+
+### Change a version's status from the page
+
+A viewer who has Redmine's "Manage versions" permission in the version's own project sees the status tag of every stage
+(open, locked or closed) as a small button with a caret. It opens a modal with the three statuses and a line on what each
+means; saving it is Redmine's own version update, so Redmine's rules apply and you land back on the Progress page. Reopening
+a closed stage is what makes it take dragged issues again. Everyone else sees a plain tag on closed and locked stages and
+nothing on open ones. A version shared from another project needs the permission in that project.
 
 ## Restyling it
 
