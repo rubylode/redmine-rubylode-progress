@@ -19,7 +19,7 @@ class RubylodeProgressController < ApplicationController
   menu_item :rubylode_progress
   before_action :find_project, :authorize
   before_action :load_progress_and_filter, only: [:show, :checklist]
-  before_action :load_progress_for_modal, only: [:quick_edit, :new_issue]
+  before_action :load_progress_for_modal, only: [:quick_edit, :new_issue, :status]
   helper_method :checklist_locals
 
   def show
@@ -79,6 +79,20 @@ class RubylodeProgressController < ApplicationController
     end
   end
 
+  # The modal for a version's status. Only a stage of this page, and only for a viewer who holds manage_versions on the
+  # version's own project. The save goes to Redmine's own version update, which decides again.
+  def status
+    @version = @progress.stages.map(&:version).find { |version| version.id == params[:version_id].to_i }
+    return render_404 unless @version
+    return render_403 unless @progress.can_manage_version?(@version)
+
+    @back_url = project_rubylode_progress_path(@project, filter: @filter, **status_grouping_parameters)
+    respond_to do |format|
+      format.html
+      format.js
+    end
+  end
+
   private
 
   # Where Redmine sends the viewer after the save: built here from the project and the filter, never taken from the request.
@@ -86,6 +100,12 @@ class RubylodeProgressController < ApplicationController
     @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
     @filter = RubylodeProgress::ChecklistFilter.resolve(requested: params[:filter], remembered: remembered_filter)
     @back_url = project_rubylode_progress_path(@project, filter: @filter)
+  end
+
+  # The grouping to come back to, only when it is a known one that differs from the project's setting.
+  def status_grouping_parameters
+    grouping = requested_grouping
+    grouping == @progress.settings.checklist_grouping ? {} : { group: grouping }
   end
 
   # Everything the checklist panel reads. The counts on the pills are taken over every issue, so they match the rows each

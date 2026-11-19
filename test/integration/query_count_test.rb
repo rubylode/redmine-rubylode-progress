@@ -33,6 +33,7 @@ class QueryCountTest < Redmine::IntegrationTest
   # trackers, one query for required custom fields and one for workflow-required fields across all the trackers (the
   # issues' projects load in one preload with the rest). The owner's revisions added one, the issues' authors, again one
   # preload for all of them. The design review added one: the names of the waiting and in-progress statuses for the rules panel (none when no status is chosen), 50 with both chosen.
+  # The status button's right (manage_versions) is asked once per project, and the page's own project is already loaded, so it added none (re-checked 2026-11-19).
   PROJECT_PAGE_QUERY_CEILING = 50
 
   setup do

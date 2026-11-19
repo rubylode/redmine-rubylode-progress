@@ -27,7 +27,7 @@ Redmine::Plugin.register :redmine_rubylode_progress do
   settings default: RubylodeProgress::Settings::DEFAULTS, partial: "settings/rubylode_progress_settings"
 
   project_module :rubylode_progress do
-    permission :view_rubylode_progress, { rubylode_progress: [:show, :checklist, :quick_edit, :new_issue, :item] }, read: true
+    permission :view_rubylode_progress, { rubylode_progress: [:show, :checklist, :quick_edit, :new_issue, :item, :status] }, read: true
   end
 
   menu :project_menu, :rubylode_progress,

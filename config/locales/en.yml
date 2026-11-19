@@ -27,8 +27,17 @@ en:
       locked: "%{version} is locked, so it takes no new issues."
       not_shared: "%{version} is not shared with this project, so it takes no new issues."
     version_tag:
-      closed: closed
+      open: open
       locked: locked
+      closed: closed
+    version_status:
+      title: "Status of %{version}"
+      change_label: "Change the status of %{version}"
+      current_label: "%{version}: %{status}. Change the status"
+      meaning:
+        open: takes new issues
+        locked: takes no new issues, but its issues stay editable
+        closed: is finished and takes no new issues
     move:
       refused: "Redmine did not move the issue."
       failed: "The issue could not be moved. Reload the page and try again."

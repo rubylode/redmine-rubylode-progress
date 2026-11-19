@@ -1,0 +1,3 @@
+$('#ajax-modal').html('<%= escape_javascript(render(partial: "rubylode_progress/status_form", formats: [:html], locals: { version: @version, back_url: @back_url, modal: true })) %>');
+showModal('ajax-modal', '600px');
+<%= rubylode_progress_close_on_outside_click_script %>

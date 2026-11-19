@@ -83,6 +83,16 @@ module RubylodeProgress
       editable_issue_ids.any? && stages.any? { |stage| accepts_issues?(stage.version) }
     end
 
+# Whether this viewer may change the version's status: Redmine's manage_versions on the version's own project (a
+# version shared from another project is that project's). Asked once per project, whatever the number of stages.
+def can_manage_version?(version)
+  @manage_versions_by_project_id ||= {}
+  @manage_versions_by_project_id.fetch(version.project_id) do
+    project = version.project_id == @project.id ? @project : version.project
+    @manage_versions_by_project_id[version.project_id] = @viewer.allowed_to?(:manage_versions, project)
+  end
+end
+
     # Taken over every counted issue, so it does not move when the checklist is filtered.
     def last_change_on
       @scope.issues.filter_map(&:updated_on).max

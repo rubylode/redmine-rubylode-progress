@@ -1,0 +1,24 @@
+<h3 class="title"><%= l("rubylode_progress.version_status.title", version: version.name) %></h3>
+
+<%= form_tag version_path(version), method: :put, class: "rubylode-progress-form" do %>
+  <%= hidden_field_tag :back_url, back_url %>
+  <div class="box rubylode-progress-status-choices">
+    <% Version::VERSION_STATUSES.each do |status| %>
+      <p class="rubylode-progress-status-choice">
+        <label>
+          <%= radio_button_tag "version[status]", status, version.status == status, id: "rubylode_progress_version_status_#{status}" %>
+          <strong><%= l("rubylode_progress.version_tag.#{status}") %></strong>
+          <span class="rubylode-progress-status-choice__meaning"><%= l("rubylode_progress.version_status.meaning.#{status}") %></span>
+        </label>
+      </p>
+    <% end %>
+  </div>
+  <p class="buttons">
+    <%= submit_tag l(:button_save), name: nil %>
+    <% if modal %>
+      <%= link_to_function l(:button_cancel), "hideModal(this);" %>
+    <% else %>
+      <%= link_to l(:button_cancel), back_url %>
+    <% end %>
+  </p>
+<% end %>

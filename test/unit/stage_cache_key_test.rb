@@ -46,7 +46,8 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: viewer, settings: settings,
                                         editable_issue_ids: progress.editable_issue_ids,
                                         new_issue_mode: progress.new_issue_mode_for(stage.version),
-                                        accepts_issues: progress.accepts_issues?(stage.version))
+                                        accepts_issues: progress.accepts_issues?(stage.version),
+                                        can_manage_version: progress.can_manage_version?(stage.version))
   end
 
   test "the key changes with whether the stage is a drop target for the viewer" do
@@ -57,13 +58,36 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     keys = [true, false].map do |accepts_issues|
       RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: @manager, settings: settings,
                                           editable_issue_ids: progress.editable_issue_ids, new_issue_mode: :none,
-                                          accepts_issues: accepts_issues)
+                                          accepts_issues: accepts_issues, can_manage_version: false)
     end
 
     refute_equal keys.first, keys.last
   end
 
-  test "it does not change on a second identical build" do
+test "the key changes with the viewer's right to manage the version" do
+  project = Project.find(@project.id)
+  settings = RubylodeProgress::EffectiveSettings.for(project)
+  progress = RubylodeProgress::ProjectProgress.new(project: project, viewer: @manager, settings: settings)
+  stage = progress.stages.first
+  keys = [true, false].map do |can_manage_version|
+    RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: @manager, settings: settings,
+                                        editable_issue_ids: progress.editable_issue_ids, new_issue_mode: :none,
+                                        accepts_issues: true, can_manage_version: can_manage_version)
+  end
+
+  refute_equal keys.first, keys.last
+end
+
+test "the manager can manage the version and the developer cannot, as the progress object says it" do
+  @manager_role.add_permission!(:manage_versions)
+  @developer_role.remove_permission!(:manage_versions)
+  [[@manager, true], [@developer, false]].each do |viewer, expected|
+    progress = RubylodeProgress::ProjectProgress.new(project: Project.find(@project.id), viewer: User.find(viewer.id))
+    assert_equal expected, progress.can_manage_version?(progress.stages.first.version)
+  end
+end
+
+test "it does not change on a second identical build" do
     assert_equal key_for, key_for
   end
 

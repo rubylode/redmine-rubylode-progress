@@ -8,6 +8,7 @@
                           editable_issue_ids: progress.editable_issue_ids,
                           new_issue_mode: progress.new_issue_mode_for(stage.version),
                           accepts_issues: progress.accepts_issues?(stage.version),
+                          can_manage_version: progress.can_manage_version?(stage.version),
                           rail_style: rubylode_progress_rail_style(progress.stages, index) %>
     <% end %>
   </ol>

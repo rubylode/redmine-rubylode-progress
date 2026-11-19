@@ -25,3 +25,5 @@ get "projects/:id/progress/versions/:version_id/new_issue", to: "rubylode_progre
                                                             as: "project_rubylode_progress_new_issue"
 get "projects/:id/progress/issues/:issue_id/item", to: "rubylode_progress#item",
                                                     as: "project_rubylode_progress_item"
+get "projects/:id/progress/versions/:version_id/status", to: "rubylode_progress#status",
+                                                         as: "project_rubylode_progress_version_status"

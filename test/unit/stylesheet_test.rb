@@ -142,6 +142,19 @@ class StylesheetTest < ActiveSupport::TestCase
     assert_match(/\.rubylode-progress-drop-refused\s*\{[^}]*--rubylode-progress-behind-color/, comment_free_stylesheet)
   end
 
+  test "the status button is styled in theme properties only, with a caret, and is a 44px target on a touch screen" do
+    selectors = rules.flat_map { |selector_text, _| selector_text.split(",").map(&:strip) }.join(" ")
+
+    %w[.rubylode-progress-status-button .rubylode-progress-status-button::after .rubylode-progress-status-choice__meaning].each do |name|
+      assert_includes selectors, name
+    end
+    body = rules.find { |selector, _| selector.strip == ".rubylode-progress-status-button" }&.last.to_s
+    assert_match(/color: var\(--rubylode-progress-text-color\)/, body)
+    assert_match(/border: 1px solid var\(--rubylode-progress-line-color\)/, body)
+    touch_rule = rules.find { |selector, _| selector.include?("rubylode-progress-status-button") && selector.include?("rubylode-progress-filter") }&.last.to_s
+    assert_match(/min-height: 44px/, touch_rule)
+  end
+
   test "the issue numbers and assignees are set off by a thin line in the theme's line colour" do
     body = rules.find { |selector, _| selector.include?("step__assignee") && selector.include?("row__number") }&.last.to_s
 

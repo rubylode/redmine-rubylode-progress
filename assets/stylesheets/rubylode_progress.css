@@ -603,6 +603,43 @@
   font-size: var(--rubylode-progress-small-text-size);
 }
 
+/* The status tag as a control, for a viewer who may manage versions: the tag's look with a small caret. */
+.rubylode-progress-status-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  border: 1px solid var(--rubylode-progress-line-color);
+  border-radius: 1em;
+  padding: 0 0.5em;
+  color: var(--rubylode-progress-text-color);
+  font-size: var(--rubylode-progress-small-text-size);
+  text-decoration: none;
+}
+
+.rubylode-progress-status-button::after {
+  content: "";
+  width: 0.35em;
+  height: 0.35em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-0.1em) rotate(45deg);
+}
+
+.rubylode-progress-status-button:hover,
+.rubylode-progress-status-button:focus-visible {
+  border-color: var(--rubylode-progress-accent-color);
+  text-decoration: none;
+}
+
+.rubylode-progress-status-choice label {
+  display: block;
+  cursor: pointer;
+}
+
+.rubylode-progress-status-choice__meaning {
+  color: var(--rubylode-progress-muted-text-color);
+}
+
 .rubylode-progress-step {
   display: flex;
   flex-wrap: wrap;
@@ -1174,6 +1211,7 @@
   .rubylode-progress-new-issue-button,
   .rubylode-progress-issue-query,
   .rubylode-progress-stage summary,
+  .rubylode-progress-status-button,
   .rubylode-progress-section__summary,
   .rubylode-progress-rules__summary {
     min-height: 44px;

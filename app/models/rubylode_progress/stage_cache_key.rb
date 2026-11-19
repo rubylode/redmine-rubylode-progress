@@ -30,17 +30,21 @@ module RubylodeProgress
   # the add-issues right), and the version's status. A role that loses a right changes the key on the next view.
   # The stage is a drop target only when it accepts issues for this viewer (open and shared with the project), and the rows
   # are draggable only where the viewer may edit (already in the digest of editable ids), so the drop-target flag is in the key too.
+  # The status tag is a button only for a viewer who may manage versions in the version's own project, so that right is in
+  # the key too, as true or false; it is worked out once per project, not per stage.
   # The rail line below a stage depends on the next stage, so it is drawn from properties on the uncached item around
   # this fragment, and nothing about a neighbour is in the key. Nothing in the fragment reads today, so no date is in it.
   module StageCacheKey
-    def self.for(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:, accepts_issues:)
+    def self.for(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:, accepts_issues:,
+                 can_manage_version:)
       step_issues = stage.steps.map(&:issue)
       editable_step_issues = step_issues.select { |issue| editable_issue_ids.include?(issue.id) }
       ["rubylode_progress/stage", project.id, viewer.id, stage.version.id, precise(stage.version.updated_on), stage.number,
        stage.state, digest_of_ids(step_issues), digest_of_ids(stage.steps.select(&:done?).map(&:issue)),
        precise(step_issues.filter_map(&:updated_on).max), settings.cache_digest, I18n.locale,
        stage.version.status, digest_of_ids(editable_step_issues), new_issue_mode,
-       digest_of_ids(in_progress_issues(step_issues, settings)), digest_of_assignees(step_issues), accepts_issues]
+       digest_of_ids(in_progress_issues(step_issues, settings)), digest_of_assignees(step_issues), accepts_issues,
+       can_manage_version]
     end
 
     # The half-filled marks: open issues in one of the settings' in-progress statuses. updated_on is stored to the
