@@ -1,0 +1,20 @@
+<%# The project's counted versions, each ticked unless the project left it out. Only on a project's tab: the plugin-wide
+    page has no list. A hidden empty value tells the controller the list was on the form, so an empty tick list is read. %>
+<% listed_versions = RubylodeProgress::IssueScope.new(project: @project, viewer: User.current,
+                                                       settings: RubylodeProgress::EffectiveSettings.for(@project)).listable_versions %>
+<% if listed_versions.any? %>
+  <% unticked_ids = Array(setting.excluded_version_ids) %>
+  <fieldset class="box">
+    <legend><%= l("rubylode_progress.settings.counted_version_ids.label") %></legend>
+    <p class="info"><%= l("rubylode_progress.settings.counted_version_ids.hint") %></p>
+    <%= hidden_field_tag "rubylode_progress_project_setting[counted_version_ids][]", "", id: nil %>
+    <% listed_versions.each do |version| %>
+      <label class="block">
+        <%= check_box_tag "rubylode_progress_project_setting[counted_version_ids][]", version.id, !unticked_ids.include?(version.id),
+                          id: "rubylode_progress_project_setting_counted_version_ids_#{version.id}" %>
+        <%= version.name %>
+        <% if version.effective_date %><em class="info"><%= format_date(version.effective_date) %></em><% end %>
+      </label>
+    <% end %>
+  </fieldset>
+<% end %>

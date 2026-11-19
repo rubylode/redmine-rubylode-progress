@@ -45,7 +45,7 @@ class RubylodeProgressProjectSettingsController < ApplicationController
 
   def submitted
     params.fetch(:rubylode_progress_project_setting, {}).permit(
-      *STRING_FIELDS, :next_issue_limit, *STATUS_LIST_FIELDS.map { |name| { name => [] } },
+      *STRING_FIELDS, :next_issue_limit, :finished_stages_kept, { counted_version_ids: [] }, *STATUS_LIST_FIELDS.map { |name| { name => [] } },
       *STATUS_LIST_FIELDS.map { |name| :"use_default_#{name}" }
     )
   end
@@ -55,7 +55,7 @@ class RubylodeProgressProjectSettingsController < ApplicationController
   def override_attributes
     values = submitted
     attributes = {}
-    (STRING_FIELDS + %w[next_issue_limit]).each do |name|
+    (STRING_FIELDS + %w[next_issue_limit finished_stages_kept]).each do |name|
       attributes[name] = values[name].presence if values.key?(name)
     end
     STATUS_LIST_FIELDS.each do |name|
@@ -64,6 +64,17 @@ class RubylodeProgressProjectSettingsController < ApplicationController
       use_default = values["use_default_#{name}"] == "1"
       attributes[name] = use_default ? nil : Array(values[name]).compact_blank.map(&:to_i)
     end
+    attributes["excluded_version_ids"] = excluded_version_ids(values[:counted_version_ids]) if values.key?(:counted_version_ids)
     attributes
+  end
+
+  # The versions the tab listed that were left unticked. Only the project's own listed versions count, so a posted id
+  # that is not one of them (another project's, a deleted one) is ignored. Nothing unticked is NULL: every version counts.
+  def excluded_version_ids(ticked_ids)
+    ticked = Array(ticked_ids).compact_blank.map(&:to_i)
+    scope = RubylodeProgress::IssueScope.new(project: @project, viewer: User.current,
+                                              settings: RubylodeProgress::EffectiveSettings.for(@project))
+    unticked = scope.listable_versions.map(&:id) - ticked
+    unticked.presence
   end
 end

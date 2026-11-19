@@ -8,5 +8,6 @@
                                                       values: setting.attributes.slice(*RubylodeProgress::ProjectSetting::OVERRIDE_ATTRIBUTES),
                                                       defaults: defaults %>
   </div>
+  <%= render "rubylode_progress/settings/version_list", setting: setting %>
   <p><%= submit_tag l(:button_save) %></p>
 <% end %>

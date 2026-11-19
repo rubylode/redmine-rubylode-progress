@@ -62,7 +62,20 @@ module RubylodeProgress
       @viewer.logged? ? @viewer.group_ids : []
     end
 
+    # The versions the project's settings tab lists for ticking: those that would be stages if ticked (the counted-versions
+    # rule applied, and either in this project's tree or holding an issue the viewer may see), oldest first.
+    def listable_versions
+      @listable_versions ||= unticked_candidates.sort_by { |version| [version.effective_date ? 0 : 1, version.effective_date || Date.new(0), version.name.to_s.downcase] }
+    end
+
     private
+
+    def unticked_candidates
+      candidates = prefix_only((shared_versions + @project.rolled_up_versions.visible(@viewer).preload(:project).to_a).uniq)
+      ids_with_issues = Issue.visible(@viewer).where(project_id: tree_project_ids, fixed_version_id: candidates.map(&:id))
+                             .distinct.pluck(:fixed_version_id).to_set
+      candidates.select { |version| ids_with_issues.include?(version.id) || own_and_visible?(version) }
+    end
 
     def candidate_versions
       @candidate_versions ||= counted_only(
@@ -82,7 +95,12 @@ module RubylodeProgress
       tree_project_ids.include?(version.project_id) && @viewer.allowed_to?(:view_issues, version.project)
     end
 
+    # The project's unticked versions go first, then the counted-versions rule.
     def counted_only(candidates)
+      prefix_only(candidates.reject { |version| @settings.excluded_version_ids.include?(version.id) })
+    end
+
+    def prefix_only(candidates)
       return candidates unless @settings.counted_versions == "prefix"
 
       candidates.select { |version| version.name.to_s.start_with?(@settings.version_name_prefix) }
