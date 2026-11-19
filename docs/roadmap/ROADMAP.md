@@ -26,7 +26,9 @@ the viewer may see.
    ~~`10-look-and-accessibility.md`~~ done 2026-11-18 (0dec454).
 7. Demo data and `bin/demo`: ~~`11-demo.md`~~ done 2026-11-19 (b08a875).
 8. The owner's revisions after the first demo: ~~`14-owner-revisions.md`~~ done 2026-11-19 (4dcdd5d).
-9. Screenshots, README, CHANGELOG, the redmine.org listing text, then release v1.0.0 with `/rubylode:prepare-release`
+9. The design review of the demo (full width, tracker rail, filter pills in the checklist, "issue" not "step"):
+   `15-design-review.md`.
+10. Screenshots, README, CHANGELOG, the redmine.org listing text, then release v1.0.0 with `/rubylode:prepare-release`
    through the Gitea origin: `12-release.md`.
    - ~~Private Gitea origin and the public GitHub repository~~ done 2026-11-18: Gitea main publishes to
      `rubylode/redmine-rubylode-progress`, seeded once by hand.
