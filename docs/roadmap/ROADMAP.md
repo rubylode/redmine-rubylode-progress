@@ -29,7 +29,9 @@ the viewer may see.
 9. The design review of the demo (full width, tracker rail, filter pills in the checklist, "issue" not "step"):
    ~~`15-design-review.md`~~ done 2026-11-19 (0141ac4).
 10. Drag an issue to another stage, and a Target version field in quick edit: ~~`16-drag-to-move.md`~~ done 2026-11-19 (016de72).
-11. Screenshots, README, CHANGELOG, the redmine.org listing text, then release v1.0.0 with `/rubylode:prepare-release`
+11. The second pass after the demo review (button colour, marks, names, dates, top block, why a drop is refused):
+   ~~`17-second-pass.md`~~ done 2026-11-19 (94b921b).
+12. Screenshots, README, CHANGELOG, the redmine.org listing text, then release v1.0.0 with `/rubylode:prepare-release`
    through the Gitea origin: `12-release.md`.
    - ~~Private Gitea origin and the public GitHub repository~~ done 2026-11-18: Gitea main publishes to
      `rubylode/redmine-rubylode-progress`, seeded once by hand.
