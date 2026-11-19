@@ -181,6 +181,7 @@ class QuickEditAndAddTest < Redmine::IntegrationTest
     assert_response :success
     assert_includes response.body, "#ajax-modal"
     assert_includes response.body, "showModal('ajax-modal', '600px')"
+    assert_includes response.body, ".ui-widget-overlay", "a click outside the modal closes it"
   end
 
   test "quick edit refuses a viewer who may not edit, and an issue that does not exist or is hidden" do
@@ -261,6 +262,7 @@ class QuickEditAndAddTest < Redmine::IntegrationTest
 
     assert_response :success
     assert_includes response.body, "showModal('ajax-modal', '600px')"
+    assert_includes response.body, ".ui-widget-overlay", "a click outside the modal closes it"
   end
 
   test "a required custom field sends the plus to Redmine's full new-issue form" do

@@ -3,4 +3,5 @@ window.location.href = '<%= escape_javascript(@full_form_url) %>';
 <% else %>
 $('#ajax-modal').html('<%= escape_javascript(render(partial: "rubylode_progress/new_issue_form", formats: [:html], locals: { issue: @issue, version: @version, tracker_choices: @tracker_choices, back_url: @back_url, modal: true })) %>');
 showModal('ajax-modal', '600px');
+<%= rubylode_progress_close_on_outside_click_script %>
 <% end %>

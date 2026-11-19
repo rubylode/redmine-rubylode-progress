@@ -23,7 +23,14 @@ module RubylodeProgressHelper
   }.freeze
   DUE_SOON_DAYS = 7
 
-  def rubylode_progress_status_label(status)
+# Redmine's modal is a jQuery UI dialog with an overlay behind it; a click on the overlay, that is anywhere outside
+# the dialog, closes it. Appended to each modal response, after showModal has opened the dialog.
+def rubylode_progress_close_on_outside_click_script
+  "$('.ui-widget-overlay').off('click.rubylodeProgress').on('click.rubylodeProgress', function () { " \
+    "$('#ajax-modal').dialog('close'); });".html_safe
+end
+
+def rubylode_progress_status_label(status)
     l("rubylode_progress.status.#{status}")
   end
 
