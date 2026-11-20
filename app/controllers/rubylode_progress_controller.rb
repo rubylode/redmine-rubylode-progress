@@ -195,6 +195,16 @@ class RubylodeProgressController < ApplicationController
     requested.is_a?(String) && sections.any? { |section| section.key == requested } ? requested : nil
   end
 
+  # The keys of the sections to open, from the address, comma separated, at most ten, and only those that name a section
+  # that exists; anything else is dropped without an error.
+  def requested_open_keys(sections)
+    requested = params[:open]
+    return [] unless requested.is_a?(String)
+
+    known = sections.map(&:key)
+    requested.split(",").first(RubylodeProgress::ChecklistSections::MAX_OPEN_KEYS).select { |key| known.include?(key) }
+  end
+
   # The narrowing comes first: the pill counts, the rows and the section tallies all read the narrowed issues, so the
   # counts match the list each pill selects. Sections list only their first rows; the notes are read for those rows only.
   def load_checklist
@@ -203,8 +213,10 @@ class RubylodeProgressController < ApplicationController
     @checklist_items = RubylodeProgress::ChecklistFilter.apply(@filter, narrowed_items, today: @today)
     sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @grouping, viewer: User.current,
                                                                            scope_items: narrowed_items)
+    expanded_key = expanded_section_key(sections)
+    sections = RubylodeProgress::ChecklistSections.fold(sections, open_keys: requested_open_keys(sections) + [expanded_key].compact)
     @sections = RubylodeProgress::ChecklistSections.limit(sections, rows_per_section: @progress.settings.checklist_rows_per_section,
-                                                                    expanded_key: expanded_section_key(sections))
+                                                                    expanded_key: expanded_key)
     @item_notes = RubylodeProgress::ItemNotes.for(@sections.flat_map { |section| section.items.map(&:issue) }, viewer: User.current,
                                                   settings: @progress.settings)
   end

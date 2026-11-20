@@ -22,12 +22,16 @@ module RubylodeProgress
   module ChecklistSections
     # key names the section in an address (?expand=): a version, category or parent id, or "none" for the one without.
     # row_count is all the rows of the section; items are the rows listed, which #limit may cut, hidden_count being the rest.
-    Section = Struct.new(:key, :title, :version, :items, :row_count, :hidden_count, :done_count, :total_count, :total_done_count, keyword_init: true) do
+    Section = Struct.new(:key, :title, :version, :items, :row_count, :hidden_count, :done_count, :total_count, :total_done_count, :folded, keyword_init: true) do
       # The closed share of all the section's issues, rounded.
       def percent
         total_count.to_i.zero? ? 0 : Rational(total_done_count * 100, total_count).round
       end
     end
+
+    FOLD_THRESHOLD = 8
+    OPEN_SECTION_COUNT = 5
+    MAX_OPEN_KEYS = 10
 
     module_function
 
@@ -73,6 +77,21 @@ module RubylodeProgress
         section.dup.tap do |cut|
           cut.items = section.items.first(rows_per_section)
           cut.hidden_count = section.items.size - rows_per_section
+        end
+      end
+    end
+
+    # With more than FOLD_THRESHOLD sections only the first OPEN_SECTION_COUNT list rows; the others keep their heading,
+    # counts and meter but carry no rows (folded) until their key is in open_keys. row_count still says how many they hold.
+    def fold(sections, open_keys: [])
+      return sections if sections.size <= FOLD_THRESHOLD
+
+      sections.each_with_index.map do |section, position|
+        next section if position < OPEN_SECTION_COUNT || open_keys.include?(section.key)
+
+        section.dup.tap do |folded|
+          folded.items = []
+          folded.folded = true
         end
       end
     end

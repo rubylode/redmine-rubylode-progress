@@ -13,6 +13,12 @@ class ProgressFiltersController extends Controller {
 
   connect() {
     this.foldMoreMenus()
+    this.openedSectionListener = (event) => this.openedSection(event)
+    this.checklistTarget.addEventListener("toggle", this.openedSectionListener, true)
+  }
+
+  disconnect() {
+    this.checklistTarget.removeEventListener("toggle", this.openedSectionListener, true)
   }
 
   // On a phone the pencil and the new-tab link sit behind a button, so the menus start closed.
@@ -60,21 +66,74 @@ class ProgressFiltersController extends Controller {
   async expand(event) {
     event.preventDefault()
     const link = event.currentTarget
-    const section = link.closest(".rubylode-progress-section")
+    await this.swapSection(link.closest(".rubylode-progress-section"), link.dataset.checklistPath, link.href)
+  }
+
+  // Fetch the panel at checklistPath and replace one section with the same section from it. Any failure leaves the
+  // viewer on pageAddress, which is the same step as a page load.
+  async swapSection(section, checklistPath, pageAddress) {
     try {
-      const response = await fetch(link.dataset.checklistPath, { credentials: "same-origin" })
+      const response = await fetch(checklistPath, { credentials: "same-origin" })
       if (!response.ok) { throw new Error(response.status) }
 
       const template = document.createElement("template")
       template.innerHTML = await response.text()
       const fresh = template.content.querySelector(`[data-section-key="${CSS.escape(section.dataset.sectionKey)}"]`)
       if (!fresh) { throw new Error("section missing") }
+      if (fresh.hasAttribute("data-lazy-section-path")) { throw new Error("section still folded") }
 
       section.replaceWith(fresh)
       this.foldMoreMenus()
       fresh.querySelector("summary").focus({ preventScroll: true })
     } catch (error) {
-      window.location.href = link.href
+      console.error("Rubylode Progress checklist: the section did not load", error)
+      window.location.href = pageAddress
+    }
+  }
+
+  // A folded section holds a link in place of its rows. The toggle event does not bubble, so the listener is on the panel
+  // in the capture phase. The first time the section is opened, its rows are fetched and the section is swapped in place.
+  openedSection(event) {
+    const section = event.target
+    if (!section.matches || !section.matches("details[data-lazy-section-path]")) { return }
+    if (!section.open) { return }
+
+    const placeholder = section.querySelector(":scope > .rubylode-progress-section__lazy")
+    if (!placeholder) {
+      console.error("Rubylode Progress checklist: the section was opened but holds no place for its rows", section)
+      return
+    }
+    if (placeholder.dataset.loading === "true") {
+      console.error("Rubylode Progress checklist: the rows of this section are already loading")
+      return
+    }
+
+    const link = placeholder.querySelector("a")
+    placeholder.dataset.loading = "true"
+    placeholder.setAttribute("role", "status")
+    placeholder.replaceChildren(placeholder.dataset.loadingMessage)
+    this.loadSection(section, placeholder, link)
+  }
+
+  // Like "Show more", but a failure keeps the folded section and offers the plain link again, so nothing is lost.
+  async loadSection(section, placeholder, link) {
+    try {
+      const response = await fetch(section.dataset.lazySectionPath, { credentials: "same-origin" })
+      if (!response.ok) { throw new Error(response.status) }
+
+      const template = document.createElement("template")
+      template.innerHTML = await response.text()
+      const fresh = template.content.querySelector(`[data-section-key="${CSS.escape(section.dataset.sectionKey)}"]`)
+      if (!fresh) { throw new Error("section missing") }
+      if (fresh.hasAttribute("data-lazy-section-path")) { throw new Error("section still folded") }
+
+      section.replaceWith(fresh)
+      this.foldMoreMenus()
+    } catch (error) {
+      console.error("Rubylode Progress checklist: the rows of the section did not load", error)
+      placeholder.dataset.loading = "false"
+      placeholder.removeAttribute("role")
+      placeholder.replaceChildren(placeholder.dataset.failedMessage + " ", ...(link ? [link] : []))
     }
   }
 

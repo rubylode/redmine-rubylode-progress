@@ -274,8 +274,8 @@ end
 
   # The checklist's own address with its filter, the grouping only when it differs from the project's setting, the
   # chosen assignee, tracker and category (none for "any"), and the section to list in full when one is named.
-  def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:, narrowing: {}, expand: nil)
-    { filter: filter, group: (grouping == default_grouping ? nil : grouping), expand: expand,
+  def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:, narrowing: {}, expand: nil, open: nil)
+    { filter: filter, group: (grouping == default_grouping ? nil : grouping), expand: expand, open: open,
       **RubylodeProgress::ChecklistNarrowing.parameters_for(narrowing).transform_keys(&:to_sym) }.compact
   end
 end
