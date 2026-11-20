@@ -19,6 +19,7 @@ class RubylodeProgressController < ApplicationController
   menu_item :rubylode_progress
   before_action :find_project, :authorize
   before_action :load_progress_and_filter, only: [:show, :checklist]
+  before_action :require_focus_to_be_a_stage, :remember_filter, only: [:show, :checklist]
   before_action :load_progress_for_modal, only: [:quick_edit, :new_issue, :status, :stage_issues, :stage_closed_issues]
   after_action :trim_indentation, only: [:show, :checklist, :stage_issues, :stage_closed_issues]
   helper_method :checklist_locals
@@ -102,7 +103,7 @@ class RubylodeProgressController < ApplicationController
     return render_404 unless @version
     return render_403 unless @progress.can_manage_version?(@version)
 
-    @back_url = project_rubylode_progress_path(@project, filter: @filter, **status_grouping_parameters)
+    @back_url = project_rubylode_progress_path(@project, filter: @filter, **status_grouping_parameters, **focus_parameters)
     respond_to do |format|
       format.html
       format.js
@@ -125,7 +126,13 @@ class RubylodeProgressController < ApplicationController
   def load_progress_for_modal
     @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
     @filter = RubylodeProgress::ChecklistFilter.resolve(requested: params[:filter], remembered: remembered_filter)
-    @back_url = project_rubylode_progress_path(@project, filter: @filter)
+    @back_url = project_rubylode_progress_path(@project, filter: @filter, **focus_parameters)
+  end
+
+  # The stage to come back to, only when it is one of the viewer's stages; anything else is dropped.
+  def focus_parameters
+    stage_id = requested_focused_stage_id
+    stage_id && @progress.stages.any? { |stage| stage.version.id == stage_id } ? { stage: stage_id } : {}
   end
 
   # The grouping to come back to, only when it is a known one that differs from the project's setting.
@@ -139,17 +146,32 @@ class RubylodeProgressController < ApplicationController
   def checklist_locals
     { sections: @sections, item_notes: @item_notes, project: @project, progress: @progress, filter: @filter,
       grouping: @grouping, default_grouping: @progress.settings.checklist_grouping, counts: @counts,
-      shown_count: @checklist_items.size, today: @today, narrowing: @narrowing, narrowing_options: @narrowing_options }
+      shown_count: @checklist_items.size, today: @today, narrowing: @narrowing, narrowing_options: @narrowing_options,
+      focused_stage: @progress.focused_stage }
   end
 
   def load_progress_and_filter
-    @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
+    @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current,
+                                                      focused_stage_id: requested_focused_stage_id)
     @filter = RubylodeProgress::ChecklistFilter.resolve(requested: params[:filter], remembered: remembered_filter)
-    @grouping = requested_grouping
+    @grouping = @progress.focus_requested? ? "flat" : requested_grouping
     @narrowing_options = RubylodeProgress::ChecklistNarrowing.options_for(@progress.items)
     @narrowing = RubylodeProgress::ChecklistNarrowing.resolve(requested_narrowing, @narrowing_options)
     @today = User.current.today
-    remember_filter
+  end
+
+  # A focus that is not one of the viewer's stages, or is not a plain number, is a 404, before anything is remembered.
+  def require_focus_to_be_a_stage
+    render_404 if @progress.focus_requested? && @progress.focused_stage.nil?
+  end
+
+  # The stage to focus on: nil without one (absent or empty), its id for a string of digits. Anything else (an array,
+  # text) is still a request for a focus that names no stage (0), so the page answers 404.
+  def requested_focused_stage_id
+    requested = params[:stage]
+    return nil if requested.nil? || requested == ""
+
+    requested.is_a?(String) && requested.match?(/\A\d+\z/) ? requested.to_i : 0
   end
 
   def remembered_filter

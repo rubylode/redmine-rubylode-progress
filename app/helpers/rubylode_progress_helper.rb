@@ -272,10 +272,15 @@ end
     project_rubylode_progress_path(project, **link_parameters, open_stage: version.id)
   end
 
+  # The page's own address focused on one stage, with the page's own checked parameters.
+  def rubylode_progress_focus_path(project, version, link_parameters)
+    project_rubylode_progress_path(project, **link_parameters, stage: version.id)
+  end
+
   # The checklist's own address with its filter, the grouping only when it differs from the project's setting, the
   # chosen assignee, tracker and category (none for "any"), and the section to list in full when one is named.
-  def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:, narrowing: {}, expand: nil, open: nil)
-    { filter: filter, group: (grouping == default_grouping ? nil : grouping), expand: expand, open: open,
+  def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:, narrowing: {}, expand: nil, open: nil, stage: nil)
+    { filter: filter, group: (grouping == default_grouping ? nil : grouping), expand: expand, open: open, stage: stage,
       **RubylodeProgress::ChecklistNarrowing.parameters_for(narrowing).transform_keys(&:to_sym) }.compact
   end
 end
