@@ -14,7 +14,7 @@ with: how far along is it, which stage are we in, what is next, and what is wait
 versions and issues each time the page opens, so there is nothing to keep up to date by hand, and it shows only what the
 viewer may see. A second page lists every project as a compact tracker.
 
-Version 1.1.0, needs Redmine 7.0 or newer. `docs/roadmap/ROADMAP.md` lists what is not done.
+Version 1.1.1, needs Redmine 7.0 or newer. `docs/roadmap/ROADMAP.md` lists what is not done.
 
 ![The Progress tab of a project](docs/screenshots/progress-tab.png)
 
@@ -72,7 +72,7 @@ Needs Redmine 7.0 or newer.
        cd /path/to/redmine/plugins
        git clone https://github.com/rubylode/redmine-rubylode-progress.git redmine_rubylode_progress
 
-   Or unpack `redmine_rubylode_progress-1.1.0.zip` from the release there.
+   Or unpack `redmine_rubylode_progress-1.1.1.zip` from the release there.
 
 2. Run `bundle exec rake redmine:plugins:migrate RAILS_ENV=production`. It adds one table, for the per-project settings.
 3. Restart Redmine.

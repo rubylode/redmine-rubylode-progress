@@ -21,7 +21,7 @@ class PluginRegisteredTest < ActiveSupport::TestCase
   test "the plugin is registered for Redmine 7.0 and newer" do
     plugin = Redmine::Plugin.find(:redmine_rubylode_progress)
     assert_equal "Rubylode Progress", plugin.name
-    assert_equal "1.1.0", plugin.version
+    assert_equal "1.1.1", plugin.version
 
     project_module = Redmine::AccessControl.available_project_modules
     assert_includes project_module, :rubylode_progress

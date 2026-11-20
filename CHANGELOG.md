@@ -2,6 +2,15 @@
 
 All notable changes to this plugin. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.1] - 2026-11-20
+
+No migration: replace the folder and restart Redmine.
+
+### Fixed
+
+- The three number fields in the settings (How many issues are Next, Finished stages kept in the list, Issues listed per checklist section) are wide enough to show their "Use the default" hint, and the date next to a version in the tick list stays on its line.
+- On a phone the three filter selects (assignee, tracker, category) fit the column instead of running past the edge of the panel.
+
 ## [1.1.0] - 2026-11-19
 
 For projects with many stages and many issues. Two migrations add the new settings: after replacing the folder run `bundle exec rake redmine:plugins:migrate RAILS_ENV=production` and restart Redmine.
@@ -42,5 +51,6 @@ First release. Needs Redmine 7.0 or newer.
 - Styling through CSS custom properties, with a dark block to paste into a dark theme (`docs/theming.md`), and a layout for a phone.
 - A throwaway demo Redmine with made-up projects (`ruby bin/demo up`), the README screenshots from it, and unit and integration tests (`bin/test`).
 
+[1.1.1]: https://github.com/rubylode/redmine-rubylode-progress/releases/tag/v1.1.1
 [1.1.0]: https://github.com/rubylode/redmine-rubylode-progress/releases/tag/v1.1.0
 [1.0.0]: https://github.com/rubylode/redmine-rubylode-progress/releases/tag/v1.0.0

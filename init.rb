@@ -21,7 +21,7 @@ Redmine::Plugin.register :redmine_rubylode_progress do
   name "Rubylode Progress"
   author "Rubylode"
   description "A Progress tab for each project: how far along it is, which stage is current, what is next."
-  version "1.1.0"
+  version "1.1.1"
   requires_redmine version_or_higher: "7.0.0"
 
   settings default: RubylodeProgress::Settings::DEFAULTS, partial: "settings/rubylode_progress_settings"
