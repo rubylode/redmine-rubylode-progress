@@ -38,6 +38,7 @@ the viewer may see.
    - ~~Private Gitea origin and the public GitHub repository~~ done 2026-11-18: Gitea main publishes to
      `rubylode/redmine-rubylode-progress`, seeded once by hand.
 14. Busy projects, many stages and many issues: ~~`19-busy-projects.md`~~ done 2026-11-19 (e6aa972), for 1.1.0.
+15. Load a stage's issues when it is opened: ~~`20-lazy-stages.md`~~ done 2026-11-19 (e7b07cb), for 1.1.0.
 
 ## Ideas
 
