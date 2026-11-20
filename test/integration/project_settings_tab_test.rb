@@ -57,7 +57,7 @@ class ProjectSettingsTabTest < Redmine::IntegrationTest
 
     assert_response :success
     %w[next_issue_limit finished_stages_kept checklist_rows_per_section].each do |name|
-      assert_select "input[type=number][name$='[#{name}]'][placeholder^='Use the default'][style*='width: 11em']", count: 1
+      assert_select "input[type=number][name$='[#{name}]'][placeholder^='Use the default'][style*='width: 14em']", count: 1
     end
   end
 

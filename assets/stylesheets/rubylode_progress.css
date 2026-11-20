@@ -1337,17 +1337,22 @@
   .rubylode-progress-checklist__selectors,
   .rubylode-progress-narrowing {
     flex-direction: column;
+    flex-wrap: nowrap;
     align-items: stretch;
   }
 
   .rubylode-progress-narrowing__field {
+    display: flex;
     flex-wrap: wrap;
+    width: 100%;
   }
 
   .rubylode-progress-narrowing__select {
     flex: 1 1 10em;
+    min-width: 0;
     max-width: none;
     min-height: 44px;
+    box-sizing: border-box;
   }
 
   .rubylode-progress-show-more,

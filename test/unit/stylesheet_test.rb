@@ -246,6 +246,16 @@ test "a narrow checklist column puts a row's number, assignee, pill and date on 
   assert_match(/\.rubylode-progress-row__main\s*\{[^}]*flex: 1 1 calc\(100% - /m, narrow)
 end
 
+  test "on a phone each narrowing select shrinks to the column instead of running past its edge" do
+    phone = comment_free_stylesheet[/@media \(max-width: 640px\)\s*\{(.*)\z/m, 1]
+
+    # A wrapping flex column sizes its line to the widest item (the pills row), so on a phone it must not wrap.
+    assert_match(/\.rubylode-progress-checklist__selectors,\s*\.rubylode-progress-narrowing\s*\{[^}]*flex-wrap: nowrap/m, phone)
+    assert_match(/\.rubylode-progress-narrowing__field\s*\{[^}]*width: 100%/m, phone)
+    assert_match(/\.rubylode-progress-narrowing__select\s*\{[^}]*min-width: 0/m, phone)
+    assert_match(/\.rubylode-progress-narrowing__select\s*\{[^}]*box-sizing: border-box/m, phone)
+  end
+
   # Redmine puts the menu item's name on its link as a class, so the top menu and the project menu carry
   # a.rubylode-progress. The page wrapper is a div with the same class and must not style those links.
   test "the page wrapper rule is scoped to the div, so the menu links named rubylode-progress are not laid out as the page" do

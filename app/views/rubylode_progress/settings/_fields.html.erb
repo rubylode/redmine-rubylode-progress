@@ -58,21 +58,21 @@
 
 <p>
   <label for="<%= field_id.call("next_issue_limit") %>"><%= l("rubylode_progress.settings.next_issue_limit.label") %></label>
-  <%= number_field_tag "#{scope}[next_issue_limit]", values["next_issue_limit"], id: field_id.call("next_issue_limit"), style: "width: 11em",
+  <%= number_field_tag "#{scope}[next_issue_limit]", values["next_issue_limit"], id: field_id.call("next_issue_limit"), style: "width: 14em",
                        min: settings_scope::NEXT_ISSUE_LIMIT_RANGE.first, max: settings_scope::NEXT_ISSUE_LIMIT_RANGE.last,
                        placeholder: defaults ? l("rubylode_progress.settings.use_default", value: defaults.next_issue_limit) : nil %>
   <em class="info"><%= l("rubylode_progress.settings.next_issue_limit.hint", first: settings_scope::NEXT_ISSUE_LIMIT_RANGE.first, last: settings_scope::NEXT_ISSUE_LIMIT_RANGE.last) %></em>
 </p>
 <p>
   <label for="<%= field_id.call("finished_stages_kept") %>"><%= l("rubylode_progress.settings.finished_stages_kept.label") %></label>
-  <%= number_field_tag "#{scope}[finished_stages_kept]", values["finished_stages_kept"], id: field_id.call("finished_stages_kept"), style: "width: 11em",
+  <%= number_field_tag "#{scope}[finished_stages_kept]", values["finished_stages_kept"], id: field_id.call("finished_stages_kept"), style: "width: 14em",
                        min: settings_scope::FINISHED_STAGES_KEPT_RANGE.first, max: settings_scope::FINISHED_STAGES_KEPT_RANGE.last,
                        placeholder: defaults ? l("rubylode_progress.settings.use_default", value: defaults.finished_stages_kept) : nil %>
   <em class="info"><%= l("rubylode_progress.settings.finished_stages_kept.hint", first: settings_scope::FINISHED_STAGES_KEPT_RANGE.first, last: settings_scope::FINISHED_STAGES_KEPT_RANGE.last) %></em>
 </p>
 <p>
   <label for="<%= field_id.call("checklist_rows_per_section") %>"><%= l("rubylode_progress.settings.checklist_rows_per_section.label") %></label>
-  <%= number_field_tag "#{scope}[checklist_rows_per_section]", values["checklist_rows_per_section"], id: field_id.call("checklist_rows_per_section"), style: "width: 11em",
+  <%= number_field_tag "#{scope}[checklist_rows_per_section]", values["checklist_rows_per_section"], id: field_id.call("checklist_rows_per_section"), style: "width: 14em",
                        min: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.first, max: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.last,
                        placeholder: defaults ? l("rubylode_progress.settings.use_default", value: defaults.checklist_rows_per_section) : nil %>
   <em class="info"><%= l("rubylode_progress.settings.checklist_rows_per_section.hint", first: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.first, last: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.last) %></em>
