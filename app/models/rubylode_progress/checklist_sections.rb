@@ -35,12 +35,15 @@ module RubylodeProgress
 
     module_function
 
-    # by is "version" (in the order the items arrive, which is stage order), "category" (by name, then "No category")
-    # or "parent" (by parent issue number, then "No parent"). scope_items is every issue the sections are made of; items
-    # are the rows to show. Sections left without a row are dropped.
+    # by is "version" (in the order the items arrive, which is stage order), "category" (by name, then "No category"),
+    # "parent" (by parent issue number, then "No parent") or "flat" (one section without a title, for a focused stage).
+    # scope_items is every issue the sections are made of; items are the rows to show. Sections left without a row are
+    # dropped.
     def group(items, by:, viewer:, scope_items: items)
       shown = items.to_set.compare_by_identity
       case by
+      when "flat"
+        [section("all", nil, scope_items, shown, version: nil)].reject { |built| built.items.empty? }
       when "category"
         grouped(scope_items, shown, key: ->(issue) { issue.category&.name }, title: ->(issue) { issue.category.name },
                                     order: :sorted, missing_key: "no_category", version: nil, section_key: ->(issue) { issue.category.id })

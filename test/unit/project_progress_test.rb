@@ -98,9 +98,46 @@ class ProjectProgressTest < ActiveSupport::TestCase
     end
   end
 
+  test "a focus narrows the items to the focused stage and leaves the stages whole" do
+    second = Version.generate!(project: @project, effective_date: Date.today + 60)
+    Issue.generate!(project: @project, fixed_version: @version)
+    Issue.generate!(project: @project, fixed_version: second)
+    Issue.generate!(project: @project, fixed_version: second)
+
+    result = progress(viewer: @manager, focused_stage_id: second.id)
+
+    assert_equal [second.id], result.items.map { |item| item.issue.fixed_version_id }.uniq
+    assert_equal 2, result.items.size
+    assert_equal 2, result.stages.size
+    assert_equal second.id, result.focused_stage.version.id
+    assert result.focus_requested?
+    assert_equal result.focused_stage.steps.map(&:number), result.items.map(&:step_number)
+  end
+
+  test "a focus on an id that is not a stage is requested but finds no stage" do
+    Issue.generate!(project: @project, fixed_version: @version)
+
+    result = progress(viewer: @manager, focused_stage_id: 0)
+
+    assert result.focus_requested?
+    assert_nil result.focused_stage
+  end
+
+  test "without a focus nothing changes" do
+    Issue.generate!(project: @project, fixed_version: @version)
+    Issue.generate!(project: @project, fixed_version: @version)
+
+    result = progress(viewer: @manager)
+
+    refute result.focus_requested?
+    assert_nil result.focused_stage
+    assert_equal 2, result.items.size
+    assert_equal result.stages.flat_map(&:steps).map(&:number), result.items.map(&:step_number)
+  end
+
   private
 
-  def progress(viewer:)
-    RubylodeProgress::ProjectProgress.new(project: @project, viewer: viewer)
+  def progress(viewer:, focused_stage_id: nil)
+    RubylodeProgress::ProjectProgress.new(project: @project, viewer: viewer, focused_stage_id: focused_stage_id)
   end
 end

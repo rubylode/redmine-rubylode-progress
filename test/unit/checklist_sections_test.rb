@@ -117,6 +117,20 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
     assert_equal %w[5 none], by_parent.map(&:key)
   end
 
+  test "flat grouping is one section without a title over all the items" do
+    items = [item(1, status: :done, version: Named.new("Alpha", 1)), item(2, version: Named.new("Beta", 2)), item(3)]
+
+    sections = RubylodeProgress::ChecklistSections.group(items, by: "flat", viewer: VIEWER)
+
+    assert_equal 1, sections.size
+    assert_equal "all", sections.first.key
+    assert_nil sections.first.title
+    assert_nil sections.first.version
+    assert_equal [1, 2, 3], sections.first.items.map { |row| row.issue.id }
+    assert_equal 3, sections.first.total_count
+    assert_equal 1, sections.first.total_done_count
+  end
+
   test "limit cuts each section to its first rows, counts the rest, and keeps the expanded section whole" do
     alpha = Named.new("Alpha", 1)
     beta = Named.new("Beta", 2)

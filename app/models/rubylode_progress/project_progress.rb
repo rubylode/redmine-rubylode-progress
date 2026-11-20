@@ -26,10 +26,12 @@ module RubylodeProgress
 
     attr_reader :settings
 
-    def initialize(project:, viewer:, settings: EffectiveSettings.for(project))
+    # focused_stage_id narrows the items to one of the viewer's stages; the stages themselves stay whole.
+    def initialize(project:, viewer:, settings: EffectiveSettings.for(project), focused_stage_id: nil)
       @project = project
       @viewer = viewer
       @settings = settings
+      @focused_stage_id = focused_stage_id
       @scope = IssueScope.new(project: project, viewer: viewer, settings: settings)
     end
 
@@ -53,8 +55,19 @@ module RubylodeProgress
 
     def all_done? = stage_list.all_done?
 
+    # Whether a focus was asked for, found or not.
+    def focus_requested? = !@focused_stage_id.nil?
+
+    # The viewer's stage the focus names; nil without a focus, or when the id is not one of the viewer's stages.
+    def focused_stage
+      return nil unless focus_requested?
+
+      @focused_stage ||= stages.find { |stage| stage.version.id == @focused_stage_id }
+    end
+
+    # Every counted item, or only the focused stage's when a focus names one of the viewer's stages.
     def items
-      @items ||= stages.flat_map do |stage|
+      @items ||= (focus_requested? ? [focused_stage].compact : stages).flat_map do |stage|
         stage.steps.map { |step| Item.new(issue: step.issue, status: status_for(step.issue), step_number: step.number) }
       end
     end
