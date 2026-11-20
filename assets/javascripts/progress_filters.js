@@ -111,7 +111,7 @@ class ProgressFiltersController extends Controller {
     const link = placeholder.querySelector("a")
     placeholder.dataset.loading = "true"
     placeholder.setAttribute("role", "status")
-    placeholder.replaceChildren(placeholder.dataset.loadingMessage)
+    placeholder.replaceChildren(section.closest(".rubylode-progress-checklist").dataset.loadingMessage)
     this.loadSection(section, placeholder, link)
   }
 
@@ -133,7 +133,7 @@ class ProgressFiltersController extends Controller {
       console.error("Rubylode Progress checklist: the rows of the section did not load", error)
       placeholder.dataset.loading = "false"
       placeholder.removeAttribute("role")
-      placeholder.replaceChildren(placeholder.dataset.failedMessage + " ", ...(link ? [link] : []))
+      placeholder.replaceChildren(section.closest(".rubylode-progress-checklist").dataset.failedMessage + " ", ...(link ? [link] : []))
     }
   }
 

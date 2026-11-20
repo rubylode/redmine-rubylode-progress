@@ -1,7 +1,7 @@
 <%# The whole panel is what a filter or grouping choice swaps in, so the heading, the pills and the counts stay in step. %>
 <% current_stage = progress.current_stage %>
 <% new_issue_mode = current_stage ? progress.new_issue_mode_for(current_stage.version) : :none %>
-<section class="rubylode-progress-checklist">
+<section class="rubylode-progress-checklist" data-loading-message="<%= l("rubylode_progress.stage_issues_loading") %>" data-failed-message="<%= l("rubylode_progress.stage_issues_failed") %>">
   <div class="rubylode-progress-checklist__heading">
     <div class="rubylode-progress-checklist__titles">
       <h3 class="rubylode-progress-checklist__title"><%= l("rubylode_progress.checklist.title.#{filter}") %></h3>
@@ -50,7 +50,7 @@
       </summary>
       <% if section.folded %>
         <%# Without a script the link reloads the page with this section open; the script swaps the section in when it is opened. %>
-        <p class="rubylode-progress-section__lazy" data-loading-message="<%= l("rubylode_progress.stage_issues_loading") %>" data-failed-message="<%= l("rubylode_progress.stage_issues_failed") %>">
+        <p class="rubylode-progress-section__lazy">
           <%= link_to l("rubylode_progress.show_stage_issues", count: section.row_count), project_rubylode_progress_path(project, **open_params),
                       class: "rubylode-progress-section__lazy-link" %>
         </p>

@@ -20,6 +20,7 @@ class RubylodeProgressController < ApplicationController
   before_action :find_project, :authorize
   before_action :load_progress_and_filter, only: [:show, :checklist]
   before_action :load_progress_for_modal, only: [:quick_edit, :new_issue, :status, :stage_issues, :stage_closed_issues]
+  after_action :trim_indentation, only: [:show, :checklist, :stage_issues, :stage_closed_issues]
   helper_method :checklist_locals
 
   def show
@@ -108,6 +109,16 @@ class RubylodeProgressController < ApplicationController
 
   private
 
+  # A busy page is mostly indentation and blank lines left by the templates. Dropping them changes nothing on screen, but
+  # whitespace is meaningful inside a pre or a textarea, so a page that holds one is left as it is.
+  def trim_indentation
+    return unless response.media_type == "text/html"
+
+    markup = response.body
+    return if markup.match?(/<(?:pre|textarea)\b/i)
+
+    response.body = markup.gsub(/^[ \t]+/, "").gsub(/\n{2,}/, "\n")
+  end
   # Where Redmine sends the viewer after the save: built here from the project and the filter, never taken from the request.
   def load_progress_for_modal
     @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
