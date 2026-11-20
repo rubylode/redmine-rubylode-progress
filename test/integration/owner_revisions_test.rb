@@ -65,7 +65,10 @@ class OwnerRevisionsTest < Redmine::IntegrationTest
 
       assert_select ".rubylode-progress-step--in-progress", count: 1
       assert_select ".rubylode-progress-step--open", count: 1
+      assert_select ".rubylode-progress-step--done", count: 0 # the closed rows load when the fold is opened
+      get "/projects/#{@project.identifier}/progress/stages/#{@version.id}/closed_issues"
       assert_select ".rubylode-progress-step--done", count: 1
+      get progress_path
       assert_select ".rubylode-progress-row--in-progress .rubylode-progress-row__mark", count: 1
       assert_select ".rubylode-progress-row--done .rubylode-progress-row__mark", count: 1
       assert_select ".rubylode-progress-row__mark--next", count: 1

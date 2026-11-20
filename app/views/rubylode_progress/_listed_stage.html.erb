@@ -4,4 +4,5 @@
                     new_issue_mode: progress.new_issue_mode_for(stage.version),
                     accepts_issues: progress.accepts_issues?(stage.version),
                     can_manage_version: progress.can_manage_version?(stage.version),
+                    open_stage_id: open_stage_id, link_parameters: link_parameters,
                     rail_style: rubylode_progress_rail_style(progress.stages, stage_indexes.fetch(stage.version.id)) %>

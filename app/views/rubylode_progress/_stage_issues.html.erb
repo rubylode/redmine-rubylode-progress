@@ -1,0 +1,30 @@
+<%# One stage's issue list: the issues, the closed fold, and the plus. The stage renders it when it starts open, and the
+    issues route answers it alone for a folded stage; both are this fragment, cached under the same key. %>
+<% cache RubylodeProgress::StageCacheKey.for_issues(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode, closed_inline: closed_inline) do %>
+  <% folds_closed = (stage.current? || stage.partial?) && stage.steps.any?(&:done?) %>
+  <ul class="rubylode-progress-steps">
+    <% (folds_closed ? stage.steps.reject(&:done?) : stage.steps).each do |step| %>
+      <%= render "stage_step", step: step, project: project, settings: settings, editable_issue_ids: editable_issue_ids %>
+    <% end %>
+  </ul>
+  <% if folds_closed %>
+    <details class="rubylode-progress-closed-fold" <%= tag.attributes(data: { lazy_issues_path: project_rubylode_progress_stage_closed_issues_path(project, version_id: stage.version.id) }) unless closed_inline %>>
+      <summary>
+        <span class="rubylode-progress-chevron" aria-hidden="true"></span>
+        <span class="rubylode-progress-closed-fold__show"><%= l("rubylode_progress.show_closed", count: stage.done_step_count) %></span>
+        <span class="rubylode-progress-closed-fold__hide"><%= l("rubylode_progress.hide_closed", count: stage.done_step_count) %></span>
+      </summary>
+      <% if closed_inline %>
+        <%= render "stage_closed_issues", stage: stage, project: project, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode %>
+      <% else %>
+        <%# The address has no parameters, so the fragment stays the same for every request. %>
+        <p class="rubylode-progress-stage__lazy"><%= link_to l("rubylode_progress.show_stage_issues", count: stage.done_step_count), "?open_stage=#{stage.version.id}", class: "rubylode-progress-stage__lazy-link" %></p>
+      <% end %>
+    </details>
+  <% end %>
+  <% unless new_issue_mode == :none %>
+    <p class="rubylode-progress-stage__add">
+      <%= render "new_issue_link", project: project, version: stage.version, full_form: new_issue_mode == :full_form %>
+    </p>
+  <% end %>
+<% end %>

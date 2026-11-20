@@ -106,7 +106,8 @@ class SecondPassTest < Redmine::IntegrationTest
     open_progress
 
     assert_select "details.rubylode-progress-stage[open] > ul.rubylode-progress-steps .rubylode-progress-step--done", count: 0
-    assert_select "details.rubylode-progress-stage[open] > details.rubylode-progress-closed-fold:not([open]) .rubylode-progress-step--done", count: 2
+    assert_select "details.rubylode-progress-stage[open] > details.rubylode-progress-closed-fold:not([open]) .rubylode-progress-step--done", count: 0
+    assert_select "details.rubylode-progress-stage[open] > details.rubylode-progress-closed-fold:not([open])[data-lazy-issues-path]", count: 2
     assert_select "details.rubylode-progress-stage:not([open]) details.rubylode-progress-closed-fold", count: 0
   end
 
@@ -142,7 +143,6 @@ class SecondPassTest < Redmine::IntegrationTest
 
     assert_select ".rubylode-progress-step--in-progress", count: 1
     assert_select ".rubylode-progress-step--open", minimum: 1
-    assert_select ".rubylode-progress-step--done", minimum: 1
     assert_select ".rubylode-progress-step--next, .rubylode-progress-step--waiting, .rubylode-progress-step--needs-you, .rubylode-progress-step--to-do", count: 0
   end
 

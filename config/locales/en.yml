@@ -70,6 +70,12 @@ en:
       current: Current
       upcoming: Upcoming
     row_more: "More actions for #%{number}"
+    show_stage_issues:
+      zero: "Show this stage"
+      one: "Show the 1 issue"
+      other: "Show the %{count} issues"
+    stage_issues_loading: "Loading the issues"
+    stage_issues_failed: "The issues did not load."
     show_closed: "Show %{count} closed"
     hide_closed: "Hide %{count} closed"
     blocking:

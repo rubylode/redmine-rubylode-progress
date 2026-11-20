@@ -68,11 +68,11 @@ class RailCacheTest < Redmine::IntegrationTest
     subscriber_reads = ActiveSupport::Notifications.subscribe("read_fragment.action_controller") { |*, payload| reads << payload[:key] }
 
     steps_seen_by("jsmith")
-    assert_equal 1, writes.size
+    assert_equal 2, writes.size, "the summary and the issue list are two fragments"
     steps_seen_by("jsmith")
 
-    assert_equal 1, writes.size
-    assert_equal 2, reads.size
+    assert_equal 2, writes.size
+    assert_equal 4, reads.size
   ensure
     ActiveSupport::Notifications.unsubscribe(subscriber_writes)
     ActiveSupport::Notifications.unsubscribe(subscriber_reads)
@@ -95,7 +95,7 @@ class RailCacheTest < Redmine::IntegrationTest
     assert_select ".rubylode-progress-step--done", count: 0
 
     @managers_issue.reload.update!(status_id: CLOSED_STATUS_ID)
-    get "/projects/#{@project.identifier}/progress"
+    get "/projects/#{@project.identifier}/progress?open_stage=#{@version.id}"
 
     assert_select ".rubylode-progress-step--done", count: 1
   end
@@ -104,6 +104,22 @@ class RailCacheTest < Redmine::IntegrationTest
     steps_seen_by("dlopper")
     Role.find(2).update!(issues_visibility: "all")
     assert_equal ["Written by the manager", "Written by the developer"].sort, steps_seen_by("dlopper").sort
+  end
+
+  test "a change only the issue list reads rewrites the list and leaves the summary cached" do
+    @managers_issue.update!(assigned_to_id: @developer.id)
+    writes = []
+    subscriber = ActiveSupport::Notifications.subscribe("write_fragment.action_controller") { |*, payload| writes << payload[:key] }
+
+    steps_seen_by("jsmith")
+    assert_equal 2, writes.size
+    @developer.update_column(:lastname, "Renamed")
+    get "/projects/#{@project.identifier}/progress"
+
+    assert_equal 3, writes.size
+    assert_includes writes.last.inspect, "stage_issues"
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscriber)
   end
 
   test "the cached fragment is reused when only a neighbour changes, while each stage's own rail line follows its issues" do
@@ -116,13 +132,13 @@ class RailCacheTest < Redmine::IntegrationTest
     subscriber = ActiveSupport::Notifications.subscribe("write_fragment.action_controller") { |*, payload| writes << payload[:key] }
 
     steps_seen_by("jsmith")
-    assert_equal 3, writes.size
+    assert_equal 6, writes.size
     assert_select "li.rubylode-progress-stage-item:nth-child(2)[style*=?]", "share-below: 0%"
 
     neighbour_issue.reload.update!(status_id: CLOSED_STATUS_ID)
     get "/projects/#{@project.identifier}/progress"
 
-    assert_equal 4, writes.size, "only the stage that changed is written again, not the stage above it"
+    assert_equal 8, writes.size, "only the stage that changed is written again (its summary and its list), not the stage above it"
     assert_select "li.rubylode-progress-stage-item:nth-child(2)[style*=?]", "share-below: 50%"
   ensure
     ActiveSupport::Notifications.unsubscribe(subscriber)

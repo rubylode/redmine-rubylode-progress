@@ -122,17 +122,22 @@ end
     assert_select ".rubylode-progress-tracker__closed", text: "4 of 8 issues closed"
   end
 
+  # The "Show the N issues" links of folded stages carry the filter, so the stage list is compared without their addresses.
+  def stage_list_without_link_parameters
+    css_select("section.rubylode-progress-stage-list").to_s.gsub(/(href="[^"?]*)\?[^"]*"/) { "#{$1}\"" }
+  end
+
   test "the filter pills show the same counts as the checklist they select, Overdue and Next up included, and the stage list is the same under every filter" do
     build_stages
     @decking_started.update_column(:due_date, @today - 2)
     open_progress
-    stage_list = css_select("section.rubylode-progress-stage-list").to_s
+    stage_list = stage_list_without_link_parameters
 
     RubylodeProgress::ChecklistFilter::NAMES.each do |name|
       pill_count = css_select("[data-filter-name=#{name}] .rubylode-progress-filter__count").first.text.to_i
       get progress_path("?filter=#{name}")
       assert_select ".rubylode-progress-checklist .rubylode-progress-row", count: pill_count
-      assert_equal stage_list, css_select("section.rubylode-progress-stage-list").to_s, name
+      assert_equal stage_list, stage_list_without_link_parameters, name
     end
 
     get progress_path("?filter=overdue")
@@ -201,8 +206,11 @@ end
     open_progress
 
     assert_select "details.rubylode-progress-stage[open] details.rubylode-progress-closed-fold > summary > .rubylode-progress-closed-fold__show", text: "Show 1 closed", count: 2
-    assert_select "details.rubylode-progress-closed-fold .rubylode-progress-step--done", count: 2
-    assert_select "details.rubylode-progress-closed-fold .rubylode-progress-step--open", count: 0
+    assert_select "details.rubylode-progress-closed-fold .rubylode-progress-step", count: 0 # the rows load when the fold is opened
+    assert_select "details.rubylode-progress-closed-fold[data-lazy-issues-path]", count: 2
+    get "/projects/#{@project.identifier}/progress/stages/#{@framing.id}/closed_issues"
+    assert_select ".rubylode-progress-step--done", count: 1
+    assert_select ".rubylode-progress-step--open", count: 0
     assert_select "details.rubylode-progress-stage:not([open]) details.rubylode-progress-closed-fold", count: 0
   end
 

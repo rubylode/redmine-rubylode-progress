@@ -266,6 +266,12 @@ end
                                                                                           narrowing: narrowing))
   end
 
+  # The page's own address with one more stage opened, for a folded stage's link without a script. The parameters are the
+  # page's own, already checked ones (filter, grouping, selects); nothing else the request carried is copied.
+  def rubylode_progress_open_stage_path(project, version, link_parameters)
+    project_rubylode_progress_path(project, **link_parameters, open_stage: version.id)
+  end
+
   # The checklist's own address with its filter, the grouping only when it differs from the project's setting, the
   # chosen assignee, tracker and category (none for "any"), and the section to list in full when one is named.
   def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:, narrowing: {}, expand: nil)

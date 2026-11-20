@@ -1265,6 +1265,17 @@
   display: none;
 }
 
+/* The line a folded stage shows until its issues load: a link to the stage opened by a page load, then "Loading". */
+.rubylode-progress-stage__lazy {
+  margin: var(--rubylode-progress-space-small) 0 0 1.4em;
+  color: var(--rubylode-progress-muted-text-color);
+}
+
+.rubylode-progress-stage__lazy-link {
+  display: inline-block;
+  padding-block: 0.6em;
+}
+
 .rubylode-progress-stage__add {
   margin: var(--rubylode-progress-space-small) 0 0;
 }

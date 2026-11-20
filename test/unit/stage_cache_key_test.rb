@@ -37,46 +37,57 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     @other_issue = Issue.generate!(project: @project, fixed_version: @version, author: @manager)
   end
 
+  # Both fragments' keys together: a change to what either reads must change the pair.
   def key_for(viewer: @manager, settings: nil)
+    [summary_key_for(viewer: viewer, settings: settings), issues_key_for(viewer: viewer, settings: settings)]
+  end
+
+  def stage_context(viewer, settings)
     viewer = User.find(viewer.id)
     project = Project.find(@project.id)
     settings ||= RubylodeProgress::EffectiveSettings.for(project)
     progress = RubylodeProgress::ProjectProgress.new(project: project, viewer: viewer, settings: settings)
-    stage = progress.stages.first
-    RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: viewer, settings: settings,
-                                        editable_issue_ids: progress.editable_issue_ids,
-                                        new_issue_mode: progress.new_issue_mode_for(stage.version),
-                                        accepts_issues: progress.accepts_issues?(stage.version),
-                                        can_manage_version: progress.can_manage_version?(stage.version))
+    [progress, progress.stages.first, project, viewer, settings]
   end
 
-  test "the key changes with whether the stage is a drop target for the viewer" do
-    project = Project.find(@project.id)
-    settings = RubylodeProgress::EffectiveSettings.for(project)
-    progress = RubylodeProgress::ProjectProgress.new(project: project, viewer: @manager, settings: settings)
-    stage = progress.stages.first
-    keys = [true, false].map do |accepts_issues|
-      RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: @manager, settings: settings,
-                                          editable_issue_ids: progress.editable_issue_ids, new_issue_mode: :none,
-                                          accepts_issues: accepts_issues, can_manage_version: false)
-    end
-
-    refute_equal keys.first, keys.last
+  def summary_key_for(viewer: @manager, settings: nil, can_manage_version: nil)
+    progress, stage, project, viewer, settings = stage_context(viewer, settings)
+    RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: viewer, settings: settings,
+                                                can_manage_version: can_manage_version.nil? ? progress.can_manage_version?(stage.version) : can_manage_version)
   end
 
-test "the key changes with the viewer's right to manage the version" do
-  project = Project.find(@project.id)
-  settings = RubylodeProgress::EffectiveSettings.for(project)
-  progress = RubylodeProgress::ProjectProgress.new(project: project, viewer: @manager, settings: settings)
-  stage = progress.stages.first
-  keys = [true, false].map do |can_manage_version|
-    RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: @manager, settings: settings,
-                                        editable_issue_ids: progress.editable_issue_ids, new_issue_mode: :none,
-                                        accepts_issues: true, can_manage_version: can_manage_version)
+  def issues_key_for(viewer: @manager, settings: nil, new_issue_mode: nil)
+    progress, stage, project, viewer, settings = stage_context(viewer, settings)
+    RubylodeProgress::StageCacheKey.for_issues(stage: stage, project: project, viewer: viewer, settings: settings,
+                                               editable_issue_ids: progress.editable_issue_ids,
+                                               new_issue_mode: new_issue_mode || progress.new_issue_mode_for(stage.version))
   end
 
-  refute_equal keys.first, keys.last
-end
+  test "the summary key changes with the viewer's right to manage the version, and the list key does not" do
+    refute_equal summary_key_for(can_manage_version: true), summary_key_for(can_manage_version: false)
+    assert_equal issues_key_for, issues_key_for
+  end
+
+  test "the list key changes with what the plus does for the viewer, and the summary key does not" do
+    refute_equal issues_key_for(new_issue_mode: :modal), issues_key_for(new_issue_mode: :none)
+    assert_equal summary_key_for, summary_key_for
+  end
+
+  test "the summary key does not read the assignees, the edit rights or the in-progress marks" do
+    settings = RubylodeProgress::EffectiveSettings.for(Project.find(@project.id),
+                                                       plugin_settings: RubylodeProgress::Settings.new("in_progress_status_ids" => ["2"]))
+    @issue.update_column(:assigned_to_id, @developer.id)
+    @issue.update_column(:updated_on, Time.utc(2000, 1, 1))
+    @other_issue.update_column(:updated_on, Time.utc(2000, 1, 1))
+    summary_before = summary_key_for(settings: settings)
+    issues_before = issues_key_for(settings: settings)
+    @developer.update_column(:lastname, "Renamed")
+    @issue.update_columns(status_id: 2)
+    @manager_role.remove_permission!(:edit_issues, :edit_own_issues, :add_issue_notes)
+
+    assert_equal summary_before, summary_key_for(settings: settings)
+    refute_equal issues_before, issues_key_for(settings: settings)
+  end
 
 test "the manager can manage the version and the developer cannot, as the progress object says it" do
   @manager_role.add_permission!(:manage_versions)

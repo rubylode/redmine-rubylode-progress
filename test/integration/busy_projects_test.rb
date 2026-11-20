@@ -210,7 +210,7 @@ class BusyProjectsTest < Redmine::IntegrationTest
 
     assert_select ".rubylode-progress-stage__name", text: "Finished 1", count: 0
     assert_select ".rubylode-progress-stage", count: 4
-    assert_select ".rubylode-progress-step", count: 2 * 2 + 3
+    assert_select ".rubylode-progress-step", count: 1 # only the current stage lists its open issue in the first response
     assert_select "ol.rubylode-progress-track > li", count: 4
   end
 
@@ -284,9 +284,10 @@ class BusyProjectsTest < Redmine::IntegrationTest
     project.reload
     stage_key = lambda do |settings|
       progress = RubylodeProgress::ProjectProgress.new(project: project, viewer: @manager, settings: settings)
-      RubylodeProgress::StageCacheKey.for(stage: progress.stages.last, project: project, viewer: @manager, settings: settings,
-                                          editable_issue_ids: Set.new, new_issue_mode: :none, accepts_issues: false,
-                                          can_manage_version: false)
+      stage = progress.stages.last
+      [RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: @manager, settings: settings, can_manage_version: false),
+       RubylodeProgress::StageCacheKey.for_issues(stage: stage, project: project, viewer: @manager, settings: settings,
+                                                  editable_issue_ids: Set.new, new_issue_mode: :none)]
     end
     base = RubylodeProgress::EffectiveSettings.for(project)
     more_kept = base.with(finished_stages_kept: 9)

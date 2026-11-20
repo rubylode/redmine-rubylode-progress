@@ -66,7 +66,7 @@ class DragToMoveTest < Redmine::IntegrationTest
     assert_select ".rubylode-progress-row[draggable=true][data-issue-id=?]", @issue.id.to_s, count: 1
     assert_select ".rubylode-progress-hint", count: 1
 
-    get progress_path("?group=category")
+    get progress_path("?group=category&open_stage=#{@closed_version.id}")
     assert_select ".rubylode-progress-step[draggable=true]", count: 2
     assert_select ".rubylode-progress-row[draggable]", count: 0
     assert_select ".rubylode-progress-section[data-version-id]", count: 0

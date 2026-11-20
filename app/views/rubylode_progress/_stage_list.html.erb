@@ -1,6 +1,10 @@
 <% fold = progress.finished_stage_fold %>
+<%# What a folded stage's link without a script carries: the page's own checked filter, grouping and selects, nothing from the raw request. %>
+<% link_parameters = rubylode_progress_checklist_params(**checklist_locals.slice(:filter, :grouping, :default_grouping, :narrowing)) %>
 <% stage_indexes = progress.stages.each_with_index.to_h { |stage, index| [stage.version.id, index] } %>
-<section class="rubylode-progress-stage-list">
+<section class="rubylode-progress-stage-list" data-controller="rubylode-progress-lazy-stage"
+         data-rubylode-progress-lazy-stage-loading-message-value="<%= l("rubylode_progress.stage_issues_loading") %>"
+         data-rubylode-progress-lazy-stage-failed-message-value="<%= l("rubylode_progress.stage_issues_failed") %>">
   <% if progress.draggable_issues? %>
     <p class="rubylode-progress-hint"><%= l("rubylode_progress.drag_hint") %></p>
   <% end %>
@@ -10,7 +14,7 @@
         <%# Outside the stage cache: it reads only the stages' states and step counts, which the stage keys already carry. %>
         <li class="rubylode-progress-stage-item rubylode-progress-stage-item--done" style="--rubylode-progress-share-below: 100%; --rubylode-progress-colour-below: var(--rubylode-progress-done-color)">
           <%= render "stage_mark", state: :done %>
-          <details class="rubylode-progress-finished-fold" id="<%= RubylodeProgressHelper::FINISHED_FOLD_ANCHOR %>">
+          <details class="rubylode-progress-finished-fold" id="<%= RubylodeProgressHelper::FINISHED_FOLD_ANCHOR %>" <%= "open" if entry.folded_stages.any? { |stage| stage.version.id == open_stage_id } %>>
             <summary>
               <span class="rubylode-progress-chevron" aria-hidden="true"></span>
               <span class="rubylode-progress-stage__name"><%= l("rubylode_progress.finished_fold", count: entry.stage_count) %></span>
@@ -19,13 +23,13 @@
             </summary>
             <ol class="rubylode-progress-stages rubylode-progress-stages--folded">
               <% entry.folded_stages.each do |stage| %>
-                <%= render "listed_stage", progress: progress, project: project, stage: stage, stage_indexes: stage_indexes %>
+                <%= render "listed_stage", progress: progress, project: project, stage: stage, stage_indexes: stage_indexes, open_stage_id: open_stage_id, link_parameters: link_parameters %>
               <% end %>
             </ol>
           </details>
         </li>
       <% else %>
-        <%= render "listed_stage", progress: progress, project: project, stage: entry, stage_indexes: stage_indexes %>
+        <%= render "listed_stage", progress: progress, project: project, stage: entry, stage_indexes: stage_indexes, open_stage_id: open_stage_id, link_parameters: link_parameters %>
       <% end %>
     <% end %>
   </ol>

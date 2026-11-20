@@ -19,11 +19,24 @@ class RubylodeProgressController < ApplicationController
   menu_item :rubylode_progress
   before_action :find_project, :authorize
   before_action :load_progress_and_filter, only: [:show, :checklist]
-  before_action :load_progress_for_modal, only: [:quick_edit, :new_issue, :status]
+  before_action :load_progress_for_modal, only: [:quick_edit, :new_issue, :status, :stage_issues, :stage_closed_issues]
   helper_method :checklist_locals
 
   def show
+    @open_stage_id = requested_open_stage_id
     load_checklist
+  end
+
+  # One stage's issue list alone, for a folded stage to fetch when it is opened. It is the partial the stage renders
+  # itself, over the same viewer-visible stages, so it never shows more than the page; a version that is not one of the
+  # page's stages is a 404.
+  def stage_issues
+    render_stage_fragment("rubylode_progress/stage_issues", closed_inline: false)
+  end
+
+  # The closed issues of one stage, for the closed fold of a current or partial stage to fetch when it is opened.
+  def stage_closed_issues
+    render_stage_fragment("rubylode_progress/stage_closed_issues")
   end
 
   # The checklist alone, for the filter links to swap in without reloading the page.
@@ -155,6 +168,25 @@ class RubylodeProgressController < ApplicationController
   # values afterwards, and not remembered.
   def requested_narrowing
     RubylodeProgress::ChecklistNarrowing::DIMENSIONS.to_h { |dimension| [dimension, params[dimension].is_a?(String) ? params[dimension] : nil] }
+  end
+
+  # Both routes answer a partial the stage renders itself, for a stage of this page only: 404 for any other version.
+  def render_stage_fragment(partial, **extra_locals)
+    stage = @progress.stages.find { |candidate| candidate.version.id == params[:version_id].to_i }
+    return render_404 unless stage
+
+    render partial: partial, layout: false,
+           locals: { stage: stage, project: @project, settings: @progress.settings,
+                     editable_issue_ids: @progress.editable_issue_ids,
+                     new_issue_mode: @progress.new_issue_mode_for(stage.version), **extra_locals }
+  end
+
+  # The id of the one folded stage to render open, only when it is one of the page's stages; anything else opens nothing.
+  def requested_open_stage_id
+    requested = params[:open_stage]
+    return nil unless requested.is_a?(String) && requested.match?(/\A\d+\z/)
+
+    @progress.stages.map { |stage| stage.version.id }.find { |id| id == requested.to_i }
   end
 
   # The key of the one section to list in full, only when it names a section that exists; anything else shows nothing extra.

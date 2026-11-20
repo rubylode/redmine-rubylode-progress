@@ -27,3 +27,7 @@ get "projects/:id/progress/issues/:issue_id/item", to: "rubylode_progress#item",
                                                     as: "project_rubylode_progress_item"
 get "projects/:id/progress/versions/:version_id/status", to: "rubylode_progress#status",
                                                          as: "project_rubylode_progress_version_status"
+get "projects/:id/progress/stages/:version_id/issues", to: "rubylode_progress#stage_issues",
+                                                       as: "project_rubylode_progress_stage_issues"
+get "projects/:id/progress/stages/:version_id/closed_issues", to: "rubylode_progress#stage_closed_issues",
+                                                              as: "project_rubylode_progress_stage_closed_issues"

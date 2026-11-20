@@ -17,7 +17,7 @@
          data-rubylode-progress-move-refused-message-value="<%= l("rubylode_progress.move.refused") %>"
          data-rubylode-progress-move-failed-message-value="<%= l("rubylode_progress.move.failed") %>"
          data-action="dragstart->rubylode-progress-move#start dragend->rubylode-progress-move#finish dragenter->rubylode-progress-move#over dragover->rubylode-progress-move#over dragleave->rubylode-progress-move#leave drop->rubylode-progress-move#drop">
-      <%= render "stage_list", progress: @progress, project: @project %>
+      <%= render "stage_list", progress: @progress, project: @project, open_stage_id: @open_stage_id %>
       <div class="rubylode-progress-checklist-column" data-controller="rubylode-progress-filters">
         <p class="rubylode-progress-move-message" role="status" aria-live="polite" hidden data-rubylode-progress-move-target="message"></p>
         <div data-rubylode-progress-filters-target="checklist">

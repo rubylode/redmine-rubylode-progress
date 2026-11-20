@@ -1,57 +1,45 @@
-<%# The item is outside the cache and carries the rail's share and colour properties, which read the neighbouring stage.
-    The cached part below depends on this stage alone. %>
+<%# The item and the details tag are outside the cache: the item carries the rail's share and colour properties, which read
+    the neighbouring stage, and the tag carries what depends on this request (open, the drop-target flag, the address a
+    folded stage loads its issues from). Inside it are two fragments, cached separately: the summary and the issue list. %>
+<% opened = stage.current? || stage.partial? || stage.version.id == open_stage_id %>
 <li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>" style="<%= rail_style %>">
-<% cache RubylodeProgress::StageCacheKey.for(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode, accepts_issues: accepts_issues, can_manage_version: can_manage_version) do %>
   <%= render "stage_mark", state: stage.state %>
-  <% folds_closed = (stage.current? || stage.partial?) && stage.steps.any?(&:done?) %>
-  <details class="rubylode-progress-stage" <%= "open" if stage.current? || stage.partial? %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %> <%= tag.attributes(data: { refuse_reason: rubylode_progress_refuse_reason(stage.version, can_manage: can_manage_version) }) unless accepts_issues %>>
-    <summary>
-      <span class="rubylode-progress-chevron" aria-hidden="true"></span>
-      <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>
-      <% status_text = l("rubylode_progress.version_tag.#{stage.version.status}") %>
-      <% if can_manage_version %>
-        <%= link_to status_text, project_rubylode_progress_version_status_path(project, version_id: stage.version.id),
-                    remote: true, class: ["rubylode-progress-status-button", ("rubylode-progress-stage__tag" if %w[closed locked].include?(stage.version.status))],
-                    title: l("rubylode_progress.version_status.change_label", version: stage.version.name),
-                    aria: { label: l("rubylode_progress.version_status.current_label", version: stage.version.name, status: status_text) } %>
-      <% elsif %w[closed locked].include?(stage.version.status) %>
-        <span class="rubylode-progress-stage__tag"><%= status_text %></span>
-      <% end %>
-      <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_stage_state_label(stage) %></span>
-      <% if stage.version.effective_date %>
-        <span class="rubylode-progress-stage__date"><%= l("rubylode_progress.stage_due", date: format_date(stage.version.effective_date)) %></span>
-      <% end %>
-      <%= render "meter", percent: rubylode_progress_stage_percent(stage) %>
-      <span class="rubylode-progress-stage__summary"><%= rubylode_progress_stage_summary(stage) %></span>
-      <% blocking_text = stage.partial? ? rubylode_progress_blocking_text(stage) : nil %>
-      <% if blocking_text %>
-        <span class="rubylode-progress-stage__blocking"><%= blocking_text %></span>
-      <% end %>
-    </summary>
-    <ul class="rubylode-progress-steps">
-      <% (folds_closed ? stage.steps.reject(&:done?) : stage.steps).each do |step| %>
-        <%= render "stage_step", step: step, project: project, settings: settings, editable_issue_ids: editable_issue_ids %>
-      <% end %>
-    </ul>
-    <% if folds_closed %>
-      <details class="rubylode-progress-closed-fold">
-        <summary>
-          <span class="rubylode-progress-chevron" aria-hidden="true"></span>
-          <span class="rubylode-progress-closed-fold__show"><%= l("rubylode_progress.show_closed", count: stage.done_step_count) %></span>
-          <span class="rubylode-progress-closed-fold__hide"><%= l("rubylode_progress.hide_closed", count: stage.done_step_count) %></span>
-        </summary>
-        <ul class="rubylode-progress-steps">
-          <% stage.steps.select(&:done?).each do |step| %>
-            <%= render "stage_step", step: step, project: project, settings: settings, editable_issue_ids: editable_issue_ids %>
-          <% end %>
-        </ul>
-      </details>
+  <details class="rubylode-progress-stage" <%= "open" if opened %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %> <%= tag.attributes(data: { refuse_reason: rubylode_progress_refuse_reason(stage.version, can_manage: can_manage_version) }) unless accepts_issues %> <%= tag.attributes(data: { lazy_issues_path: project_rubylode_progress_stage_issues_path(project, version_id: stage.version.id) }) unless opened %>>
+    <% cache RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: User.current, settings: settings, can_manage_version: can_manage_version) do %>
+      <summary>
+        <span class="rubylode-progress-chevron" aria-hidden="true"></span>
+        <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>
+        <% status_text = l("rubylode_progress.version_tag.#{stage.version.status}") %>
+        <% if can_manage_version %>
+          <%= link_to status_text, project_rubylode_progress_version_status_path(project, version_id: stage.version.id),
+                      remote: true, class: ["rubylode-progress-status-button", ("rubylode-progress-stage__tag" if %w[closed locked].include?(stage.version.status))],
+                      title: l("rubylode_progress.version_status.change_label", version: stage.version.name),
+                      aria: { label: l("rubylode_progress.version_status.current_label", version: stage.version.name, status: status_text) } %>
+        <% elsif %w[closed locked].include?(stage.version.status) %>
+          <span class="rubylode-progress-stage__tag"><%= status_text %></span>
+        <% end %>
+        <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_stage_state_label(stage) %></span>
+        <% if stage.version.effective_date %>
+          <span class="rubylode-progress-stage__date"><%= l("rubylode_progress.stage_due", date: format_date(stage.version.effective_date)) %></span>
+        <% end %>
+        <%= render "meter", percent: rubylode_progress_stage_percent(stage) %>
+        <span class="rubylode-progress-stage__summary"><%= rubylode_progress_stage_summary(stage) %></span>
+        <% blocking_text = stage.partial? ? rubylode_progress_blocking_text(stage) : nil %>
+        <% if blocking_text %>
+          <span class="rubylode-progress-stage__blocking"><%= blocking_text %></span>
+        <% end %>
+      </summary>
     <% end %>
-    <% unless new_issue_mode == :none %>
-      <p class="rubylode-progress-stage__add">
-        <%= render "new_issue_link", project: project, version: stage.version, full_form: new_issue_mode == :full_form %>
+    <% if opened %>
+      <%= render "stage_issues", stage: stage, project: project, settings: settings, editable_issue_ids: editable_issue_ids,
+                                 new_issue_mode: new_issue_mode, closed_inline: stage.version.id == open_stage_id %>
+    <% else %>
+      <%# A folded stage renders no issues. The link is the way in without a script; the script replaces this line with the
+          list when the stage is opened. %>
+      <p class="rubylode-progress-stage__lazy">
+        <%= link_to l("rubylode_progress.show_stage_issues", count: stage.step_count), rubylode_progress_open_stage_path(project, stage.version, link_parameters),
+                    class: "rubylode-progress-stage__lazy-link" %>
       </p>
     <% end %>
   </details>
-<% end %>
 </li>

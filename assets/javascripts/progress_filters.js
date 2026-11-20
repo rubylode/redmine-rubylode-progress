@@ -117,3 +117,56 @@ class ProgressFoldController extends Controller {
 }
 
 application.register("rubylode-progress-fold", ProgressFoldController)
+
+// A folded stage renders its summary only; its issues come from the address on its details tag when it is first opened.
+// The toggle event does not bubble, so the listener is on the list in the capture phase. Until the issues arrive the
+// stage holds a link to the same stage opened by a full page load, which is also where a failed load leaves the viewer.
+class ProgressLazyStageController extends Controller {
+  static values = { loadingMessage: String, failedMessage: String }
+
+  connect() {
+    this.openedStage = (event) => this.load(event)
+    this.element.addEventListener("toggle", this.openedStage, true)
+  }
+
+  disconnect() {
+    this.element.removeEventListener("toggle", this.openedStage, true)
+  }
+
+  async load(event) {
+    const stage = event.target
+    if (!stage.matches || !stage.matches("details[data-lazy-issues-path]")) { return }
+    if (!stage.open) { return }
+
+    const placeholder = stage.querySelector(":scope > .rubylode-progress-stage__lazy")
+    if (!placeholder) {
+      console.error("Rubylode Progress stages: the stage was opened but holds no place for its issues", stage)
+      return
+    }
+    if (placeholder.dataset.loading === "true") {
+      console.error("Rubylode Progress stages: the issues of this stage are already loading")
+      return
+    }
+
+    const link = placeholder.querySelector("a")
+    placeholder.dataset.loading = "true"
+    placeholder.setAttribute("role", "status")
+    placeholder.replaceChildren(this.loadingMessageValue)
+    try {
+      const response = await fetch(stage.dataset.lazyIssuesPath, { credentials: "same-origin", headers: { "Accept": "text/html" } })
+      if (!response.ok) { throw new Error(response.status) }
+
+      const template = document.createElement("template")
+      template.innerHTML = await response.text()
+      placeholder.replaceWith(template.content)
+      stage.removeAttribute("data-lazy-issues-path")
+    } catch (error) {
+      console.error("Rubylode Progress stages: the issues of the stage did not load", error)
+      placeholder.dataset.loading = "false"
+      placeholder.removeAttribute("role")
+      placeholder.replaceChildren(this.failedMessageValue + " ", ...(link ? [link] : []))
+    }
+  }
+}
+
+application.register("rubylode-progress-lazy-stage", ProgressLazyStageController)

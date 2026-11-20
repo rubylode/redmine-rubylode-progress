@@ -86,7 +86,7 @@ class QueryCountTest < Redmine::IntegrationTest
     end
 
     assert_equal few, many
-    assert_select ".rubylode-progress-step", count: 50
+    assert_select ".rubylode-progress-step", count: 33 # the 17 closed issues are in the closed folds, which load when opened
     assert_operator many, :<=, PROJECT_PAGE_QUERY_CEILING
   end
 

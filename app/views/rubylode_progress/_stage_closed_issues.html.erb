@@ -1,0 +1,9 @@
+<%# The closed issues of a current or partial stage: the body of its closed fold. The page lists them inline only for a stage
+    asked for with open_stage; otherwise the fold fetches them from the closed issues route when it is opened. %>
+<% cache RubylodeProgress::StageCacheKey.for_issues(stage: stage, project: project, viewer: User.current, settings: settings, editable_issue_ids: editable_issue_ids, new_issue_mode: new_issue_mode, part: :closed) do %>
+  <ul class="rubylode-progress-steps">
+    <% stage.steps.select(&:done?).each do |step| %>
+      <%= render "stage_step", step: step, project: project, settings: settings, editable_issue_ids: editable_issue_ids %>
+    <% end %>
+  </ul>
+<% end %>

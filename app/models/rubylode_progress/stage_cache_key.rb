@@ -28,23 +28,36 @@ module RubylodeProgress
   # The pencils and the plus sit in the cached fragment, so the key also carries what decides them: a digest of the ids of
   # the stage's issues this viewer may edit, what the plus does for this viewer (none, modal or full form, which holds
   # the add-issues right), and the version's status. A role that loses a right changes the key on the next view.
-  # The stage is a drop target only when it accepts issues for this viewer (open and shared with the project), and the rows
-  # are draggable only where the viewer may edit (already in the digest of editable ids), so the drop-target flag is in the key too.
+  # The rows are draggable only where the viewer may edit (already in the digest of editable ids).
   # The status tag is a button only for a viewer who may manage versions in the version's own project, so that right is in
   # the key too, as true or false; it is worked out once per project, not per stage.
   # The rail line below a stage depends on the next stage, so it is drawn from properties on the uncached item around
   # this fragment, and nothing about a neighbour is in the key. Nothing in the fragment reads today, so no date is in it.
   module StageCacheKey
-    def self.for(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:, accepts_issues:,
-                 can_manage_version:)
+    # The stage's summary (name, status button, date, meter, counts, the blocking line) is one fragment and its issue
+    # list another, so a folded stage can show the first and load the second later, and the summary never depends on the
+    # list. Each key carries what its fragment reads. The summary reads the stage's state and counts (the ids digests),
+    # the version, the settings and the right to manage versions. The list (the open issues and the closed fold, whose
+    # closed rows are a third fragment, part: :closed, fetched when the fold is opened) reads the issues themselves: the assignees,
+    # the in-progress marks, the pencils and the plus. Whether the stage is a drop target is not in either: that is on the
+    # details tag, outside the cache.
+    def self.for_summary(stage:, project:, viewer:, settings:, can_manage_version:)
+      step_issues = stage.steps.map(&:issue)
+      ["rubylode_progress/stage_summary", *shared_parts(stage, project, viewer, settings, step_issues), can_manage_version]
+    end
+
+    def self.for_issues(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:, part: :open, closed_inline: false)
       step_issues = stage.steps.map(&:issue)
       editable_step_issues = step_issues.select { |issue| editable_issue_ids.include?(issue.id) }
-      ["rubylode_progress/stage", project.id, viewer.id, stage.version.id, precise(stage.version.updated_on), stage.number,
-       stage.state, digest_of_ids(step_issues), digest_of_ids(stage.steps.select(&:done?).map(&:issue)),
-       precise(step_issues.filter_map(&:updated_on).max), settings.cache_digest, I18n.locale,
-       stage.version.status, digest_of_ids(editable_step_issues), new_issue_mode,
-       digest_of_ids(in_progress_issues(step_issues, settings)), digest_of_assignees(step_issues), accepts_issues,
-       can_manage_version]
+      ["rubylode_progress/stage_issues", part, closed_inline, *shared_parts(stage, project, viewer, settings, step_issues),
+       digest_of_ids(editable_step_issues), new_issue_mode, digest_of_ids(in_progress_issues(step_issues, settings)),
+       digest_of_assignees(step_issues)]
+    end
+
+    def self.shared_parts(stage, project, viewer, settings, step_issues)
+      [project.id, viewer.id, stage.version.id, precise(stage.version.updated_on), stage.number, stage.state,
+       digest_of_ids(step_issues), digest_of_ids(stage.steps.select(&:done?).map(&:issue)),
+       precise(step_issues.filter_map(&:updated_on).max), settings.cache_digest, I18n.locale, stage.version.status]
     end
 
     # The half-filled marks: open issues in one of the settings' in-progress statuses. updated_on is stored to the
