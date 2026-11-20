@@ -2,6 +2,22 @@
 
 All notable changes to this plugin. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Finished stages fold into one row of the stage list ("38 finished stages", with their combined meter and the issues closed), keeping the last few unfolded. How many is a setting, per project with a plugin-wide default.
+- The top track draws the folded stages as one summary mark and, with more than 12 stages, labels only the current stage and its neighbours, so the labels no longer overlap.
+- A list of versions in the project's Progress settings, each ticked by default: untick one and it is not a stage and its issues are not counted.
+- Each checklist section lists its first 10 issues and a "Show more" link for the rest. The rest is not in the first response, so a busy page loads far lighter; without JavaScript the link reloads the page with that section in full. The number is a setting, per project with a plugin-wide default.
+- Three selects above the checklist narrow it by assignee, tracker or category. They offer only values the viewer can see, change the pill counts with the list, and are carried into "Open as issue query".
+- Long issue notes are cut at two lines with a "show note" link, and the Behind notice names at most three stages.
+- A layout for a phone for the folded row, the summary mark, the selects and "Show more".
+
+### Fixed
+
+- The page wrapper's layout no longer applies to the menu links Redmine gives the same class.
+
 ## [1.0.0] - 2026-11-19
 
 First release. Needs Redmine 7.0 or newer.

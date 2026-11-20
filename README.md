@@ -40,6 +40,14 @@ compact checklist; on the right, a checklist of the issues with a filter (Open, 
 choice of grouping (version, category or parent issue). Each row carries a status pill, the assignee, the date and the latest
 note.
 
+A busy project stays readable. Older finished stages fold into one row of the stage list ("38 finished stages", with their
+combined meter), and the top track draws them as one green mark and labels only the stages around the current one. Each
+checklist section lists its first 10 issues and a "Show more" link for the rest, which is a plain link that reloads the page
+without JavaScript. Three selects beside the status pills narrow the checklist by assignee, tracker or category: they offer
+only values that occur among the issues the viewer can see, with counts, they change the pill counts with the list, and they
+leave the stage list and the top track as they are. They are not remembered. Long issue notes are cut at two lines with a
+"show note" link, and the overdue notice names at most three stages.
+
 ![The Needs you filter](docs/screenshots/progress-needs-you.png)
 
 On a phone the two columns stack, and under a dark theme the page follows it.
@@ -94,8 +102,13 @@ means "use the plugin-wide default", and the tab shows what that default is.
 | Statuses that mean in progress | none | An open issue in one of these shows as in progress. |
 | Statuses that mean waiting | none | An open issue in one of these shows as waiting on someone else. |
 | How many issues are Next | 3 | From 0 to 20. The first open issues of the current stage are marked Next. |
+| Finished stages kept in the list | 3 | From 0 to 20. Older finished stages fold into one row of the stage list and one mark on the top track. A project with that many or fewer finished stages looks as before. |
+| Issues listed per checklist section | 10 | From 5 to 100. The rest of a section is behind its "Show more" link and is not sent with the page. |
 | Note shown on each item | Latest note | The latest note the viewer may see, or the value of one issue custom field. |
 
+The project's tab (not the plugin-wide page) also lists the project's versions with a checkbox each, all ticked. Untick a
+version to leave it out: it is not a stage and its issues are not counted. New versions are counted as they appear. The
+"Versions that make the stages" rule applies first.
 Every person can also pick another grouping for themselves on the page ("just for you"); that is not a setting, only a
 preference of the signed-in user, and so is the filter they last chose.
 
