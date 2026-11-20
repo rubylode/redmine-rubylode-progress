@@ -297,6 +297,159 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     assert_equal 3, checklist_row_ids.size
   end
 
+  def stage_named(name) = RubylodeProgress::ProjectProgress.new(project: Project.find(@project.id), viewer: @manager).stages.find { |stage| stage.version.name == name }
+
+  test "the top block shows the focused stage's own name, position, percent and closed count" do
+    build_project
+    @upcoming.update!(description: "The second half")
+    @upcoming_issues.first.update!(status_id: CLOSED_STATUS_ID)
+    log_user("jsmith", "jsmith")
+    stage = stage_named("Upcoming stage")
+
+    get progress_path, params: { stage: @upcoming.id }
+
+    assert_response :success
+    assert_select "h3.rubylode-progress-tracker__headline", text: "Upcoming stage"
+    assert_select "p.rubylode-progress-tracker__description", text: "The second half"
+    assert_select "p.rubylode-progress-tracker__position", text: "Stage 2 of 2"
+    assert_select "p.rubylode-progress-tracker__percent", text: "#{RubylodeProgress::PercentRule.percent_of(stage)}%"
+    assert_select "p.rubylode-progress-tracker__closed", text: "1 of 3 issues closed"
+    assert_select "p.rubylode-progress-tracker__percent-note", count: 0
+
+    get progress_path
+    assert_select "p.rubylode-progress-tracker__percent", text: "#{RubylodeProgress::ProjectProgress.new(project: Project.find(@project.id), viewer: @manager).percent}%"
+    assert_select "p.rubylode-progress-tracker__closed", text: "2 of 5 issues closed"
+    assert_select "p.rubylode-progress-tracker__percent-note", count: 1
+  end
+
+  test "the notices of a focused page read the focused stage alone" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @current.id }
+    assert_select "li.rubylode-progress-notice", text: /Current stage/
+
+    get progress_path, params: { stage: @upcoming.id }
+    assert_response :success
+    assert_select "li.rubylode-progress-notice", count: 0
+  end
+
+  test "a focused stage that is done fills the top block without a current stage" do
+    build_project
+    @project.issues.update_all(status_id: CLOSED_STATUS_ID)
+    @current.update!(status: "closed")
+    @upcoming.update!(status: "closed")
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id, filter: "all" }
+
+    assert_response :success
+    assert_select "h3.rubylode-progress-tracker__headline", text: "Upcoming stage"
+    assert_select "p.rubylode-progress-tracker__position", text: "Stage 2 of 2"
+    assert_select "p.rubylode-progress-tracker__percent", text: "100%"
+    assert_select "p.rubylode-progress-tracker__closed", text: "3 of 3 issues closed"
+    assert_select "li.rubylode-progress-track__stage--focused", count: 1
+  end
+
+  test "the rail keeps every stage, marks the focused one, dims the others and links each to its focus" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id }
+
+    assert_response :success
+    stages = css_select("ol.rubylode-progress-track > li.rubylode-progress-track__stage")
+    assert_equal 2, stages.size
+    assert_select "li.rubylode-progress-track__stage--focused", count: 1
+    assert_select "li.rubylode-progress-track__stage--dimmed", count: 1
+    assert_select "li.rubylode-progress-track__stage--focused a.rubylode-progress-track__focus-link[aria-label*=?]", "Upcoming stage"
+    assert_select "li.rubylode-progress-track__stage--dimmed a.rubylode-progress-track__focus-link[aria-label*=?]", "Current stage"
+    stages.each do |item|
+      links = item.css("a.rubylode-progress-track__focus-link")
+      assert_operator links.size, :>=, 1
+      links.each do |link|
+        assert_equal progress_path, URI.parse(link["href"]).path
+        assert_includes [@current.id.to_s, @upcoming.id.to_s], query_of(link["href"])["stage"]
+        assert link["aria-label"].present?, "the dot's link names its stage"
+      end
+    end
+    assert_equal [@current.id.to_s, @upcoming.id.to_s].sort,
+                 css_select("li.rubylode-progress-track__stage a.rubylode-progress-track__focus-link").map { |link| query_of(link["href"])["stage"] }.uniq.sort
+  end
+
+  test "the rail's links and the show all link keep the filter, grouping and selects, and the show all link drops the stage" do
+    build_project
+    @project.issues.where(fixed_version_id: @upcoming.id).update_all(assigned_to_id: @developer.id)
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id, filter: "all", group: "category", assignee: @developer.id }
+
+    assert_response :success
+    show_all = css_select("a.rubylode-progress-tracker__show-all").first
+    assert show_all, "a show all stages link"
+    assert_equal "Show all stages", show_all.text.strip
+    assert_equal progress_path, URI.parse(show_all["href"]).path
+    query = query_of(show_all["href"])
+    assert_nil query["stage"]
+    assert_equal "all", query["filter"]
+    assert_equal "category", query["group"]
+    assert_equal @developer.id.to_s, query["assignee"]
+    css_select("a.rubylode-progress-track__focus-link").each do |link|
+      kept = query_of(link["href"])
+      assert_equal "all", kept["filter"]
+      assert_equal "category", kept["group"]
+      assert_equal @developer.id.to_s, kept["assignee"]
+    end
+  end
+
+  test "dragging targets survive the focus and the rail gains no drop target markup" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path
+    rail_attributes = css_select("ol.rubylode-progress-track *").flat_map { |node| node.attribute_nodes.map(&:name) }.uniq.reject { |name| name == "class" || name == "style" }
+
+    get progress_path, params: { stage: @upcoming.id }
+
+    assert_response :success
+    assert_select "details.rubylode-progress-stage[data-version-id=?]", @upcoming.id.to_s
+    focused_attributes = css_select("ol.rubylode-progress-track *").flat_map { |node| node.attribute_nodes.map(&:name) }.uniq
+    assert_empty focused_attributes - rail_attributes - %w[class style href aria-label]
+    assert_select "ol.rubylode-progress-track [data-version-id], ol.rubylode-progress-track [data-refuse-reason]", count: 0
+  end
+
+  test "the page that is not focused has no focus classes, rail links or show all link" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path
+
+    assert_response :success
+    assert_select "[class*=track__stage--focused], [class*=track__stage--dimmed]", count: 0
+    assert_select "a.rubylode-progress-tracker__show-all", count: 0
+    assert_select "a.rubylode-progress-track__focus-link", count: 0
+  end
+
+  test "a focused stage inside the rail's finished-stage summary mark keeps that mark as it is" do
+    build_project
+    Array.new(12) do |index|
+      version = Version.generate!(project: @project, name: "Done #{index + 1}", effective_date: Date.new(2025, 1, 1) >> index)
+      2.times { Issue.generate!(project: @project, fixed_version: version, author: @manager, status_id: CLOSED_STATUS_ID) }
+      version.update!(status: "closed")
+      version
+    end
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @current.id }
+
+    assert_response :success
+    assert_select "li.rubylode-progress-track__stage--summary", count: 1
+    assert_select "li.rubylode-progress-track__stage--summary a.rubylode-progress-track__ellipsis", count: 1
+    assert_select "li.rubylode-progress-track__stage--summary a.rubylode-progress-track__focus-link", count: 0
+    assert_select "li.rubylode-progress-track__stage--summary.rubylode-progress-track__stage--dimmed", count: 0
+    assert_select "li.rubylode-progress-track__stage--focused", count: 1
+  end
+
   # Every link of the page that opens a modal, by where it sits, so a test can read each one's address.
   def modal_links
     { "row quick edit" => css_select("li.rubylode-progress-row a.rubylode-progress-edit"),

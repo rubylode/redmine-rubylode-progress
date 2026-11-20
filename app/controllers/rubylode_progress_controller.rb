@@ -155,7 +155,8 @@ class RubylodeProgressController < ApplicationController
     @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current,
                                                       focused_stage_id: requested_focused_stage_id)
     @filter = RubylodeProgress::ChecklistFilter.resolve(requested: params[:filter], remembered: remembered_filter)
-    @grouping = @progress.focus_requested? ? "flat" : requested_grouping
+    @checked_grouping = requested_grouping
+    @grouping = @progress.focus_requested? ? "flat" : @checked_grouping
     @narrowing_options = RubylodeProgress::ChecklistNarrowing.options_for(@progress.items)
     @narrowing = RubylodeProgress::ChecklistNarrowing.resolve(requested_narrowing, @narrowing_options)
     @today = User.current.today

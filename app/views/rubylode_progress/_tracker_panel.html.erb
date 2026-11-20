@@ -1,4 +1,7 @@
-<% current_stage = progress.current_stage %>
+<%# Focused on a stage, the block is that stage's: its name, number, percent and notices (the items are already the stage's own).
+    The rail below keeps every stage. %>
+<% focused_stage = local_assigns[:focused_stage] %>
+<% current_stage = focused_stage || progress.current_stage %>
 <% closed_count = progress.items.count { |item| item.status == :done } %>
 <section class="rubylode-progress-tracker">
   <div class="rubylode-progress-tracker__main">
@@ -15,21 +18,29 @@
         <p class="rubylode-progress-tracker__description"><%= current_stage.version.description %></p>
       <% end %>
     <% end %>
-    <%= render "track", stages: progress.stages, percent: progress.percent, labels: true, today: today, fold: progress.finished_stage_fold %>
+    <% if focused_stage %>
+      <p class="rubylode-progress-tracker__leave-focus">
+        <%= link_to l("rubylode_progress.focus.show_all"), project_rubylode_progress_path(project, **link_parameters), class: "rubylode-progress-tracker__show-all" %>
+      </p>
+    <% end %>
+    <%= render "track", stages: progress.stages, percent: progress.percent, labels: true, today: today, fold: progress.finished_stage_fold,
+                        project: project, focused_stage: focused_stage, link_parameters: local_assigns[:link_parameters] %>
   </div>
 
   <div class="rubylode-progress-tracker__summary">
     <div class="rubylode-progress-tracker__figure">
-      <p class="rubylode-progress-tracker__percent"><%= progress.percent %>%</p>
+      <p class="rubylode-progress-tracker__percent"><%= focused_stage ? rubylode_progress_stage_percent(focused_stage) : progress.percent %>%</p>
       <div class="rubylode-progress-tracker__figure-notes">
-        <p class="rubylode-progress-tracker__percent-note"><%= l("rubylode_progress.percent_note") %></p>
+        <% unless focused_stage %>
+          <p class="rubylode-progress-tracker__percent-note"><%= l("rubylode_progress.percent_note") %></p>
+        <% end %>
         <% if last_change_on %>
           <p class="rubylode-progress-tracker__updated"><%= l("rubylode_progress.updated", date: rubylode_progress_updated_text(last_change_on, today)) %></p>
         <% end %>
       </div>
     </div>
     <p class="rubylode-progress-tracker__closed"><%= l("rubylode_progress.closed_of_total", closed: closed_count, total: progress.items.size) %></p>
-    <% notices = RubylodeProgress::StageNotices.for(progress.stages, today: today) %>
+    <% notices = RubylodeProgress::StageNotices.for(focused_stage ? [focused_stage] : progress.stages, today: today) %>
     <% if notices.any? %>
       <ul class="rubylode-progress-notices">
         <% notices.each do |notice| %>

@@ -10,7 +10,11 @@
   <% if @progress.stages.empty? %>
     <p class="rubylode-progress-empty"><%= l("rubylode_progress.nothing_to_track") %></p>
   <% else %>
-    <%= render "tracker_panel", progress: @progress, today: @today, last_change_on: @progress.last_change_on %>
+    <%# The rail's and the show all link's parameters are the page's own checked ones: the grouping the address asked for, not the
+        flat one a focused page lists in, so leaving the focus brings it back. %>
+    <% tracker_link_parameters = rubylode_progress_checklist_params(filter: @filter, grouping: @checked_grouping, default_grouping: @progress.settings.checklist_grouping, narrowing: @narrowing) %>
+    <%= render "tracker_panel", progress: @progress, project: @project, today: @today, last_change_on: @progress.last_change_on,
+                               focused_stage: @progress.focused_stage, link_parameters: tracker_link_parameters %>
     <%# One controller for both columns: the stage list and the checklist rows are dragged between the drop targets. The
         messages are server-rendered text; the address of each move is on the dragged row. %>
     <div class="rubylode-progress-columns" data-controller="rubylode-progress-move"

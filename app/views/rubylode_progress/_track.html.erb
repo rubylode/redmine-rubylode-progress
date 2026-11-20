@@ -2,7 +2,10 @@
     stage's closed share, so the line is continuous. The marks are decoration; each label says the state in words.
     Over 12 stages (and with labels) the older finished stages are one summary mark of three dots that links to the fold
     row of the stage list, and only the current stage and its neighbours get a full label: the others are a mark with a
-    tooltip and a visually hidden label. The aria-label counts every stage either way. %>
+    tooltip and a visually hidden label. The aria-label counts every stage either way.
+    On a page focused on a stage (focused_stage, with project and link_parameters) every stage's mark and name link to that
+    stage's focused page, the focused one is marked and the others are dimmed; the summary mark stays as it is. %>
+<% focused_stage = local_assigns[:focused_stage] %>
 <% fold = local_assigns[:fold] %>
 <% entries = rubylode_progress_track_entries(stages, fold || RubylodeProgress::FinishedStageFold.new(stages, 0), condense: local_assigns[:labels] && fold) %>
 <ol class="rubylode-progress-track" aria-label="<%= l("rubylode_progress.track_label", percent: percent, finished: stages.count(&:done?), total: stages.size) %>">
@@ -30,10 +33,19 @@
     <% else %>
       <% stage = entry %>
       <% titled = local_assigns[:labels] && !labelled %>
-      <li class="rubylode-progress-track__stage rubylode-progress-track__stage--<%= stage.state %>" style="<%= rubylode_progress_segment_style(stage) %>"<% if titled %> title="<%= rubylode_progress_track_mark_title(stage) %>"<% end %>>
+      <% focus_address = focused_stage ? rubylode_progress_focus_path(project, stage.version, link_parameters || {}) : nil %>
+      <% focus_label = focused_stage ? l("rubylode_progress.focus.link_label", name: stage.version.name) : nil %>
+      <% focus_state = focused_stage ? (stage.version.id == focused_stage.version.id ? "focused" : "dimmed") : nil %>
+      <li class="rubylode-progress-track__stage rubylode-progress-track__stage--<%= stage.state %><%= " rubylode-progress-track__stage--#{focus_state}" if focus_state %>" style="<%= rubylode_progress_segment_style(stage) %>"<% if titled %> title="<%= rubylode_progress_track_mark_title(stage) %>"<% end %>>
         <span class="rubylode-progress-track__line">
           <span class="rubylode-progress-track__segment"></span>
-          <%= render "rubylode_progress/stage_mark", state: stage.state %>
+          <% if focus_address %>
+            <%= link_to focus_address, class: "rubylode-progress-track__focus-link", aria: { label: focus_label } do %>
+              <%= render "rubylode_progress/stage_mark", state: stage.state %>
+            <% end %>
+          <% else %>
+            <%= render "rubylode_progress/stage_mark", state: stage.state %>
+          <% end %>
         </span>
         <% if titled %>
           <span class="rubylode-progress-visually-hidden"><%= rubylode_progress_track_mark_title(stage) %></span>
@@ -41,7 +53,13 @@
           <% date_line = rubylode_progress_stage_date_line(stage, today) %>
           <span class="rubylode-progress-track__label">
             <span class="rubylode-progress-track__heading">
-              <span class="rubylode-progress-track__name"><%= stage.version.name %></span>
+              <span class="rubylode-progress-track__name">
+                <% if focus_address %>
+                  <%= link_to stage.version.name, focus_address, class: "rubylode-progress-track__focus-link", aria: { label: focus_label } %>
+                <% else %>
+                  <%= stage.version.name %>
+                <% end %>
+              </span>
               <span class="rubylode-progress-track__percent"><%= rubylode_progress_stage_percent(stage) %>%</span>
             </span>
             <% if date_line %>

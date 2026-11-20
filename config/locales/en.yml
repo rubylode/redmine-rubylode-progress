@@ -17,6 +17,9 @@ en:
     track_summary_label: "%{count} stages done"
     track_summary_show: "Show the %{count} finished stages"
     track_mark_title: "%{name}, %{percent}%, %{state}"
+    focus:
+      link_label: "Focus on %{name}"
+      show_all: Show all stages
     other_section: Other
     stage_due: "Due %{date}"
     percent_done: "%{percent}% done"
