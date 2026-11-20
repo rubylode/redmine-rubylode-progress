@@ -71,6 +71,13 @@
   <em class="info"><%= l("rubylode_progress.settings.finished_stages_kept.hint", first: settings_scope::FINISHED_STAGES_KEPT_RANGE.first, last: settings_scope::FINISHED_STAGES_KEPT_RANGE.last) %></em>
 </p>
 <p>
+  <label for="<%= field_id.call("checklist_rows_per_section") %>"><%= l("rubylode_progress.settings.checklist_rows_per_section.label") %></label>
+  <%= number_field_tag "#{scope}[checklist_rows_per_section]", values["checklist_rows_per_section"], id: field_id.call("checklist_rows_per_section"),
+                       min: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.first, max: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.last,
+                       placeholder: defaults ? l("rubylode_progress.settings.use_default", value: defaults.checklist_rows_per_section) : nil %>
+  <em class="info"><%= l("rubylode_progress.settings.checklist_rows_per_section.hint", first: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.first, last: settings_scope::CHECKLIST_ROWS_PER_SECTION_RANGE.last) %></em>
+</p>
+<p>
   <label for="<%= field_id.call("note_source") %>"><%= l("rubylode_progress.settings.note_source.label") %></label>
   <% note_choices = [[l("rubylode_progress.settings.note_source.latest_note"), "latest_note"]] +
                     IssueCustomField.sorted.map { |field| [field.name, "custom_field_#{field.id}"] } %>

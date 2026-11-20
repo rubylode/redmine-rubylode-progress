@@ -37,15 +37,27 @@ class StageNoticesTest < ActiveSupport::TestCase
     assert_equal ["Framing", 45, 1, 0], [behind.stage_name, behind.days, behind.open_count, behind.more_count]
   end
 
-  test "several partial stages: the oldest first, the rest counted as more" do
+  test "several partial stages: the oldest first, up to two others named" do
     stages = stages_for([version(1, "Alpha", TODAY - 20), version(2, "Beta", TODAY - 60), version(3, "Gamma", TODAY - 5),
                          version(4, "Now", TODAY + 9)],
                         [open_issue(1, 1), open_issue(2, 2), open_issue(3, 2), open_issue(4, 3), open_issue(5, 4), closed_issue(6, 4)])
 
     behind = RubylodeProgress::StageNotices.for(stages, today: TODAY).find { |notice| notice.kind == :behind }
 
-    assert_equal ["Beta", 60, 2, 2], [behind.stage_name, behind.days, behind.open_count, behind.more_count]
-  end
+  assert_equal ["Beta", 60, 2, 0], [behind.stage_name, behind.days, behind.open_count, behind.more_count]
+  assert_equal %w[Alpha Gamma], behind.other_stage_names
+end
+
+test "the Behind notice names at most three stages and counts the rest as more" do
+  versions = (1..6).map { |number| version(number, "Late #{number}", TODAY - (10 * number), status: "closed") } + [version(7, "Now", TODAY + 9)]
+  issues = (1..6).map { |number| open_issue(number, number) } + [open_issue(7, 7)]
+
+  behind = RubylodeProgress::StageNotices.for(stages_for(versions, issues), today: TODAY).find { |notice| notice.kind == :behind }
+
+  assert_equal "Late 6", behind.stage_name
+  assert_equal ["Late 5", "Late 4"], behind.other_stage_names
+  assert_equal 3, behind.more_count
+end
 
   test "a partial stage that is not yet due, or has no date, gives no Behind notice" do
     stages = stages_for([version(1, "Early", TODAY + 2), version(2, "Undated"), version(3, "Now", TODAY + 9)],

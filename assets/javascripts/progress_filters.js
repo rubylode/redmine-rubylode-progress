@@ -2,7 +2,7 @@
  * Copyright (C) 2026  Nick Gorbikoff. GPL v2 or later, as the rest of the plugin.
  *
  * A Stimulus controller, registered on the application that Redmine 7 starts. Without this file, or when a request
- * fails, the filters and the grouping buttons are ordinary links that reload the page with ?filter=<name>&group=<name>,
+ * fails, the filters, "Show more" and the grouping buttons are ordinary links that reload the page with ?filter=<name>&group=<name>,
  * and the grouping select has its own button inside a noscript tag.
  */
 import { Controller } from "@hotwired/stimulus"
@@ -36,9 +36,46 @@ class ProgressFiltersController extends Controller {
     const checklistUrl = new URL(form.dataset.checklistPath, window.location.origin)
     const pageUrl = new URL(form.action, window.location.origin)
     checklistUrl.searchParams.set("group", select.value)
-    pageUrl.searchParams.set("filter", checklistUrl.searchParams.get("filter"))
-    pageUrl.searchParams.set("group", select.value)
+    pageUrl.search = checklistUrl.search
     await this.swap(checklistUrl.pathname + checklistUrl.search, pageUrl.toString())
+  }
+
+  // One of the three selects (assignee, tracker, category): the form holds the checklist address with the filter and the
+  // grouping; the selects' values are added, "any" being no parameter at all.
+  async chooseNarrowing(event) {
+    const form = event.currentTarget
+    const checklistUrl = new URL(form.dataset.checklistPath, window.location.origin)
+    const pageUrl = new URL(form.action, window.location.origin)
+    form.querySelectorAll("select").forEach((select) => {
+      if (select.value === "any") { return }
+
+      checklistUrl.searchParams.set(select.name, select.value)
+    })
+    pageUrl.search = checklistUrl.search
+    await this.swap(checklistUrl.pathname + checklistUrl.search, pageUrl.toString())
+  }
+
+  // "Show more" under a section: fetch the panel with that section listed in full and swap only that section, so the
+  // sections already opened stay as they are. The link is a real address that reloads the page without a script.
+  async expand(event) {
+    event.preventDefault()
+    const link = event.currentTarget
+    const section = link.closest(".rubylode-progress-section")
+    try {
+      const response = await fetch(link.dataset.checklistPath, { credentials: "same-origin" })
+      if (!response.ok) { throw new Error(response.status) }
+
+      const template = document.createElement("template")
+      template.innerHTML = await response.text()
+      const fresh = template.content.querySelector(`[data-section-key="${CSS.escape(section.dataset.sectionKey)}"]`)
+      if (!fresh) { throw new Error("section missing") }
+
+      section.replaceWith(fresh)
+      this.foldMoreMenus()
+      fresh.querySelector("summary").focus({ preventScroll: true })
+    } catch (error) {
+      window.location.href = link.href
+    }
   }
 
   async swap(checklistPath, pageAddress) {

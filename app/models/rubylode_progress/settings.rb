@@ -25,6 +25,7 @@ module RubylodeProgress
     CHECKLIST_GROUPING_CHOICES = %w[version category parent].freeze
     NEXT_ISSUE_LIMIT_RANGE = (0..20)
     FINISHED_STAGES_KEPT_RANGE = (0..20)
+    CHECKLIST_ROWS_PER_SECTION_RANGE = (5..100)
     CUSTOM_FIELD_NOTE_SOURCE = /\Acustom_field_(\d+)\z/
 
     DEFAULTS = {
@@ -35,6 +36,7 @@ module RubylodeProgress
       "waiting_status_ids" => [],
       "next_issue_limit" => "3",
       "finished_stages_kept" => "3",
+      "checklist_rows_per_section" => "10",
       "note_source" => "latest_note"
     }.freeze
 
@@ -65,6 +67,13 @@ module RubylodeProgress
       Integer(@values["finished_stages_kept"].to_s, 10).clamp(FINISHED_STAGES_KEPT_RANGE)
     rescue ArgumentError, TypeError
       Integer(DEFAULTS["finished_stages_kept"], 10)
+    end
+
+    # How many issues each checklist section lists before "Show more"; held to 5 to 100.
+    def checklist_rows_per_section
+      Integer(@values["checklist_rows_per_section"].to_s, 10).clamp(CHECKLIST_ROWS_PER_SECTION_RANGE)
+    rescue ArgumentError, TypeError
+      Integer(DEFAULTS["checklist_rows_per_section"], 10)
     end
 
     # The custom field whose value is the item note, or nil for the latest visible note.

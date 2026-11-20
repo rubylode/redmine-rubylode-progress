@@ -45,7 +45,7 @@ class RubylodeProgressProjectSettingsController < ApplicationController
 
   def submitted
     params.fetch(:rubylode_progress_project_setting, {}).permit(
-      *STRING_FIELDS, :next_issue_limit, :finished_stages_kept, { counted_version_ids: [] }, *STATUS_LIST_FIELDS.map { |name| { name => [] } },
+      *STRING_FIELDS, :next_issue_limit, :finished_stages_kept, :checklist_rows_per_section, { counted_version_ids: [] }, *STATUS_LIST_FIELDS.map { |name| { name => [] } },
       *STATUS_LIST_FIELDS.map { |name| :"use_default_#{name}" }
     )
   end
@@ -55,7 +55,7 @@ class RubylodeProgressProjectSettingsController < ApplicationController
   def override_attributes
     values = submitted
     attributes = {}
-    (STRING_FIELDS + %w[next_issue_limit finished_stages_kept]).each do |name|
+    (STRING_FIELDS + %w[next_issue_limit finished_stages_kept checklist_rows_per_section]).each do |name|
       attributes[name] = values[name].presence if values.key?(name)
     end
     STATUS_LIST_FIELDS.each do |name|

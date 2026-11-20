@@ -9,7 +9,7 @@
       <span class="rubylode-progress-checklist__by"><%= l("rubylode_progress.checklist.by", grouping: l("rubylode_progress.group.#{grouping}").downcase) %></span>
     </div>
     <div class="rubylode-progress-checklist__actions">
-      <%= link_to l("rubylode_progress.checklist.issue_query"), rubylode_progress_issue_query_path(project, filter, progress.stages),
+      <%= link_to l("rubylode_progress.checklist.issue_query"), rubylode_progress_issue_query_path(project, filter, progress.stages, narrowing),
                   class: "rubylode-progress-issue-query" %>
       <% unless new_issue_mode == :none %>
         <%= render "new_issue_button", project: project, version: current_stage.version, full_form: new_issue_mode == :full_form, filter: filter %>
@@ -17,10 +17,13 @@
     </div>
   </div>
 
-  <%= render "filters", project: project, current_filter: filter, counts: counts, grouping: grouping, default_grouping: default_grouping %>
+  <div class="rubylode-progress-checklist__selectors">
+    <%= render "filters", project: project, current_filter: filter, counts: counts, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing %>
+    <%= render "narrowing", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, narrowing_options: narrowing_options %>
+  </div>
 
   <div class="rubylode-progress-checklist__controls">
-    <%= render "group_by", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping %>
+    <%= render "group_by", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing %>
     <%= render "status_rules", progress: progress, project: project %>
   </div>
 
@@ -33,13 +36,13 @@
     <% versioned = grouping == "version" && section.version %>
     <% drop_target = versioned && progress.accepts_issues?(section.version) %>
     <% refuse_reason = versioned && !drop_target ? rubylode_progress_refuse_reason(section.version, can_manage: progress.can_manage_version?(section.version)) : nil %>
-    <details class="rubylode-progress-section" open <%= tag.attributes(data: { version_id: section.version.id }) if drop_target %> <%= tag.attributes(data: { refuse_reason: refuse_reason }) if refuse_reason %>>
+    <details class="rubylode-progress-section" open data-section-key="<%= section.key %>" <%= tag.attributes(data: { version_id: section.version.id }) if drop_target %> <%= tag.attributes(data: { refuse_reason: refuse_reason }) if refuse_reason %>>
       <summary class="rubylode-progress-section__summary">
         <span class="rubylode-progress-chevron" aria-hidden="true"></span>
         <h3 class="rubylode-progress-section__title">
           <%= section.title || l("rubylode_progress.other_section") %>
           <%# Under Open the count is the rows listed below it; the meter keeps the whole section for context. %>
-          <span class="rubylode-progress-section__tally"><%= filter == "open" ? l("rubylode_progress.checklist.section_open", count: section.items.size) : l("rubylode_progress.checklist.section_tally", done: section.total_done_count, total: section.total_count) %></span>
+          <span class="rubylode-progress-section__tally"><%= filter == "open" ? l("rubylode_progress.checklist.section_open", count: section.row_count) : l("rubylode_progress.checklist.section_tally", done: section.total_done_count, total: section.total_count) %></span>
         </h3>
         <%= render "meter", percent: section.percent %>
       </summary>
@@ -50,6 +53,16 @@
                                        settings: progress.settings, today: today %>
         <% end %>
       </ul>
+      <% if section.hidden_count.positive? %>
+        <% more_params = rubylode_progress_checklist_params(filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, expand: section.key) %>
+        <p class="rubylode-progress-section__more">
+          <%# Without a script this is an ordinary link that reloads the page with this one section listed in full. %>
+          <%= link_to l("rubylode_progress.checklist.show_more", count: section.hidden_count), project_rubylode_progress_path(project, **more_params),
+                      class: "rubylode-progress-show-more",
+                      data: { checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, only_path: true, **more_params),
+                              action: "click->rubylode-progress-filters#expand" } %>
+        </p>
+      <% end %>
     </details>
   <% end %>
 </section>

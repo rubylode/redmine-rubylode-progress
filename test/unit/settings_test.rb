@@ -44,6 +44,14 @@ class SettingsTest < ActiveSupport::TestCase
     assert_equal 3, RubylodeProgress::Settings.new("finished_stages_kept" => "lots").finished_stages_kept
   end
 
+test "the rows per section default to 10, are held to 5 to 100, and unusable values read as 10" do
+  assert_equal 10, RubylodeProgress::Settings.new({}).checklist_rows_per_section
+  assert_equal 100, RubylodeProgress::Settings.new("checklist_rows_per_section" => "900").checklist_rows_per_section
+  assert_equal 5, RubylodeProgress::Settings.new("checklist_rows_per_section" => "1").checklist_rows_per_section
+  assert_equal 25, RubylodeProgress::Settings.new("checklist_rows_per_section" => "25").checklist_rows_per_section
+  assert_equal 10, RubylodeProgress::Settings.new("checklist_rows_per_section" => "many").checklist_rows_per_section
+end
+
   test "the effective settings are frozen and their digest follows their values" do
     project = Project.find(1)
     plain = RubylodeProgress::EffectiveSettings.for(project)

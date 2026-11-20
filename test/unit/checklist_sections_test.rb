@@ -19,7 +19,7 @@ require File.expand_path("../test_helper", __dir__)
 
 class ChecklistSectionsTest < ActiveSupport::TestCase
   Item = RubylodeProgress::ProjectProgress::Item
-  Named = Struct.new(:name)
+  Named = Struct.new(:name, :id)
   ParentDouble = Struct.new(:id, :subject, :visible) do
     def visible?(_viewer) = visible != false
   end
@@ -105,5 +105,36 @@ class ChecklistSectionsTest < ActiveSupport::TestCase
     assert_equal 2, sections.first.total_count
     assert_equal 1, sections.first.total_done_count
     assert_equal 50, sections.first.percent
+  end
+  test "sections carry a stable key: the version, category or parent id, and none for the empty one" do
+    parent = ParentDouble.new(5, "The parent")
+    by_version = RubylodeProgress::ChecklistSections.group([item(1, version: Named.new("A", 31)), item(2, version: Named.new("B", 32))], by: "version", viewer: VIEWER)
+    by_category = RubylodeProgress::ChecklistSections.group([item(1, category: CategoryDouble.new(4, "Z")), item(2)], by: "category", viewer: VIEWER)
+    by_parent = RubylodeProgress::ChecklistSections.group([item(1, parent: parent), item(2)], by: "parent", viewer: VIEWER)
+
+    assert_equal %w[31 32], by_version.map(&:key)
+    assert_equal %w[4 none], by_category.map(&:key)
+    assert_equal %w[5 none], by_parent.map(&:key)
+  end
+
+  test "limit cuts each section to its first rows, counts the rest, and keeps the expanded section whole" do
+    alpha = Named.new("Alpha", 1)
+    beta = Named.new("Beta", 2)
+    items = (1..5).map { |id| item(id, version: alpha) } + (6..8).map { |id| item(id, version: beta) }
+    sections = RubylodeProgress::ChecklistSections.group(items, by: "version", viewer: VIEWER)
+
+    cut = RubylodeProgress::ChecklistSections.limit(sections, rows_per_section: 3)
+    assert_equal [[1, 2, 3], [6, 7, 8]], cut.map { |section| section.items.map { |row| row.issue.id } }
+    assert_equal [2, 0], cut.map(&:hidden_count)
+    assert_equal [5, 3], cut.map(&:row_count)
+    assert_equal [5, 3], cut.map(&:total_count)
+
+    expanded = RubylodeProgress::ChecklistSections.limit(sections, rows_per_section: 3, expanded_key: "1")
+    assert_equal [5, 3], expanded.map { |section| section.items.size }
+    assert_equal [0, 0], expanded.map(&:hidden_count)
+
+    unknown = RubylodeProgress::ChecklistSections.limit(sections, rows_per_section: 3, expanded_key: "999")
+    assert_equal [3, 3], unknown.map { |section| section.items.size }
+    assert_equal 5, sections.first.items.size, "the grouped sections are not changed"
   end
 end

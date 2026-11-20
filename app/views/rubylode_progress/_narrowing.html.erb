@@ -1,0 +1,26 @@
+<%# The assignee, tracker and category selects beside the status pills. A plain GET form: without a script the button inside
+    noscript applies it; with one a change swaps the checklist in place. "any" is first; the others are only values the
+    viewer's visible counted issues have, with how many. Locals: project, filter, grouping, default_grouping, narrowing
+    (the chosen values), narrowing_options (the offered ones). %>
+<% base_params = rubylode_progress_checklist_params(filter: filter, grouping: grouping, default_grouping: default_grouping) %>
+<%= form_tag project_rubylode_progress_path(project), method: :get, class: "rubylode-progress-narrowing",
+             data: { checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, only_path: true, **base_params),
+                     action: "change->rubylode-progress-filters#chooseNarrowing" } do %>
+  <% base_params.each do |name, value| %>
+    <%= hidden_field_tag name, value, id: nil %>
+  <% end %>
+  <% any_labels = { "assignee" => l("rubylode_progress.narrowing.any_assignee"), "tracker" => l("rubylode_progress.narrowing.any_tracker"),
+                   "category" => l("rubylode_progress.narrowing.any_category") } %>
+  <% dimension_labels = { "assignee" => l("rubylode_progress.narrowing.assignee"), "tracker" => l("rubylode_progress.narrowing.tracker"),
+                          "category" => l("rubylode_progress.narrowing.category") } %>
+  <% RubylodeProgress::ChecklistNarrowing::DIMENSIONS.each do |dimension| %>
+    <% choices = [[any_labels.fetch(dimension), RubylodeProgress::ChecklistNarrowing::ANY]] +
+                 narrowing_options.fetch(dimension.to_sym).map { |option| ["#{option.label} (#{option.count})", option.value] } %>
+    <label class="rubylode-progress-narrowing__field">
+      <span class="rubylode-progress-narrowing__label"><%= dimension_labels.fetch(dimension) %></span>
+      <%= select_tag dimension, options_for_select(choices, narrowing.fetch(dimension)), id: "rubylode-progress-narrowing-#{dimension}",
+                     class: "rubylode-progress-narrowing__select" %>
+    </label>
+  <% end %>
+  <noscript><%= submit_tag l("rubylode_progress.group.apply"), name: nil %></noscript>
+<% end %>

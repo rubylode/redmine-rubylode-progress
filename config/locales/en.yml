@@ -81,7 +81,8 @@ en:
       other: "%{count} days"
     notices:
       behind: "%{stage} is %{days} overdue: %{open}"
-      behind_more: "%{stage} is %{days} overdue: %{open}, and %{count} more"
+      behind_also: "%{stage} is %{days} overdue: %{open}. Also behind: %{others}"
+      and_more: "%{count} more"
       due_soon: "%{stage}: %{open}, %{days} left"
       due_today: "%{stage}: %{open}, due today"
       open_issues:
@@ -122,11 +123,23 @@ en:
       by: "by %{grouping}"
       section_tally: "%{done} of %{total} closed"
       section_open: "%{count} open"
+      show_more:
+        one: "Show %{count} more"
+        other: "Show %{count} more"
+      show_note: show note
       issue_query: Open as issue query
       new_issue: New issue
       empty:
         needs_you: Nothing is waiting on you
         other: No issues match this filter
+    narrowing:
+      assignee: Assignee
+      tracker: Tracker
+      category: Category
+      any_assignee: Any assignee
+      any_tracker: Any tracker
+      any_category: Any category
+      unassigned: Unassigned
     group:
       label: Group by
       select_label: Group the checklist by
@@ -188,6 +201,9 @@ en:
       finished_stages_kept:
         label: Finished stages kept in the list
         hint: "From %{first} to %{last}. Older finished stages fold into one row of the stage list and one mark on the top track."
+      checklist_rows_per_section:
+        label: Issues listed per checklist section
+        hint: "From %{first} to %{last}. The rest of a section is behind its Show more link."
       counted_version_ids:
         label: Versions that count as stages
         hint: "Untick a version to leave it out: it is not a stage and its issues are not counted. New versions are counted as they appear."

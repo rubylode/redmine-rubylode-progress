@@ -20,7 +20,9 @@ module RubylodeProgress
   # section's tally and percent count all of its issues, however the rows are filtered, so a heading never says "0/3"
   # beside a full meter.
   module ChecklistSections
-    Section = Struct.new(:title, :version, :items, :done_count, :total_count, :total_done_count, keyword_init: true) do
+    # key names the section in an address (?expand=): a version, category or parent id, or "none" for the one without.
+    # row_count is all the rows of the section; items are the rows listed, which #limit may cut, hidden_count being the rest.
+    Section = Struct.new(:key, :title, :version, :items, :row_count, :hidden_count, :done_count, :total_count, :total_done_count, keyword_init: true) do
       # The closed share of all the section's issues, rounded.
       def percent
         total_count.to_i.zero? ? 0 : Rational(total_done_count * 100, total_count).round
@@ -37,27 +39,42 @@ module RubylodeProgress
       case by
       when "category"
         grouped(scope_items, shown, key: ->(issue) { issue.category&.name }, title: ->(issue) { issue.category.name },
-                                    order: :sorted, missing_key: "no_category", version: nil)
+                                    order: :sorted, missing_key: "no_category", version: nil, section_key: ->(issue) { issue.category.id })
       when "parent"
         grouped(scope_items, shown, key: ->(issue) { issue.parent&.id }, title: ->(issue) { parent_title(issue.parent, viewer) },
-                                    order: :sorted, missing_key: "no_parent", version: nil)
+                                    order: :sorted, missing_key: "no_parent", version: nil, section_key: ->(issue) { issue.parent.id })
       else
         grouped(scope_items, shown, key: ->(issue) { issue.fixed_version }, title: ->(issue) { issue.fixed_version.name },
-                                    order: :arrival, missing_key: nil, version: ->(issue) { issue.fixed_version })
+                                    order: :arrival, missing_key: nil, version: ->(issue) { issue.fixed_version },
+                                    section_key: ->(issue) { issue.fixed_version.id })
       end
     end
 
-    def grouped(scope_items, shown, key:, title:, order:, missing_key:, version:)
+    def grouped(scope_items, shown, key:, title:, order:, missing_key:, version:, section_key:)
       owned, missing = scope_items.partition { |item| key.call(item.issue) }
       groups = owned.group_by { |item| key.call(item.issue) }
       keys = order == :sorted ? groups.keys.sort : groups.keys
       sections = keys.map do |group_key|
         first_issue = groups.fetch(group_key).first.issue
-        section(title.call(first_issue), groups.fetch(group_key), shown, version: version&.call(first_issue))
+        section(section_key.call(first_issue).to_s, title.call(first_issue), groups.fetch(group_key), shown, version: version&.call(first_issue))
       end
       missing_title = missing_key ? I18n.t("rubylode_progress.#{missing_key}") : nil
-      sections << section(missing_title, missing, shown, version: nil) if missing.any?
+      sections << section("none", missing_title, missing, shown, version: nil) if missing.any?
       sections.reject { |built| built.items.empty? }
+    end
+
+    # The sections cut to their first rows_per_section rows, except the one named by expanded_key, which keeps all. The rest
+    # of a cut section is only counted (hidden_count), so it is never loaded or drawn. An expanded_key that names no section
+    # changes nothing.
+    def limit(sections, rows_per_section:, expanded_key: nil)
+      sections.map do |section|
+        next section if section.key == expanded_key || section.items.size <= rows_per_section
+
+        section.dup.tap do |cut|
+          cut.items = section.items.first(rows_per_section)
+          cut.hidden_count = section.items.size - rows_per_section
+        end
+      end
     end
 
     # The subject of a parent the viewer may not see is not theirs to read; its number is all the heading says.
@@ -65,9 +82,9 @@ module RubylodeProgress
       parent.visible?(viewer) ? "##{parent.id} #{parent.subject}" : "##{parent.id}"
     end
 
-    def section(title, scope_items, shown, version:)
+    def section(key, title, scope_items, shown, version:)
       rows = scope_items.select { |item| shown.include?(item) }
-      Section.new(title: title, version: version, items: rows, done_count: rows.count { |item| item.status == :done },
+      Section.new(key: key, title: title, version: version, items: rows, row_count: rows.size, hidden_count: 0, done_count: rows.count { |item| item.status == :done },
                   total_count: scope_items.size, total_done_count: scope_items.count { |item| item.status == :done })
     end
   end

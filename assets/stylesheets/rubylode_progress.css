@@ -827,12 +827,55 @@
   background: var(--rubylode-progress-accent-color);
 }
 
+/* The status pills and the three selects share a row, and wrap onto the next when the column is narrow. */
+.rubylode-progress-checklist__selectors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-space-small) var(--rubylode-progress-gap);
+  align-items: center;
+  margin: var(--rubylode-progress-space-small) 0 var(--rubylode-progress-gap);
+}
+
 .rubylode-progress-filters {
   display: flex;
   flex-wrap: wrap;
   gap: var(--rubylode-progress-space-small);
-  margin: var(--rubylode-progress-space-small) 0 var(--rubylode-progress-gap);
+  margin: 0;
 }
+
+.rubylode-progress-narrowing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rubylode-progress-space-small);
+  align-items: center;
+  margin: 0;
+}
+
+.rubylode-progress-narrowing__field {
+  display: inline-flex;
+  gap: 0.4em;
+  align-items: center;
+}
+
+.rubylode-progress-narrowing__label {
+  font-size: var(--rubylode-progress-small-text-size);
+  color: var(--rubylode-progress-muted-text-color);
+}
+
+.rubylode-progress-narrowing__select {
+  max-width: 14em;
+  margin: 0;
+}
+
+.rubylode-progress-section__more {
+  margin: var(--rubylode-progress-space-small) 0 0;
+}
+
+.rubylode-progress-show-more {
+  display: inline-block;
+  padding: 0.2em 0;
+}
+
 
 .rubylode-progress-filter {
   display: inline-flex;
@@ -1081,9 +1124,30 @@
   font-weight: bold;
 }
 
+/* A note is cut at two lines; a longer one has a "show note" details that opens the whole text. */
 .rubylode-progress-row__note {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
   margin: 0;
   font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-row__note-more {
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+.rubylode-progress-row__note-more > summary {
+  display: inline-block;
+  cursor: pointer;
+  color: var(--rubylode-progress-accent-color);
+}
+
+.rubylode-progress-row__note-full {
+  margin: 0.2em 0 0;
+  white-space: pre-line;
 }
 
 .rubylode-progress-pill {
@@ -1250,6 +1314,31 @@
   .rubylode-progress-filters {
     flex-wrap: nowrap;
     overflow-x: auto;
+  }
+
+  /* The three selects stack, each as wide as the column, and keep a 44px target; so does the Show more link. */
+  .rubylode-progress-checklist__selectors,
+  .rubylode-progress-narrowing {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rubylode-progress-narrowing__field {
+    flex-wrap: wrap;
+  }
+
+  .rubylode-progress-narrowing__select {
+    flex: 1 1 10em;
+    max-width: none;
+    min-height: 44px;
+  }
+
+  .rubylode-progress-show-more,
+  .rubylode-progress-row__note-more > summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    box-sizing: border-box;
   }
 
   .rubylode-progress-filter,

@@ -113,13 +113,15 @@ class RubylodeProgressController < ApplicationController
   def checklist_locals
     { sections: @sections, item_notes: @item_notes, project: @project, progress: @progress, filter: @filter,
       grouping: @grouping, default_grouping: @progress.settings.checklist_grouping, counts: @counts,
-      shown_count: @checklist_items.size, today: @today }
+      shown_count: @checklist_items.size, today: @today, narrowing: @narrowing, narrowing_options: @narrowing_options }
   end
 
   def load_progress_and_filter
     @progress = RubylodeProgress::ProjectProgress.new(project: @project, viewer: User.current)
     @filter = RubylodeProgress::ChecklistFilter.resolve(requested: params[:filter], remembered: remembered_filter)
     @grouping = requested_grouping
+    @narrowing_options = RubylodeProgress::ChecklistNarrowing.options_for(@progress.items)
+    @narrowing = RubylodeProgress::ChecklistNarrowing.resolve(requested_narrowing, @narrowing_options)
     @today = User.current.today
     remember_filter
   end
@@ -149,12 +151,29 @@ class RubylodeProgressController < ApplicationController
     end
   end
 
+  # The three selects' values as the request sent them; only strings are kept. They are checked against the offered
+  # values afterwards, and not remembered.
+  def requested_narrowing
+    RubylodeProgress::ChecklistNarrowing::DIMENSIONS.to_h { |dimension| [dimension, params[dimension].is_a?(String) ? params[dimension] : nil] }
+  end
+
+  # The key of the one section to list in full, only when it names a section that exists; anything else shows nothing extra.
+  def expanded_section_key(sections)
+    requested = params[:expand]
+    requested.is_a?(String) && sections.any? { |section| section.key == requested } ? requested : nil
+  end
+
+  # The narrowing comes first: the pill counts, the rows and the section tallies all read the narrowed issues, so the
+  # counts match the list each pill selects. Sections list only their first rows; the notes are read for those rows only.
   def load_checklist
-    @counts = RubylodeProgress::ChecklistFilter.counts(@progress.items, today: @today)
-    @checklist_items = RubylodeProgress::ChecklistFilter.apply(@filter, @progress.items, today: @today)
-    @sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @grouping, viewer: User.current,
-                                                                            scope_items: @progress.items)
-    @item_notes = RubylodeProgress::ItemNotes.for(@checklist_items.map(&:issue), viewer: User.current,
+    narrowed_items = RubylodeProgress::ChecklistNarrowing.apply(@narrowing, @progress.items)
+    @counts = RubylodeProgress::ChecklistFilter.counts(narrowed_items, today: @today)
+    @checklist_items = RubylodeProgress::ChecklistFilter.apply(@filter, narrowed_items, today: @today)
+    sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @grouping, viewer: User.current,
+                                                                           scope_items: narrowed_items)
+    @sections = RubylodeProgress::ChecklistSections.limit(sections, rows_per_section: @progress.settings.checklist_rows_per_section,
+                                                                    expanded_key: expanded_section_key(sections))
+    @item_notes = RubylodeProgress::ItemNotes.for(@sections.flat_map { |section| section.items.map(&:issue) }, viewer: User.current,
                                                   settings: @progress.settings)
   end
 end

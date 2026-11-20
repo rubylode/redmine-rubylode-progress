@@ -22,6 +22,7 @@ module RubylodeProgressHelper
     current: "--rubylode-progress-accent-color", upcoming: "--rubylode-progress-track-empty-color"
   }.freeze
   DUE_SOON_DAYS = 7
+  NOTE_PREVIEW_LENGTH = 110 # about two lines of a checklist row
   # Over this many stages the top track stops labelling every stage: it folds the older finished ones into one mark and
   # labels only the current stage and its neighbours.
   TRACK_CONDENSE_THRESHOLD = 12
@@ -202,9 +203,9 @@ end
                   l("rubylode_progress.notices.open_count", count: notice.open_count)
                 end
     if notice.kind == :behind
-      key = notice.more_count.positive? ? "behind_more" : "behind"
+      key = notice.other_stage_names.any? ? "behind_also" : "behind"
       l("rubylode_progress.notices.#{key}", stage: notice.stage_name, days: rubylode_progress_days(notice.days),
-                                          open: open_text, count: notice.more_count)
+                                          open: open_text, others: rubylode_progress_other_stages_text(notice))
     elsif notice.days.zero?
       l("rubylode_progress.notices.due_today", stage: notice.stage_name, open: open_text)
     else
@@ -212,6 +213,17 @@ end
     end
   end
 
+  # The other stages a Behind notice names, with "and N more" for the rest: "Alpha and Gamma", "Alpha, Gamma and 4 more".
+  def rubylode_progress_other_stages_text(notice)
+    names = notice.other_stage_names.dup
+    names << l("rubylode_progress.notices.and_more", count: notice.more_count) if notice.more_count.positive?
+    names.to_sentence
+  end
+
+  # An issue note cut for the row: [the text shown, whether there is more to show in the "show note" details].
+  def rubylode_progress_note_preview(note)
+    [truncate(note, length: NOTE_PREVIEW_LENGTH, separator: " "), note.length > NOTE_PREVIEW_LENGTH]
+  end
   # What a folded partial stage says under its name: its one open issue, or how many there are.
   def rubylode_progress_blocking_text(stage)
     open_steps = stage.steps.reject(&:done?)
@@ -249,12 +261,15 @@ end
   end
 
   # Where "Open as issue query" goes: Redmine's issue list, built from the project and the filter.
-  def rubylode_progress_issue_query_path(project, filter, stages)
-    project_issues_path(project, **RubylodeProgress::IssueQuery.parameters_for(filter, version_ids: stages.map { |stage| stage.version.id }))
+  def rubylode_progress_issue_query_path(project, filter, stages, narrowing = {})
+    project_issues_path(project, **RubylodeProgress::IssueQuery.parameters_for(filter, version_ids: stages.map { |stage| stage.version.id },
+                                                                                          narrowing: narrowing))
   end
 
-  # The checklist's own address with its filter and, only when it differs from the project's setting, the grouping.
-  def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:)
-    { filter: filter, group: (grouping == default_grouping ? nil : grouping) }.compact
+  # The checklist's own address with its filter, the grouping only when it differs from the project's setting, the
+  # chosen assignee, tracker and category (none for "any"), and the section to list in full when one is named.
+  def rubylode_progress_checklist_params(filter:, grouping:, default_grouping:, narrowing: {}, expand: nil)
+    { filter: filter, group: (grouping == default_grouping ? nil : grouping), expand: expand,
+      **RubylodeProgress::ChecklistNarrowing.parameters_for(narrowing).transform_keys(&:to_sym) }.compact
   end
 end

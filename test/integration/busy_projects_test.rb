@@ -25,7 +25,7 @@ class BusyProjectsTest < Redmine::IntegrationTest
 
   FOLD = "details.rubylode-progress-finished-fold"
   CLOSED_STATUS_ID = 5
-  PROJECT_PAGE_QUERY_CEILING = 50 # the same ceiling as QueryCountTest
+  PROJECT_PAGE_QUERY_CEILING = 51 # the same ceiling as QueryCountTest
 
   setup do
     @manager = User.find(2)

@@ -24,13 +24,35 @@ module RubylodeProgress
 
     module_function
 
-    def parameters_for(filter_name, version_ids:)
+    def parameters_for(filter_name, version_ids:, narrowing: {})
       name = ChecklistFilter.valid?(filter_name) ? filter_name : ChecklistFilter::DEFAULT
       fields = %w[status_id fixed_version_id]
       operators = { "status_id" => STATUS_OPERATORS.fetch(name, "o"), "fixed_version_id" => "=" }
       values = { "fixed_version_id" => version_ids.map { |version_id| Integer(version_id).to_s } }
       add_own_rule(name, fields, operators, values)
+      add_narrowing(name, narrowing, fields, operators, values)
       { set_filter: 1, f: fields, op: operators, v: values, sort: "id" }
+    end
+
+    # The assignee, tracker and category the viewer chose, as Redmine's own filters ("none" is its "none" operator). Needs
+    # you already holds the assignee field with "me", and one field cannot say both, so it keeps its own rule.
+    NARROWING_FIELDS = { "assignee" => "assigned_to_id", "tracker" => "tracker_id", "category" => "category_id" }.freeze
+
+    def add_narrowing(name, narrowing, fields, operators, values)
+      NARROWING_FIELDS.each do |dimension, field|
+        value = narrowing[dimension]
+        next if value.blank? || value == ChecklistNarrowing::ANY
+        next if dimension == "assignee" && name == "needs_you"
+
+        fields << field
+        if value == ChecklistNarrowing::NONE
+          operators[field] = "!*"
+          values[field] = [""]
+        else
+          operators[field] = "="
+          values[field] = [Integer(value, 10).to_s]
+        end
+      end
     end
 
     def add_own_rule(name, fields, operators, values)

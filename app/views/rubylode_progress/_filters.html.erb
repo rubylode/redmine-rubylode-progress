@@ -1,7 +1,7 @@
 <nav class="rubylode-progress-filters" aria-label="<%= l("rubylode_progress.filters.label") %>">
   <% RubylodeProgress::ChecklistFilter::NAMES.each do |name| %>
     <% count = counts.fetch(name) %>
-    <% pill_params = rubylode_progress_checklist_params(filter: name, grouping: grouping, default_grouping: default_grouping) %>
+    <% pill_params = rubylode_progress_checklist_params(filter: name, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing) %>
     <%= link_to project_rubylode_progress_path(project, **pill_params),
                 class: ["rubylode-progress-filter", ("rubylode-progress-filter--empty" if count.zero?),
                         ("rubylode-progress-filter--behind" if name == "overdue" && count.positive?)].compact.join(" "),

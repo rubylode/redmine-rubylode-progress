@@ -9,7 +9,16 @@
   <span class="rubylode-progress-row__mark rubylode-progress-row__mark--<%= mark_state %>" aria-hidden="true"></span>
   <div class="rubylode-progress-row__main">
     <span class="rubylode-progress-row__title"><%= render "item_title_link", project: project, issue: issue %></span>
-    <% if note.present? %><p class="rubylode-progress-row__note"><%= note %></p><% end %>
+    <% if note.present? %>
+      <% note_preview, note_is_long = rubylode_progress_note_preview(note) %>
+      <p class="rubylode-progress-row__note"><%= note_preview %></p>
+      <% if note_is_long %>
+        <details class="rubylode-progress-row__note-more">
+          <summary><%= l("rubylode_progress.checklist.show_note") %></summary>
+          <p class="rubylode-progress-row__note-full"><%= note %></p>
+        </details>
+      <% end %>
+    <% end %>
   </div>
   <%# Open on a wide screen; the controller folds it on a phone, where the button opens it again. %>
   <details class="rubylode-progress-more" open>

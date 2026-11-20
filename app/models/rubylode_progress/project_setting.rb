@@ -21,7 +21,7 @@ module RubylodeProgress
     self.table_name = "rubylode_progress_project_settings"
 
     OVERRIDE_ATTRIBUTES = %w[counted_versions version_name_prefix checklist_grouping in_progress_status_ids
-                             waiting_status_ids next_issue_limit note_source finished_stages_kept].freeze
+                             waiting_status_ids next_issue_limit note_source finished_stages_kept checklist_rows_per_section].freeze
     MAXIMUM_PREFIX_LENGTH = 60
 
     belongs_to :project
@@ -38,6 +38,8 @@ module RubylodeProgress
     validates :next_issue_limit, inclusion: { in: Settings::NEXT_ISSUE_LIMIT_RANGE }, allow_nil: true
     validates :finished_stages_kept, numericality: { only_integer: true }, allow_nil: true
     validates :finished_stages_kept, inclusion: { in: Settings::FINISHED_STAGES_KEPT_RANGE }, allow_nil: true
+    validates :checklist_rows_per_section, numericality: { only_integer: true }, allow_nil: true
+    validates :checklist_rows_per_section, inclusion: { in: Settings::CHECKLIST_ROWS_PER_SECTION_RANGE }, allow_nil: true
     validates :version_name_prefix, length: { maximum: MAXIMUM_PREFIX_LENGTH }, allow_nil: true
     validates :note_source, format: { with: /\A(latest_note|custom_field_\d+)\z/ }, allow_nil: true
 
