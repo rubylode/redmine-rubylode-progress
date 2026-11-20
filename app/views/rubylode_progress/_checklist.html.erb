@@ -1,15 +1,18 @@
 <%# The whole panel is what a filter or grouping choice swaps in, so the heading, the pills and the counts stay in step. %>
-<% current_stage = progress.current_stage %>
+<%# A focused page offers the focused stage alone; otherwise the current one. %>
+<% current_stage = focused_stage || progress.current_stage %>
 <% new_issue_mode = current_stage ? progress.new_issue_mode_for(current_stage.version) : :none %>
 <section class="rubylode-progress-checklist" data-loading-message="<%= l("rubylode_progress.stage_issues_loading") %>" data-failed-message="<%= l("rubylode_progress.stage_issues_failed") %>">
   <div class="rubylode-progress-checklist__heading">
     <div class="rubylode-progress-checklist__titles">
       <h3 class="rubylode-progress-checklist__title"><%= l("rubylode_progress.checklist.title.#{filter}") %></h3>
       <span class="rubylode-progress-checklist__count"><%= l("rubylode_progress.checklist.count", count: shown_count) %></span>
-      <span class="rubylode-progress-checklist__by"><%= l("rubylode_progress.checklist.by", grouping: l("rubylode_progress.group.#{grouping}").downcase) %></span>
+      <% unless focused_stage %>
+        <span class="rubylode-progress-checklist__by"><%= l("rubylode_progress.checklist.by", grouping: l("rubylode_progress.group.#{grouping}").downcase) %></span>
+      <% end %>
     </div>
     <div class="rubylode-progress-checklist__actions">
-      <%= link_to l("rubylode_progress.checklist.issue_query"), rubylode_progress_issue_query_path(project, filter, progress.stages, narrowing),
+      <%= link_to l("rubylode_progress.checklist.issue_query"), rubylode_progress_issue_query_path(project, filter, focused_stage ? [focused_stage] : progress.stages, narrowing),
                   class: "rubylode-progress-issue-query" %>
       <% unless new_issue_mode == :none %>
         <%= render "new_issue_button", project: project, version: current_stage.version, full_form: new_issue_mode == :full_form, filter: filter %>
@@ -18,12 +21,14 @@
   </div>
 
   <div class="rubylode-progress-checklist__selectors">
-    <%= render "filters", project: project, current_filter: filter, counts: counts, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing %>
-    <%= render "narrowing", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, narrowing_options: narrowing_options %>
+    <%= render "filters", project: project, current_filter: filter, counts: counts, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, focused_stage: focused_stage %>
+    <%= render "narrowing", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, narrowing_options: narrowing_options, focused_stage: focused_stage %>
   </div>
 
   <div class="rubylode-progress-checklist__controls">
-    <%= render "group_by", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing %>
+    <% unless focused_stage %>
+      <%= render "group_by", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing %>
+    <% end %>
     <%= render "status_rules", progress: progress, project: project %>
   </div>
 
@@ -31,5 +36,5 @@
     <p class="rubylode-progress-checklist__empty"><%= l("rubylode_progress.checklist.empty.#{filter == "needs_you" ? "needs_you" : "other"}") %></p>
   <% end %>
   <%= render "checklist_sections", sections: sections, project: project, progress: progress, filter: filter, grouping: grouping,
-                                  default_grouping: default_grouping, narrowing: narrowing, item_notes: item_notes, today: today %>
+                                  default_grouping: default_grouping, narrowing: narrowing, item_notes: item_notes, today: today, focused_stage: focused_stage %>
 </section>

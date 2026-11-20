@@ -1,8 +1,8 @@
 <%# The assignee, tracker and category selects beside the status pills. A plain GET form: without a script the button inside
     noscript applies it; with one a change swaps the checklist in place. "any" is first; the others are only values the
     viewer's visible counted issues have, with how many. Locals: project, filter, grouping, default_grouping, narrowing
-    (the chosen values), narrowing_options (the offered ones). %>
-<% base_params = rubylode_progress_checklist_params(filter: filter, grouping: grouping, default_grouping: default_grouping) %>
+    (the chosen values), narrowing_options (the offered ones), focused_stage (nil without a focus). %>
+<% base_params = rubylode_progress_checklist_params(filter: filter, grouping: grouping, default_grouping: default_grouping, stage: focused_stage&.version&.id) %>
 <%= form_tag project_rubylode_progress_path(project), method: :get, class: "rubylode-progress-narrowing",
              data: { checklist_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, only_path: true, **base_params),
                      action: "change->rubylode-progress-filters#chooseNarrowing" } do %>

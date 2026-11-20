@@ -1,6 +1,9 @@
+<%# A focused page lists the focused stage alone, open, with no fold row (it may be a folded or a finished stage). %>
+<% focused_stage = progress.focused_stage %>
+<% open_stage_id = focused_stage.version.id if focused_stage %>
 <% fold = progress.finished_stage_fold %>
 <%# What a folded stage's link without a script carries: the page's own checked filter, grouping and selects, nothing from the raw request. %>
-<% link_parameters = rubylode_progress_checklist_params(**checklist_locals.slice(:filter, :grouping, :default_grouping, :narrowing)) %>
+<% link_parameters = rubylode_progress_checklist_params(**checklist_locals.slice(:filter, :grouping, :default_grouping, :narrowing), stage: focused_stage&.version&.id) %>
 <% stage_indexes = progress.stages.each_with_index.to_h { |stage, index| [stage.version.id, index] } %>
 <section class="rubylode-progress-stage-list" data-controller="rubylode-progress-lazy-stage"
          data-rubylode-progress-lazy-stage-loading-message-value="<%= l("rubylode_progress.stage_issues_loading") %>"
@@ -9,7 +12,7 @@
     <p class="rubylode-progress-hint"><%= l("rubylode_progress.drag_hint") %></p>
   <% end %>
   <ol class="rubylode-progress-stages">
-    <% fold.list_entries.each do |entry| %>
+    <% (focused_stage ? [focused_stage] : fold.list_entries).each do |entry| %>
       <% if entry.is_a?(RubylodeProgress::FinishedStageFold) %>
         <%# Outside the stage cache: it reads only the stages' states and step counts, which the stage keys already carry. %>
         <li class="rubylode-progress-stage-item rubylode-progress-stage-item--done" style="--rubylode-progress-share-below: 100%; --rubylode-progress-colour-below: var(--rubylode-progress-done-color)">

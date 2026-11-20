@@ -179,4 +179,119 @@ class FocusOnAStageTest < Redmine::IntegrationTest
       assert_equal expected, css_select("input[name=back_url]").first["value"], path
     end
   end
+  def focus_link_for(version) = css_select("li.rubylode-progress-stage-item a.rubylode-progress-stage__focus-link").find { |link| link.text.strip == version.name }
+
+  def query_of(address) = Rack::Utils.parse_query(URI.parse(address).query)
+
+  test "the stage name links to the focused page keeping the filter and the selects" do
+    build_project
+    @project.issues.where(fixed_version_id: @upcoming.id).update_all(assigned_to_id: @developer.id)
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { filter: "all", assignee: @developer.id }
+
+    assert_response :success
+    link = focus_link_for(@upcoming)
+    assert link, "the upcoming stage's name is a focus link"
+    assert_equal progress_path, URI.parse(link["href"]).path
+    query = query_of(link["href"])
+    assert_equal @upcoming.id.to_s, query["stage"]
+    assert_equal "all", query["filter"]
+    assert_equal @developer.id.to_s, query["assignee"]
+    assert_nil query["open_stage"]
+  end
+
+  test "the focused stage list is one open stage without a fold row" do
+    build_project
+    finished = Array.new(8) do |index|
+      version = Version.generate!(project: @project, name: "Finished #{index + 1}", effective_date: Date.new(2025, 1, 1) >> index)
+      2.times { Issue.generate!(project: @project, fixed_version: version, author: @manager, status_id: CLOSED_STATUS_ID) }
+      version.update!(status: "closed")
+      version
+    end
+    log_user("jsmith", "jsmith")
+    get progress_path
+    assert_select ".rubylode-progress-finished-fold", count: 1
+
+    get progress_path, params: { stage: finished.first.id }
+
+    assert_response :success
+    assert_select ".rubylode-progress-finished-fold", count: 0
+    assert_select "ol.rubylode-progress-stages > li.rubylode-progress-stage-item", count: 1
+    assert_select "details.rubylode-progress-stage[open]", count: 1
+    assert_select "details.rubylode-progress-stage:not([open])", count: 0
+    assert_select "a.rubylode-progress-stage__focus-link", text: "Finished 1"
+  end
+
+  test "the focused checklist is flat" do
+    build_project
+    4.times { |count| Issue.generate!(project: @project, fixed_version: @upcoming, author: @developer, subject: "More #{count}") }
+    RubylodeProgress::ProjectSetting.create!(project: @project, checklist_rows_per_section: 5)
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id, filter: "all" }
+
+    assert_response :success
+    assert_select ".rubylode-progress-section__title", count: 0
+    assert_select "details.rubylode-progress-section", count: 0
+    assert_select ".rubylode-progress-group", count: 0
+    assert_select ".rubylode-progress-checklist__by", count: 0
+    assert_no_match(/translation missing/i, response.body)
+    assert_select ".rubylode-progress-checklist ul.rubylode-progress-rows", count: 1
+    assert_equal 5, checklist_row_ids.size
+    more = css_select("a.rubylode-progress-show-more").first
+    assert more, "a show more link"
+    assert_equal @upcoming.id.to_s, query_of(more["href"])["stage"]
+    assert_equal "all", query_of(more["data-checklist-path"])["expand"]
+    assert_equal @upcoming.id.to_s, query_of(more["data-checklist-path"])["stage"]
+
+    get checklist_path, params: { stage: @upcoming.id, filter: "all", expand: "all" }
+    assert_equal 7, checklist_row_ids.size
+    assert_select "a.rubylode-progress-show-more", count: 0
+  end
+
+  test "the filter and narrowing links keep the focus" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id }
+
+    assert_response :success
+    pills = css_select("a.rubylode-progress-filter")
+    assert_operator pills.size, :>, 1
+    pills.each do |pill|
+      assert_equal @upcoming.id.to_s, query_of(pill["href"])["stage"]
+      assert_equal @upcoming.id.to_s, query_of(pill["data-checklist-path"])["stage"]
+    end
+    form = css_select("form.rubylode-progress-narrowing").first
+    assert_equal @upcoming.id.to_s, query_of(form["data-checklist-path"])["stage"]
+    assert_select "form.rubylode-progress-narrowing input[type=hidden][name=stage][value=?]", @upcoming.id.to_s
+  end
+
+  test "the new issue button offers the focused stage" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id }
+
+    assert_response :success
+    assert_select "a.rubylode-progress-new-issue-button[href*=?]", "/versions/#{@upcoming.id}/new_issue"
+  end
+
+  test "when every stage is done the focused stage still renders open" do
+    build_project
+    @project.issues.update_all(status_id: CLOSED_STATUS_ID)
+    @current.update!(status: "closed")
+    @upcoming.update!(status: "closed")
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id, filter: "all" }
+
+    assert_response :success
+    assert_select ".rubylode-progress-finished-fold", count: 0
+    assert_select "details.rubylode-progress-stage[open]", count: 1
+    assert_select "ol.rubylode-progress-stages > li.rubylode-progress-stage-item", count: 1
+    assert_select "a.rubylode-progress-stage__focus-link", text: "Upcoming stage"
+    assert_equal 3, checklist_row_ids.size
+  end
 end

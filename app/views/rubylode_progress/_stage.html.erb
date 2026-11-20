@@ -1,14 +1,16 @@
 <%# The item and the details tag are outside the cache: the item carries the rail's share and colour properties, which read
     the neighbouring stage, and the tag carries what depends on this request (open, the drop-target flag, the address a
-    folded stage loads its issues from). Inside it are two fragments, cached separately: the summary and the issue list. %>
+    folded stage loads its issues from). Inside it are two fragments, cached separately: the summary and the issue list.
+    The chevron and the name sit in the summary outside its cached part: the name links to the stage's focused page with this
+    request's own parameters, which the summary's key does not include. %>
 <% opened = stage.current? || stage.partial? || stage.version.id == open_stage_id %>
 <li class="rubylode-progress-stage-item rubylode-progress-stage-item--<%= stage.state %>" style="<%= rail_style %>">
   <%= render "stage_mark", state: stage.state %>
   <details class="rubylode-progress-stage" <%= "open" if opened %> <%= tag.attributes(data: { version_id: stage.version.id }) if accepts_issues %> <%= tag.attributes(data: { refuse_reason: rubylode_progress_refuse_reason(stage.version, can_manage: can_manage_version) }) unless accepts_issues %> <%= tag.attributes(data: { lazy_issues_path: project_rubylode_progress_stage_issues_path(project, version_id: stage.version.id) }) unless opened %>>
-    <% cache RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: User.current, settings: settings, can_manage_version: can_manage_version) do %>
-      <summary>
-        <span class="rubylode-progress-chevron" aria-hidden="true"></span>
-        <span class="rubylode-progress-stage__name"><%= stage.version.name %></span>
+    <summary>
+      <span class="rubylode-progress-chevron" aria-hidden="true"></span>
+      <span class="rubylode-progress-stage__name"><%= link_to stage.version.name, rubylode_progress_focus_path(project, stage.version, link_parameters), class: "rubylode-progress-stage__focus-link" %></span>
+      <% cache RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: User.current, settings: settings, can_manage_version: can_manage_version) do %>
         <% status_text = l("rubylode_progress.version_tag.#{stage.version.status}") %>
         <% if can_manage_version %>
           <%= link_to status_text, project_rubylode_progress_version_status_path(project, version_id: stage.version.id),
@@ -28,8 +30,8 @@
         <% if blocking_text %>
           <span class="rubylode-progress-stage__blocking"><%= blocking_text %></span>
         <% end %>
-      </summary>
-    <% end %>
+      <% end %>
+    </summary>
     <% if opened %>
       <%= render "stage_issues", stage: stage, project: project, settings: settings, editable_issue_ids: editable_issue_ids,
                                  new_issue_mode: new_issue_mode, closed_inline: stage.version.id == open_stage_id %>
