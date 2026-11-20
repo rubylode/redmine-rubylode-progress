@@ -41,13 +41,17 @@ choice of grouping (version, category or parent issue). Each row carries a statu
 note.
 
 A busy project stays readable. Older finished stages fold into one row of the stage list ("38 finished stages", with their
-combined meter), and the top track draws them as one green mark and labels only the stages around the current one. Each
+combined meter), and the top track draws them as one mark of three dots and labels only the stages around the current one. Each
 checklist section lists its first 10 issues and a "Show more" link for the rest, which is a plain link that reloads the page
 without JavaScript. A long list opens section by section: with more than 8 sections only the first 5 list rows and the rest load
 theirs when opened (a plain `?open=<section>` link without JavaScript). Three selects beside the status pills narrow the checklist by assignee, tracker or category: they offer
 only values that occur among the issues the viewer can see, with counts, they change the pill counts with the list, and they
 leave the stage list and the top track as they are. They are not remembered. Long issue notes are cut at two lines with a
 "show note" link, and the overdue notice names at most three stages.
+
+![A project with 45 stages and 1000 issues](docs/screenshots/progress-busy.png)
+
+The demo's Lighthouse project, with 45 quarterly stages and 1000 made-up issues.
 
 ![The Needs you filter](docs/screenshots/progress-needs-you.png)
 

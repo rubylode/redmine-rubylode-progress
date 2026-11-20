@@ -30,6 +30,7 @@ const trackerSelector = ".rubylode-progress .rubylode-progress-checklist-column"
 // The chosen filter is remembered per person, so every shot names its filter and the last one leaves it on Open.
 await shoot(page, "progress-tab", "/projects/bridge/progress?filter=open", trackerSelector, { fullPage: true })
 await shoot(page, "progress-needs-you", "/projects/bridge/progress?filter=needs_you", trackerSelector, { fullPage: true })
+await shoot(page, "progress-busy", "/projects/lighthouse/progress?filter=open", trackerSelector, { fullPage: true })
 await page.goto(`${baseUrl}/projects/bridge/progress?filter=open`, { waitUntil: "load" })
 await shoot(page, "all-projects", "/progress", ".rubylode-progress-all-projects", { fullPage: true })
 
