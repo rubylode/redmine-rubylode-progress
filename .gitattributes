@@ -11,3 +11,4 @@ test export-ignore
 bin export-ignore
 script export-ignore
 package.json export-ignore
+.env.example export-ignore
