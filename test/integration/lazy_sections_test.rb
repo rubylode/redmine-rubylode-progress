@@ -101,7 +101,8 @@ class LazySectionsTest < Redmine::IntegrationTest
     assert_nil node["data-lazy-section-path"]
     assert_equal 10, node.css(".rubylode-progress-row").size
     assert_select "a.rubylode-progress-show-more", text: "Show 4 more"
-    assert_nil section_node(@versions[10])["open"]
+    assert_select ".rubylode-progress-section", count: 1
+    assert_select ".rubylode-progress-checklist", count: 0
   end
 
   test "an unknown, blank or non-string open key returns the checklist as it is" do

@@ -43,6 +43,8 @@ class RubylodeProgressController < ApplicationController
   # The checklist alone, for the filter links to swap in without reloading the page.
   def checklist
     load_checklist
+    return render_opened_sections if @opened_section_keys.any?
+
     render partial: "rubylode_progress/checklist", locals: checklist_locals, layout: false
   end
 
@@ -206,6 +208,13 @@ class RubylodeProgressController < ApplicationController
     requested.is_a?(String) && sections.any? { |section| section.key == requested } ? requested : nil
   end
 
+  # The sections named by open= alone, listed as the page would list them (open, with their first rows), for a folded
+  # section to swap itself for. Only keys that name a section get here; an unknown key renders the whole checklist.
+  def render_opened_sections
+    opened = @sections.select { |section| @opened_section_keys.include?(section.key) }
+    render partial: "rubylode_progress/checklist_sections", layout: false, locals: checklist_locals.merge(sections: opened)
+  end
+
   # The keys of the sections to open, from the address, comma separated, at most ten, and only those that name a section
   # that exists; anything else is dropped without an error.
   def requested_open_keys(sections)
@@ -225,7 +234,8 @@ class RubylodeProgressController < ApplicationController
     sections = RubylodeProgress::ChecklistSections.group(@checklist_items, by: @grouping, viewer: User.current,
                                                                            scope_items: narrowed_items)
     expanded_key = expanded_section_key(sections)
-    sections = RubylodeProgress::ChecklistSections.fold(sections, open_keys: requested_open_keys(sections) + [expanded_key].compact)
+    @opened_section_keys = requested_open_keys(sections)
+    sections = RubylodeProgress::ChecklistSections.fold(sections, open_keys: @opened_section_keys + [expanded_key].compact)
     @sections = RubylodeProgress::ChecklistSections.limit(sections, rows_per_section: @progress.settings.checklist_rows_per_section,
                                                                     expanded_key: expanded_key)
     @item_notes = RubylodeProgress::ItemNotes.for(@sections.flat_map { |section| section.items.map(&:issue) }, viewer: User.current,
