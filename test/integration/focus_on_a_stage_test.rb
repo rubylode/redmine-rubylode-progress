@@ -134,6 +134,8 @@ class FocusOnAStageTest < Redmine::IntegrationTest
 
     get progress_path, params: { stage: @upcoming.id, group: "version" }
     get checklist_path, params: { stage: @upcoming.id, group: "parent" }
+    get progress_path, params: { stage: @upcoming.id, filter: "done" }
+    get checklist_path, params: { stage: @upcoming.id, filter: "all" }
 
     assert_response :success
     assert_equal "open", User.find(2).pref[RubylodeProgress::ChecklistFilter::PREFERENCE_KEY]
@@ -160,5 +162,21 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     assert_response :success
     assert_select "p.rubylode-progress-checklist__empty", text: "No issues match this filter"
     assert_equal [], checklist_row_ids
+  end
+  test "the modals opened with a stage build a back address that keeps the stage" do
+    build_project
+    log_user("jsmith", "jsmith")
+    expected = "#{progress_path}?filter=all&stage=#{@upcoming.id}"
+    modal_paths = [
+      "#{progress_path}/versions/#{@upcoming.id}/status",
+      "#{progress_path}/issues/#{@current_open_issue.id}/quick_edit",
+      "#{progress_path}/versions/#{@upcoming.id}/new_issue"
+    ]
+
+    modal_paths.each do |path|
+      get path, params: { filter: "all", stage: @upcoming.id }
+      assert_response :success, path
+      assert_equal expected, css_select("input[name=back_url]").first["value"], path
+    end
   end
 end

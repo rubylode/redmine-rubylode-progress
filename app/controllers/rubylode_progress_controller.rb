@@ -178,8 +178,10 @@ class RubylodeProgressController < ApplicationController
     User.current.logged? ? User.current.pref[RubylodeProgress::ChecklistFilter::PREFERENCE_KEY] : nil
   end
 
-  # Only a valid choice that differs from the stored one is written; a plain visit never rewrites it.
+  # Only a valid choice that differs from the stored one is written; a plain visit never rewrites it, and a focused
+  # request never writes a preference.
   def remember_filter
+    return if @progress.focus_requested?
     return unless User.current.logged? && RubylodeProgress::ChecklistFilter.valid?(params[:filter])
     return if params[:filter] == remembered_filter
 
