@@ -2,6 +2,16 @@
 
 All notable changes to this plugin. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Focus on one stage: click a stage's name in the stage list, or its mark on the track, and the page lists only that stage and its issues, with the stage's own name, percent and closed count at the top. The address is the view (`?stage=<id>`), so it can be shared; the other stages stay on the track, dimmed, as links, and "Show all stages" leaves the focus.
+
+### Changed
+
+- The stage name in the stage list is now a link to the focused page; the chevron folds the stage, as before.
+
 ## [1.1.1] - 2026-11-20
 
 No migration: replace the folder and restart Redmine.

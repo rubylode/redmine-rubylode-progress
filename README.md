@@ -49,6 +49,8 @@ only values that occur among the issues the viewer can see, with counts, they ch
 leave the stage list and the top track as they are. They are not remembered. Long issue notes are cut at two lines with a
 "show note" link, and the overdue notice names at most three stages.
 
+Click a stage's name to focus on it: the page then lists only that stage and its issues, the top block shows its own name, percent and closed count, and the other stages stay on the track, dimmed, as links. The address is the view (`?stage=<id>`), so you can share it or bookmark it, and filter, grouping and selects carry over. The chevron still folds a stage; "Show all stages" leaves the focus.
+
 ![A project with 45 stages and 1000 issues](docs/screenshots/progress-busy.png)
 
 The demo's Lighthouse project, with 45 quarterly stages and 1000 made-up issues.

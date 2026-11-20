@@ -159,6 +159,17 @@
   min-width: 0;
 }
 
+.rubylode-progress-tracker__leave-focus {
+  margin: 0 0 var(--rubylode-progress-space-small);
+  font-size: var(--rubylode-progress-small-text-size);
+}
+
+/* A quiet link: the theme's own link look, underlined only on hover or keyboard focus. */
+.rubylode-progress-tracker__show-all:hover,
+.rubylode-progress-tracker__show-all:focus-visible {
+  text-decoration: underline;
+}
+
 .rubylode-progress-tracker__position {
   margin: 0;
   text-transform: uppercase;
@@ -374,8 +385,47 @@
   color: var(--rubylode-progress-text-color);
 }
 
-.rubylode-progress-track__stage--current .rubylode-progress-track__name {
+.rubylode-progress-track__stage--current .rubylode-progress-track__name,
+.rubylode-progress-track__stage--focused .rubylode-progress-track__name {
   font-weight: bold;
+}
+
+/* On a focused page the rail's marks and names are links to the other stages. They keep the look of the text around
+   them; the focused stage keeps the current stage's ring on its mark, the others fade but stay readable and come
+   back on hover or keyboard focus. */
+.rubylode-progress-track__focus-link:link,
+.rubylode-progress-track__focus-link:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rubylode-progress-track__name .rubylode-progress-track__focus-link:hover,
+.rubylode-progress-track__name .rubylode-progress-track__focus-link:focus-visible {
+  text-decoration: underline;
+}
+
+.rubylode-progress-track__line .rubylode-progress-track__focus-link {
+  display: inline-flex;
+  border-radius: 50%;
+}
+
+/* The name is clipped to its box, so an outline drawn outside it would be cut off. */
+.rubylode-progress-track__name .rubylode-progress-track__focus-link:focus-visible {
+  outline-offset: -2px;
+}
+
+.rubylode-progress-track__stage--focused .rubylode-progress-stage-mark {
+  --stage-mark-color: var(--rubylode-progress-accent-color);
+  box-shadow: 0 0 0 0.3em color-mix(in srgb, var(--rubylode-progress-accent-color) 22%, transparent);
+}
+
+.rubylode-progress-track__stage--dimmed {
+  opacity: 0.65;
+}
+
+.rubylode-progress-track__stage--dimmed:hover,
+.rubylode-progress-track__stage--dimmed:focus-within {
+  opacity: 1;
 }
 
 .rubylode-progress-track__percent {
@@ -589,6 +639,19 @@
 
 .rubylode-progress-stage__name {
   font-weight: bold;
+}
+
+/* The stage name is a link to the focused page. It reads as the name it replaces: the text colour, no underline until
+   hover or keyboard focus. The :link and :visited forms beat a theme's link colour by specificity. */
+.rubylode-progress-stage__focus-link:link,
+.rubylode-progress-stage__focus-link:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rubylode-progress-stage__focus-link:hover,
+.rubylode-progress-stage__focus-link:focus-visible {
+  text-decoration: underline;
 }
 
 .rubylode-progress-stage__summary {
@@ -1323,8 +1386,8 @@
 
   /* The tracker keeps its segments and marks; only the first, current and last stage keep a label, and only the
      current one its date. */
-  .rubylode-progress-track__stage:not(:first-child):not(:last-child):not(.rubylode-progress-track__stage--current) .rubylode-progress-track__label,
-  .rubylode-progress-track__stage:not(.rubylode-progress-track__stage--current) .rubylode-progress-track__date {
+  .rubylode-progress-track__stage:not(:first-child):not(:last-child):not(.rubylode-progress-track__stage--current):not(.rubylode-progress-track__stage--focused) .rubylode-progress-track__label,
+  .rubylode-progress-track__stage:not(.rubylode-progress-track__stage--current):not(.rubylode-progress-track__stage--focused) .rubylode-progress-track__date {
     display: none;
   }
 
