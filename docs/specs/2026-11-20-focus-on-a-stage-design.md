@@ -36,7 +36,10 @@ that reproduces the view.
 
 ## Design
 
-- **Address:** `/projects/:id/progress?stage=<version id>`, beside `filter`, `group`, `assignee`, `tracker`, `category`.
+- **Address:** `/projects/:id/progress/stages/:version_id` (the stage is a digits-only path segment; `filter`, `group`,
+  `assignee`, `tracker` and `category` follow as the query). It is the same `show` action, so every rule below applies
+  unchanged. `?stage=<version id>` on `/projects/:id/progress` is still accepted (old links, the checklist and fragment
+  routes, the modal back addresses); when both are present the path wins. Links into the focus use the path form.
   A value that is not the id of one of the viewer's stages for this project is a 404 (same rule as the stage fragments);
   a non-numeric value is a 404 too. The stage fragment and checklist routes accept and keep `stage`, so a swapped-in
   fragment never widens the view.

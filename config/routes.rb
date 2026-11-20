@@ -31,3 +31,6 @@ get "projects/:id/progress/stages/:version_id/issues", to: "rubylode_progress#st
                                                        as: "project_rubylode_progress_stage_issues"
 get "projects/:id/progress/stages/:version_id/closed_issues", to: "rubylode_progress#stage_closed_issues",
                                                               as: "project_rubylode_progress_stage_closed_issues"
+# The focused page's own address: the same action as ?stage=<id>, with the stage taken from the path.
+get "projects/:id/progress/stages/:stage", to: "rubylode_progress#show", as: "project_rubylode_progress_stage",
+                                           constraints: { stage: /\d+/ }

@@ -6,7 +6,7 @@ All notable changes to this plugin. The format follows [Keep a Changelog](https:
 
 ### Added
 
-- Focus on one stage: click a stage's name in the stage list, or its mark on the track, and the page lists only that stage and its issues, with the stage's own name, percent and closed count at the top. The address is the view (`?stage=<id>`), so it can be shared; the other stages stay on the track, dimmed, as links, and "Show all stages" leaves the focus.
+- Focus on one stage: click a stage's name in the stage list, or its mark on the track, and the page lists only that stage and its issues, with the stage's own name, percent and closed count at the top. The address is the view, `/projects/:id/progress/stages/:version_id` (filter, grouping and selects follow as the query; the older `?stage=<id>` still works, and the path wins when both are given), so it can be shared; the other stages stay on the track, dimmed, as links, and "Show all stages" leaves the focus.
 
 ### Changed
 

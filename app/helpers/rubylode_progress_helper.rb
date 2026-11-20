@@ -272,9 +272,10 @@ end
     project_rubylode_progress_path(project, **link_parameters, open_stage: version.id)
   end
 
-  # The page's own address focused on one stage, with the page's own checked parameters.
+  # The page's own address focused on one stage: the stage is in the path, the page's own checked parameters (filter,
+  # grouping, selects) follow as the query, and a stage the parameters carry is never repeated there.
   def rubylode_progress_focus_path(project, version, link_parameters)
-    project_rubylode_progress_path(project, **link_parameters, stage: version.id)
+    project_rubylode_progress_stage_path(project, version.id, **link_parameters.except(:stage))
   end
 
   # The checklist's own address with its filter, the grouping only when it differs from the project's setting, the

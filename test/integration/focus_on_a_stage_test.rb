@@ -54,6 +54,8 @@ class FocusOnAStageTest < Redmine::IntegrationTest
 
   def checklist_path = "#{progress_path}/checklist"
 
+  def stage_path(version) = "#{progress_path}/stages/#{version.id}"
+
   def checklist_row_ids = css_select("li.rubylode-progress-row").map { |row| row["id"] }
 
   test "the stage parameter narrows the checklist to that stage" do
@@ -181,6 +183,134 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     end
   end
 
+  test "the path form narrows both columns exactly as the query form does" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id, filter: "all" }
+    query_rows = checklist_row_ids.sort
+    query_stage_names = css_select("a.rubylode-progress-stage__focus-link").map { |link| link.text.strip }
+    query_headline = css_select("h3.rubylode-progress-tracker__headline").map(&:text)
+
+    get stage_path(@upcoming), params: { filter: "all" }
+
+    assert_response :success
+    assert_equal @upcoming_issues.map { |issue| "rubylode-progress-item-#{issue.id}" }.sort, checklist_row_ids.sort
+    assert_equal query_rows, checklist_row_ids.sort
+    assert_equal query_stage_names, css_select("a.rubylode-progress-stage__focus-link").map { |link| link.text.strip }
+    assert_equal ["Upcoming stage"], query_stage_names
+    assert_equal query_headline, css_select("h3.rubylode-progress-tracker__headline").map(&:text)
+    assert_select "ol.rubylode-progress-stages > li.rubylode-progress-stage-item", count: 1
+    assert_select "li.rubylode-progress-track__stage--focused", count: 1
+    assert_select "a.rubylode-progress-tracker__show-all", count: 1
+    assert_select "a.rubylode-progress-item-link", text: "Current open issue", count: 0
+  end
+
+  test "a stage segment that is not digits does not route to the page" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    ["abc", "12abc", "-1", "1.5"].each do |segment|
+      get "#{progress_path}/stages/#{segment}"
+      assert_response :not_found, "stages/#{segment}"
+    end
+  end
+
+  test "through the path a non-stage id, another project's version and a hidden version are 404" do
+    build_project
+    stranger = Version.generate!(project: Project.generate!(is_public: false), name: "Elsewhere")
+    log_user("jsmith", "jsmith")
+
+    [999_999, stranger.id].each do |version_id|
+      get "#{progress_path}/stages/#{version_id}"
+      assert_response :not_found, "stages/#{version_id}"
+    end
+
+    RubylodeProgress::ProjectSetting.create!(project: @project, excluded_version_ids: [@upcoming.id])
+    get stage_path(@upcoming)
+    assert_response :not_found, "an unticked version"
+    get stage_path(@current)
+    assert_response :success
+  end
+
+  test "the fragment routes under stages and the checklist still answer next to the path form" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get "#{stage_path(@upcoming)}/issues", xhr: true
+    assert_response :success
+    assert_select "a.rubylode-progress-item-link", text: "Upcoming issue 1"
+
+    get "#{stage_path(@current)}/closed_issues", xhr: true
+    assert_response :success
+
+    get checklist_path, params: { filter: "all" }
+    assert_response :success
+    assert_equal 5, checklist_row_ids.size
+  end
+
+  test "the path form never writes the remembered filter or the project's grouping" do
+    build_project
+    RubylodeProgress::ProjectSetting.create!(project: @project, checklist_grouping: "category")
+    user = User.find(2)
+    user.pref[RubylodeProgress::ChecklistFilter::PREFERENCE_KEY] = "open"
+    user.pref.save
+    log_user("jsmith", "jsmith")
+
+    get stage_path(@upcoming), params: { filter: "done", group: "version" }
+    assert_response :success
+    get stage_path(@upcoming), params: { filter: "all" }
+    assert_response :success
+    get "#{progress_path}/stages/999999", params: { filter: "done" }
+    assert_response :not_found
+
+    assert_equal "open", User.find(2).pref[RubylodeProgress::ChecklistFilter::PREFERENCE_KEY]
+    assert_equal "category", RubylodeProgress::ProjectSetting.find_by(project_id: @project.id).checklist_grouping
+  end
+
+  test "the path wins when the path and the query name different stages" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get stage_path(@upcoming), params: { stage: @current.id, filter: "all" }
+
+    assert_response :success
+    assert_equal @upcoming_issues.map { |issue| "rubylode-progress-item-#{issue.id}" }.sort, checklist_row_ids.sort
+    assert_select "h3.rubylode-progress-tracker__headline", text: "Upcoming stage"
+  end
+
+  test "the query form keeps working next to the path form" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id, filter: "all" }
+
+    assert_response :success
+    assert_equal 3, checklist_row_ids.size
+    assert_select "h3.rubylode-progress-tracker__headline", text: "Upcoming stage"
+  end
+
+  test "the focus links on the rail and the stage list use the path form without a repeated stage" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get stage_path(@upcoming), params: { filter: "all", group: "category" }
+
+    assert_response :success
+    links = css_select("a.rubylode-progress-stage__focus-link, a.rubylode-progress-track__focus-link")
+    assert_operator links.size, :>=, 3
+    links.each do |link|
+      assert_match(%r{\A/projects/#{@project.identifier}/progress/stages/\d+\?}, link["href"])
+      assert_not_includes query_of(link["href"]).keys, "stage"
+      assert_equal "all", query_of(link["href"])["filter"]
+      assert_equal "category", query_of(link["href"])["group"]
+    end
+    assert_equal 1, links.count { |link| link["href"].include?("/stages/#{@upcoming.id}?") && link["class"].include?("stage__focus-link") }
+    assert_equal stage_path(@upcoming), URI.parse(css_select("a.rubylode-progress-stage__focus-link").first["href"]).path
+    show_all = css_select("a.rubylode-progress-tracker__show-all").first
+    assert_equal progress_path, URI.parse(show_all["href"]).path
+  end
+
   def focus_link_for(version) = css_select("li.rubylode-progress-stage-item a.rubylode-progress-stage__focus-link").find { |link| link.text.strip == version.name }
 
   def query_of(address) = Rack::Utils.parse_query(URI.parse(address).query)
@@ -195,9 +325,9 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     assert_response :success
     link = focus_link_for(@upcoming)
     assert link, "the upcoming stage's name is a focus link"
-    assert_equal progress_path, URI.parse(link["href"]).path
+    assert_equal stage_path(@upcoming), URI.parse(link["href"]).path
     query = query_of(link["href"])
-    assert_equal @upcoming.id.to_s, query["stage"]
+    assert_not_includes query.keys, "stage"
     assert_equal "all", query["filter"]
     assert_equal @developer.id.to_s, query["assignee"]
     assert_nil query["open_stage"]
@@ -368,13 +498,13 @@ class FocusOnAStageTest < Redmine::IntegrationTest
       links = item.css("a.rubylode-progress-track__focus-link")
       assert_operator links.size, :>=, 1
       links.each do |link|
-        assert_equal progress_path, URI.parse(link["href"]).path
-        assert_includes [@current.id.to_s, @upcoming.id.to_s], query_of(link["href"])["stage"]
+        assert_includes [stage_path(@current), stage_path(@upcoming)], URI.parse(link["href"]).path
+        assert_not_includes query_of(link["href"]).keys, "stage"
         assert link["aria-label"].present?, "the dot's link names its stage"
       end
     end
-    assert_equal [@current.id.to_s, @upcoming.id.to_s].sort,
-                 css_select("li.rubylode-progress-track__stage a.rubylode-progress-track__focus-link").map { |link| query_of(link["href"])["stage"] }.uniq.sort
+    assert_equal [stage_path(@current), stage_path(@upcoming)].sort,
+                 css_select("li.rubylode-progress-track__stage a.rubylode-progress-track__focus-link").map { |link| URI.parse(link["href"]).path }.uniq.sort
   end
 
   test "the rail's links and the show all link keep the filter, grouping and selects, and the show all link drops the stage" do
@@ -395,7 +525,9 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     assert_equal "category", query["group"]
     assert_equal @developer.id.to_s, query["assignee"]
     css_select("a.rubylode-progress-track__focus-link").each do |link|
+      assert_match(%r{/progress/stages/\d+\z}, URI.parse(link["href"]).path)
       kept = query_of(link["href"])
+      assert_not_includes kept.keys, "stage"
       assert_equal "all", kept["filter"]
       assert_equal "category", kept["group"]
       assert_equal @developer.id.to_s, kept["assignee"]
@@ -430,6 +562,7 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     name_link = focus_link_for(@upcoming)
     assert name_link, "the focused stage's name is a link"
     assert_equal grouping, query_of(name_link["href"])["group"]
+    assert_equal stage_path(@upcoming), URI.parse(name_link["href"]).path
   end
 
   test "a focused page keeps the chosen grouping in every link, and leaving the focus restores it" do
