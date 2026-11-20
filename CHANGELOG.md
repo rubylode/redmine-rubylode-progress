@@ -12,6 +12,7 @@ All notable changes to this plugin. The format follows [Keep a Changelog](https:
 - Each checklist section lists its first 10 issues and a "Show more" link for the rest. The rest is not in the first response, so a busy page loads far lighter; without JavaScript the link reloads the page with that section in full. The number is a setting, per project with a plugin-wide default.
 - Three selects above the checklist narrow it by assignee, tracker or category. They offer only values the viewer can see, change the pill counts with the list, and are carried into "Open as issue query".
 - Long issue notes are cut at two lines with a "show note" link, and the Behind notice names at most three stages.
+- A folded stage in the stage list renders its summary only and loads its issues when it is opened, from `GET /projects/:id/progress/stages/:version_id/issues` (the stage's issues as the viewer may see them); the closed issues inside a current or behind stage load the same way, from `.../closed_issues`, when its closed fold is opened. Without JavaScript its "Show the N issues" link reloads the page with `?open_stage=<id>`. A busy project's page is a fraction of its size and no longer grows with the issues in folded stages.
 - A layout for a phone for the folded row, the summary mark, the selects and "Show more".
 
 ### Fixed

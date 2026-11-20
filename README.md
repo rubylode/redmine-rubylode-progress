@@ -118,6 +118,10 @@ preference of the signed-in user, and so is the filter they last chose.
 - The page for all projects, at `/progress`, linked from the top menu as "Progress" for anyone who can see at least one
   project with the module enabled. One tracker for each project, in name order: the name (linking to its tab), the track, the
   percent and the current stage. A project with no versions says "Nothing to track yet".
+- In the stage list the current stage and the stages left behind show their issues at once; every other stage shows its
+  name, date, meter and counts, and loads its issues when it is opened, so a project with many stages and issues opens
+  light. The closed issues of a current or behind stage load when its "Show N closed" fold is opened. Without JavaScript the
+  "Show the N issues" link reloads the page with that stage open.
 
 ![All projects](docs/screenshots/all-projects.png)
 
