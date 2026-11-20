@@ -20,7 +20,7 @@ class RubylodeProgressController < ApplicationController
   before_action :find_project, :authorize
   before_action :load_progress_and_filter, only: [:show, :checklist]
   before_action :require_focus_to_be_a_stage, :remember_filter, only: [:show, :checklist]
-  before_action :load_progress_for_modal, only: [:quick_edit, :new_issue, :status, :stage_issues, :stage_closed_issues]
+  before_action :load_progress_for_modal, only: [:item, :quick_edit, :new_issue, :status, :stage_issues, :stage_closed_issues]
   after_action :trim_indentation, only: [:show, :checklist, :stage_issues, :stage_closed_issues]
   helper_method :checklist_locals
 
@@ -57,6 +57,7 @@ class RubylodeProgressController < ApplicationController
                   .find_by(id: params[:issue_id])
     return render_404 unless @issue
 
+    @back_url = project_rubylode_progress_path(@project, filter: @filter, **status_grouping_parameters, **focus_parameters)
     respond_to do |format|
       format.html { redirect_to issue_path(@issue) }
       format.js

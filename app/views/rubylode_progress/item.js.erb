@@ -10,7 +10,7 @@ var hangFromTop = function () {
   $('#ajax-modal').dialog('option', 'position', { my: 'center top', at: 'center top+40', of: window });
 };
 hangFromTop();
-fetch(<%= raw issue_path(@issue, back_url: project_rubylode_progress_path(@project)).to_json %>,
+fetch(<%= raw issue_path(@issue, back_url: @back_url).to_json %>,
       { credentials: 'same-origin', headers: { Accept: 'text/html' } })
   .then(function (response) {
     if (!response.ok) { throw new Error(response.status); }

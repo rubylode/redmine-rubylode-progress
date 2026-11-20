@@ -163,6 +163,7 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     assert_select "p.rubylode-progress-checklist__empty", text: "No issues match this filter"
     assert_equal [], checklist_row_ids
   end
+
   test "the modals opened with a stage build a back address that keeps the stage" do
     build_project
     log_user("jsmith", "jsmith")
@@ -179,6 +180,7 @@ class FocusOnAStageTest < Redmine::IntegrationTest
       assert_equal expected, css_select("input[name=back_url]").first["value"], path
     end
   end
+
   def focus_link_for(version) = css_select("li.rubylode-progress-stage-item a.rubylode-progress-stage__focus-link").find { |link| link.text.strip == version.name }
 
   def query_of(address) = Rack::Utils.parse_query(URI.parse(address).query)
@@ -293,5 +295,120 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     assert_select "ol.rubylode-progress-stages > li.rubylode-progress-stage-item", count: 1
     assert_select "a.rubylode-progress-stage__focus-link", text: "Upcoming stage"
     assert_equal 3, checklist_row_ids.size
+  end
+
+  # Every link of the page that opens a modal, by where it sits, so a test can read each one's address.
+  def modal_links
+    { "row quick edit" => css_select("li.rubylode-progress-row a.rubylode-progress-edit"),
+      "row item" => css_select("li.rubylode-progress-row a.rubylode-progress-item-link"),
+      "step quick edit" => css_select("li.rubylode-progress-step a.rubylode-progress-edit"),
+      "step item" => css_select("li.rubylode-progress-step a.rubylode-progress-item-link"),
+      "stage plus" => css_select("a.rubylode-progress-add"),
+      "new issue button" => css_select("a.rubylode-progress-new-issue-button"),
+      "stage status button" => css_select("a.rubylode-progress-status-button") }
+  end
+
+  test "every link that opens a modal carries the focused stage" do
+    build_project
+    Role.find(1).add_permission!(:manage_versions)
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @current.id, filter: "all" }
+
+    assert_response :success
+    modal_links.each do |name, links|
+      assert_operator links.size, :>, 0, "the focused page has a #{name} link"
+      links.each { |link| assert_equal @current.id.to_s, query_of(link["href"])["stage"], "#{name} #{link["href"]}" }
+    end
+  end
+
+  test "the same links on the page that is not focused carry no stage" do
+    build_project
+    Role.find(1).add_permission!(:manage_versions)
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { filter: "all" }
+
+    assert_response :success
+    modal_links.each do |name, links|
+      assert_operator links.size, :>, 0, "the page has a #{name} link"
+      links.each { |link| assert_not_includes query_of(link["href"]).keys, "stage", "#{name} #{link["href"]}" }
+    end
+  end
+
+  def back_url_of(link) = Rack::Utils.parse_nested_query(URI.parse(link["href"]).query)["back_url"]
+
+  test "the full new-issue form comes back to the focused stage, and to the page when not focused" do
+    build_project
+    IssueCustomField.generate!(name: "Customer code", field_format: "string", is_required: true,
+                               is_for_all: true, tracker_ids: Tracker.pluck(:id))
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @current.id, filter: "all" }
+
+    ["a.rubylode-progress-new-issue-button", "a.rubylode-progress-add"].each do |selector|
+      back_url = back_url_of(css_select(selector).first)
+      assert_equal progress_path, URI.parse(back_url).path, selector
+      assert_equal @current.id.to_s, query_of(back_url)["stage"], selector
+    end
+    assert_equal "all", query_of(back_url_of(css_select("a.rubylode-progress-new-issue-button").first))["filter"]
+
+    get progress_path, params: { filter: "all" }
+
+    ["a.rubylode-progress-new-issue-button", "a.rubylode-progress-add"].each do |selector|
+      assert_not_includes query_of(back_url_of(css_select(selector).first)).keys, "stage", selector
+    end
+  end
+
+  test "the item modal and its back address keep the focused stage" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get "#{progress_path}/issues/#{@current_open_issue.id}/item", params: { filter: "all", stage: @upcoming.id }, xhr: true
+
+    assert_response :success
+    back_url = CGI.unescape(response.body[/back_url=([^"\\]+)/, 1].to_s)
+    assert_equal "#{progress_path}?filter=all&stage=#{@upcoming.id}", back_url
+  end
+
+  test "a stage that is not one of the viewer's is dropped from the item modal's back address" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get "#{progress_path}/issues/#{@current_open_issue.id}/item", params: { stage: "abc" }, xhr: true
+
+    assert_response :success
+    assert_not_includes response.body, "stage="
+  end
+
+  # The cached pencils, plus and status button read the focus, so a focused render must not leave its links in the entry
+  # the unfocused page reads, nor the other way round.
+  test "a focused render and an unfocused render of one stage never share cached links" do
+    original_caching = ActionController::Base.perform_caching
+    original_store = ActionController::Base.cache_store
+    cached_selectors = ["li.rubylode-progress-step a.rubylode-progress-edit", "li.rubylode-progress-step a.rubylode-progress-item-link",
+                        "a.rubylode-progress-add", "a.rubylode-progress-status-button"]
+    stage_of_links = lambda do |selector|
+      css_select(selector).map { |link| query_of(link["href"])["stage"] }.uniq
+    end
+    build_project
+    Role.find(1).add_permission!(:manage_versions)
+    log_user("jsmith", "jsmith")
+
+    [%i[focused unfocused], %i[unfocused focused]].each do |order|
+      ActionController::Base.perform_caching = true
+      ActionController::Base.cache_store = ActiveSupport::Cache::MemoryStore.new
+      order.each do |kind|
+        get progress_path, params: kind == :focused ? { stage: @current.id } : {}
+        assert_response :success
+        cached_selectors.each do |selector|
+          expected = kind == :focused ? [@current.id.to_s] : [nil]
+          assert_equal expected, stage_of_links.call(selector), "#{order.join(" then ")}: #{kind} #{selector}"
+        end
+      end
+    end
+  ensure
+    ActionController::Base.perform_caching = original_caching
+    ActionController::Base.cache_store = original_store
   end
 end

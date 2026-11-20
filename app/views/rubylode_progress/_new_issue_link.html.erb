@@ -1,10 +1,10 @@
 <% label = l("rubylode_progress.new_issue.link_label", version: version.name) %>
 <% if full_form %>
   <%= link_to sprite_icon("add", label),
-              new_project_issue_path(project, issue: { fixed_version_id: version.id }, back_url: project_rubylode_progress_path(project)),
+              new_project_issue_path(project, issue: { fixed_version_id: version.id }, back_url: project_rubylode_progress_path(project, stage: local_assigns[:stage])),
               class: "rubylode-progress-add", title: label, aria: { label: label } %>
 <% else %>
   <%= link_to sprite_icon("add", label),
-              project_rubylode_progress_new_issue_path(project, version_id: version.id),
+              project_rubylode_progress_new_issue_path(project, version_id: version.id, stage: local_assigns[:stage]),
               remote: true, class: "rubylode-progress-add", title: label, aria: { label: label } %>
 <% end %>

@@ -50,22 +50,32 @@ class StageCacheKeyTest < ActiveSupport::TestCase
     [progress, progress.stages.first, project, viewer, settings]
   end
 
-  def summary_key_for(viewer: @manager, settings: nil, can_manage_version: nil)
+  def summary_key_for(viewer: @manager, settings: nil, can_manage_version: nil, focused: false)
     progress, stage, project, viewer, settings = stage_context(viewer, settings)
     RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: viewer, settings: settings,
-                                                can_manage_version: can_manage_version.nil? ? progress.can_manage_version?(stage.version) : can_manage_version)
+                                                can_manage_version: can_manage_version.nil? ? progress.can_manage_version?(stage.version) : can_manage_version,
+                                                focused: focused)
   end
 
-  def issues_key_for(viewer: @manager, settings: nil, new_issue_mode: nil)
+  def issues_key_for(viewer: @manager, settings: nil, new_issue_mode: nil, focused: false, part: :open)
     progress, stage, project, viewer, settings = stage_context(viewer, settings)
     RubylodeProgress::StageCacheKey.for_issues(stage: stage, project: project, viewer: viewer, settings: settings,
                                                editable_issue_ids: progress.editable_issue_ids,
-                                               new_issue_mode: new_issue_mode || progress.new_issue_mode_for(stage.version))
+                                               new_issue_mode: new_issue_mode || progress.new_issue_mode_for(stage.version),
+                                               focused: focused, part: part)
   end
 
   test "the summary key changes with the viewer's right to manage the version, and the list key does not" do
     refute_equal summary_key_for(can_manage_version: true), summary_key_for(can_manage_version: false)
     assert_equal issues_key_for, issues_key_for
+  end
+
+  test "a focused page's links are in both keys, so a focused render never shares an entry with the unfocused one" do
+    refute_equal summary_key_for(focused: true), summary_key_for(focused: false)
+    refute_equal issues_key_for(focused: true), issues_key_for(focused: false)
+    refute_equal issues_key_for(focused: true, part: :closed), issues_key_for(focused: false, part: :closed)
+    assert_equal summary_key_for(focused: true), summary_key_for(focused: true)
+    assert_equal issues_key_for, issues_key_for(focused: false)
   end
 
   test "the list key changes with what the plus does for the viewer, and the summary key does not" do

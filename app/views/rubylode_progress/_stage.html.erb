@@ -10,10 +10,10 @@
     <summary>
       <span class="rubylode-progress-chevron" aria-hidden="true"></span>
       <span class="rubylode-progress-stage__name"><%= link_to stage.version.name, rubylode_progress_focus_path(project, stage.version, link_parameters), class: "rubylode-progress-stage__focus-link" %></span>
-      <% cache RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: User.current, settings: settings, can_manage_version: can_manage_version) do %>
+      <% cache RubylodeProgress::StageCacheKey.for_summary(stage: stage, project: project, viewer: User.current, settings: settings, can_manage_version: can_manage_version, focused: focused) do %>
         <% status_text = l("rubylode_progress.version_tag.#{stage.version.status}") %>
         <% if can_manage_version %>
-          <%= link_to status_text, project_rubylode_progress_version_status_path(project, version_id: stage.version.id),
+          <%= link_to status_text, project_rubylode_progress_version_status_path(project, version_id: stage.version.id, stage: (stage.version.id if focused)),
                       remote: true, class: ["rubylode-progress-status-button", ("rubylode-progress-stage__tag" if %w[closed locked].include?(stage.version.status))],
                       title: l("rubylode_progress.version_status.change_label", version: stage.version.name),
                       aria: { label: l("rubylode_progress.version_status.current_label", version: stage.version.name, status: status_text) } %>
@@ -34,7 +34,7 @@
     </summary>
     <% if opened %>
       <%= render "stage_issues", stage: stage, project: project, settings: settings, editable_issue_ids: editable_issue_ids,
-                                 new_issue_mode: new_issue_mode, closed_inline: stage.version.id == open_stage_id %>
+                                 new_issue_mode: new_issue_mode, closed_inline: stage.version.id == open_stage_id, focused: focused %>
     <% else %>
       <%# A folded stage renders no issues. The link is the way in without a script; the script replaces this line with the
           list when the stage is opened. %>

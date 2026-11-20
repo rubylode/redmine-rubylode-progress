@@ -5,4 +5,5 @@
                     accepts_issues: progress.accepts_issues?(stage.version),
                     can_manage_version: progress.can_manage_version?(stage.version),
                     open_stage_id: open_stage_id, link_parameters: link_parameters,
+                    focused: progress.focused_stage&.version&.id == stage.version.id,
                     rail_style: rubylode_progress_rail_style(progress.stages, stage_indexes.fetch(stage.version.id)) %>

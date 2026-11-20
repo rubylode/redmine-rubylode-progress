@@ -15,7 +15,7 @@
       <%= link_to l("rubylode_progress.checklist.issue_query"), rubylode_progress_issue_query_path(project, filter, focused_stage ? [focused_stage] : progress.stages, narrowing),
                   class: "rubylode-progress-issue-query" %>
       <% unless new_issue_mode == :none %>
-        <%= render "new_issue_button", project: project, version: current_stage.version, full_form: new_issue_mode == :full_form, filter: filter %>
+        <%= render "new_issue_button", project: project, version: current_stage.version, full_form: new_issue_mode == :full_form, filter: filter, stage: focused_stage&.version&.id %>
       <% end %>
     </div>
   </div>

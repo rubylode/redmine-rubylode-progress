@@ -31,6 +31,8 @@ module RubylodeProgress
   # The rows are draggable only where the viewer may edit (already in the digest of editable ids).
   # The status tag is a button only for a viewer who may manage versions in the version's own project, so that right is in
   # the key too, as true or false; it is worked out once per project, not per stage.
+  # The pencils, the plus and the status button of a page focused on this stage carry the stage in their addresses (so a save
+  # comes back to the focus), so whether the page is focused on it is in both keys, as true or false.
   # The rail line below a stage depends on the next stage, so it is drawn from properties on the uncached item around
   # this fragment, and nothing about a neighbour is in the key. Nothing in the fragment reads today, so no date is in it.
   module StageCacheKey
@@ -41,17 +43,17 @@ module RubylodeProgress
     # closed rows are a third fragment, part: :closed, fetched when the fold is opened) reads the issues themselves: the assignees,
     # the in-progress marks, the pencils and the plus. Whether the stage is a drop target is not in either: that is on the
     # details tag, outside the cache.
-    def self.for_summary(stage:, project:, viewer:, settings:, can_manage_version:)
+    def self.for_summary(stage:, project:, viewer:, settings:, can_manage_version:, focused: false)
       step_issues = stage.steps.map(&:issue)
-      ["rubylode_progress/stage_summary", *shared_parts(stage, project, viewer, settings, step_issues), can_manage_version]
+      ["rubylode_progress/stage_summary", *shared_parts(stage, project, viewer, settings, step_issues), can_manage_version, focused]
     end
 
-    def self.for_issues(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:, part: :open, closed_inline: false)
+    def self.for_issues(stage:, project:, viewer:, settings:, editable_issue_ids:, new_issue_mode:, part: :open, closed_inline: false, focused: false)
       step_issues = stage.steps.map(&:issue)
       editable_step_issues = step_issues.select { |issue| editable_issue_ids.include?(issue.id) }
       ["rubylode_progress/stage_issues", part, closed_inline, *shared_parts(stage, project, viewer, settings, step_issues),
        digest_of_ids(editable_step_issues), new_issue_mode, digest_of_ids(in_progress_issues(step_issues, settings)),
-       digest_of_assignees(step_issues)]
+       digest_of_assignees(step_issues), focused]
     end
 
     def self.shared_parts(stage, project, viewer, settings, step_issues)

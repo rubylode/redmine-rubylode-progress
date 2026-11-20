@@ -1,7 +1,7 @@
 <%# A focused stage lists its rows flat: no heading, no fold, only the rows and the show more line. %>
 <% if grouping == "flat" %>
   <%= render "checklist_section_rows", section: section, project: project, progress: progress, filter: filter, grouping: grouping,
-                                      item_notes: item_notes, today: today %>
+                                      item_notes: item_notes, today: today, focused_stage: focused_stage %>
   <%= render "checklist_section_more", section: section, project: project, filter: filter, grouping: grouping, default_grouping: default_grouping,
                                       narrowing: narrowing, focused_stage: focused_stage %>
 <% else %>
@@ -30,7 +30,7 @@
     </p>
   <% else %>
     <%= render "checklist_section_rows", section: section, project: project, progress: progress, filter: filter, grouping: grouping,
-                                        item_notes: item_notes, today: today %>
+                                        item_notes: item_notes, today: today, focused_stage: focused_stage %>
   <% end %>
   <%= render "checklist_section_more", section: section, project: project, filter: filter, grouping: grouping, default_grouping: default_grouping,
                                       narrowing: narrowing, focused_stage: focused_stage %>

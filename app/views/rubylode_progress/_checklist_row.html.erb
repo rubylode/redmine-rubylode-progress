@@ -8,7 +8,7 @@
     <%= tag.attributes(draggable: "true", data: { issue_id: issue.id, current_version_id: issue.fixed_version_id, update_path: issue_path(issue) }) if movable %>>
   <span class="rubylode-progress-row__mark rubylode-progress-row__mark--<%= mark_state %>" aria-hidden="true"></span>
   <div class="rubylode-progress-row__main">
-    <span class="rubylode-progress-row__title"><%= render "item_title_link", project: project, issue: issue %></span>
+    <span class="rubylode-progress-row__title"><%= render "item_title_link", project: project, issue: issue, filter: filter, stage: focused_stage&.version&.id %></span>
     <% if note.present? %>
       <% note_preview, note_is_long = rubylode_progress_note_preview(note) %>
       <p class="rubylode-progress-row__note"><%= note_preview %></p>
@@ -25,7 +25,7 @@
     <summary class="rubylode-progress-more__button" aria-label="<%= l("rubylode_progress.row_more", number: issue.id) %>"><span aria-hidden="true">&hellip;</span></summary>
     <span class="rubylode-progress-hover-actions rubylode-progress-more__links">
       <% if editable_issue_ids.include?(issue.id) %>
-        <%= render "quick_edit_link", project: project, issue: issue, filter: filter %>
+        <%= render "quick_edit_link", project: project, issue: issue, filter: filter, stage: focused_stage&.version&.id %>
       <% end %>
       <%= render "new_tab_link", issue: issue %>
     </span>
