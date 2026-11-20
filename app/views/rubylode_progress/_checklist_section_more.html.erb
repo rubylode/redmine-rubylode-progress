@@ -1,6 +1,6 @@
 <%# The line that lists a cut section in full; nothing when no row is hidden. The focus is kept in both addresses. %>
 <% if section.hidden_count.positive? %>
-  <% more_params = rubylode_progress_checklist_params(filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, expand: section.key, stage: focused_stage&.version&.id) %>
+  <% more_params = rubylode_progress_checklist_params(filter: filter, grouping: link_grouping, default_grouping: default_grouping, narrowing: narrowing, expand: section.key, stage: focused_stage&.version&.id) %>
   <p class="rubylode-progress-section__more">
     <%# Without a script this is an ordinary link that reloads the page with this one section listed in full. %>
     <%= link_to l("rubylode_progress.checklist.show_more", count: section.hidden_count), project_rubylode_progress_path(project, **more_params),

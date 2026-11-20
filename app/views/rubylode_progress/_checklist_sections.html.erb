@@ -1,5 +1,5 @@
 <%# The sections alone, with no panel around them: what a folded section swaps itself for when it is opened. %>
 <% sections.each do |section| %>
-  <%= render "checklist_section", section: section, project: project, progress: progress, filter: filter, grouping: grouping,
+  <%= render "checklist_section", section: section, project: project, progress: progress, filter: filter, grouping: grouping, link_grouping: link_grouping,
                                   default_grouping: default_grouping, narrowing: narrowing, item_notes: item_notes, today: today, focused_stage: focused_stage %>
 <% end %>

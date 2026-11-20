@@ -2,7 +2,7 @@
 <% if grouping == "flat" %>
   <%= render "checklist_section_rows", section: section, project: project, progress: progress, filter: filter, grouping: grouping,
                                       item_notes: item_notes, today: today, focused_stage: focused_stage %>
-  <%= render "checklist_section_more", section: section, project: project, filter: filter, grouping: grouping, default_grouping: default_grouping,
+  <%= render "checklist_section_more", section: section, project: project, filter: filter, link_grouping: link_grouping, default_grouping: default_grouping,
                                       narrowing: narrowing, focused_stage: focused_stage %>
 <% else %>
 <%# A version section is a drop target only when the checklist is grouped by version and the version accepts issues;
@@ -10,7 +10,7 @@
 <% versioned = grouping == "version" && section.version %>
 <% drop_target = versioned && progress.accepts_issues?(section.version) %>
 <% refuse_reason = versioned && !drop_target ? rubylode_progress_refuse_reason(section.version, can_manage: progress.can_manage_version?(section.version)) : nil %>
-<% open_params = section.folded ? rubylode_progress_checklist_params(filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, open: section.key, stage: focused_stage&.version&.id) : nil %>
+<% open_params = section.folded ? rubylode_progress_checklist_params(filter: filter, grouping: link_grouping, default_grouping: default_grouping, narrowing: narrowing, open: section.key, stage: focused_stage&.version&.id) : nil %>
 <%# A folded section keeps its heading and its drop target but lists no rows; the script loads them when it is opened. %>
 <details class="rubylode-progress-section" <%= "open" unless section.folded %> data-section-key="<%= section.key %>" <%= tag.attributes(data: { lazy_section_path: url_for(controller: "rubylode_progress", action: "checklist", id: project, only_path: true, **open_params) }) if open_params %> <%= tag.attributes(data: { version_id: section.version.id }) if drop_target %> <%= tag.attributes(data: { refuse_reason: refuse_reason }) if refuse_reason %>>
   <summary class="rubylode-progress-section__summary">
@@ -32,7 +32,7 @@
     <%= render "checklist_section_rows", section: section, project: project, progress: progress, filter: filter, grouping: grouping,
                                         item_notes: item_notes, today: today, focused_stage: focused_stage %>
   <% end %>
-  <%= render "checklist_section_more", section: section, project: project, filter: filter, grouping: grouping, default_grouping: default_grouping,
+  <%= render "checklist_section_more", section: section, project: project, filter: filter, link_grouping: link_grouping, default_grouping: default_grouping,
                                       narrowing: narrowing, focused_stage: focused_stage %>
 </details>
 <% end %>

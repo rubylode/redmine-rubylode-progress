@@ -146,7 +146,7 @@ class RubylodeProgressController < ApplicationController
   # filter would show whatever filter is chosen now.
   def checklist_locals
     { sections: @sections, item_notes: @item_notes, project: @project, progress: @progress, filter: @filter,
-      grouping: @grouping, default_grouping: @progress.settings.checklist_grouping, counts: @counts,
+      grouping: @grouping, link_grouping: @checked_grouping, default_grouping: @progress.settings.checklist_grouping, counts: @counts,
       shown_count: @checklist_items.size, today: @today, narrowing: @narrowing, narrowing_options: @narrowing_options,
       focused_stage: @progress.focused_stage }
   end

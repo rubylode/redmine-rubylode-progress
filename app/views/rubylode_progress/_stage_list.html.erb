@@ -3,7 +3,7 @@
 <% open_stage_id = focused_stage.version.id if focused_stage %>
 <% fold = progress.finished_stage_fold %>
 <%# What a folded stage's link without a script carries: the page's own checked filter, grouping and selects, nothing from the raw request. %>
-<% link_parameters = rubylode_progress_checklist_params(**checklist_locals.slice(:filter, :grouping, :default_grouping, :narrowing), stage: focused_stage&.version&.id) %>
+<% link_parameters = rubylode_progress_checklist_params(**checklist_locals.slice(:filter, :default_grouping, :narrowing), grouping: checklist_locals[:link_grouping], stage: focused_stage&.version&.id) %>
 <% stage_indexes = progress.stages.each_with_index.to_h { |stage, index| [stage.version.id, index] } %>
 <section class="rubylode-progress-stage-list" data-controller="rubylode-progress-lazy-stage"
          data-rubylode-progress-lazy-stage-loading-message-value="<%= l("rubylode_progress.stage_issues_loading") %>"

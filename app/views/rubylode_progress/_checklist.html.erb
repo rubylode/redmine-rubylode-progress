@@ -21,8 +21,8 @@
   </div>
 
   <div class="rubylode-progress-checklist__selectors">
-    <%= render "filters", project: project, current_filter: filter, counts: counts, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, focused_stage: focused_stage %>
-    <%= render "narrowing", project: project, filter: filter, grouping: grouping, default_grouping: default_grouping, narrowing: narrowing, narrowing_options: narrowing_options, focused_stage: focused_stage %>
+    <%= render "filters", project: project, current_filter: filter, counts: counts, link_grouping: link_grouping, default_grouping: default_grouping, narrowing: narrowing, focused_stage: focused_stage %>
+    <%= render "narrowing", project: project, filter: filter, link_grouping: link_grouping, default_grouping: default_grouping, narrowing: narrowing, narrowing_options: narrowing_options, focused_stage: focused_stage %>
   </div>
 
   <div class="rubylode-progress-checklist__controls">
@@ -35,6 +35,6 @@
   <% if sections.empty? %>
     <p class="rubylode-progress-checklist__empty"><%= l("rubylode_progress.checklist.empty.#{filter == "needs_you" ? "needs_you" : "other"}") %></p>
   <% end %>
-  <%= render "checklist_sections", sections: sections, project: project, progress: progress, filter: filter, grouping: grouping,
+  <%= render "checklist_sections", sections: sections, project: project, progress: progress, filter: filter, grouping: grouping, link_grouping: link_grouping,
                                   default_grouping: default_grouping, narrowing: narrowing, item_notes: item_notes, today: today, focused_stage: focused_stage %>
 </section>

@@ -402,6 +402,99 @@ class FocusOnAStageTest < Redmine::IntegrationTest
     end
   end
 
+  # Every address the page (or a swapped-in fragment) carries, and the hidden fields of its forms.
+  def addresses_on_the_page
+    css_select("[href], [data-checklist-path], [data-lazy-section-path]").flat_map do |node|
+      [node["href"], node["data-checklist-path"], node["data-lazy-section-path"]].compact
+    end
+  end
+
+  def assert_grouping_kept_in_links(grouping)
+    addresses = addresses_on_the_page
+    assert_empty addresses.grep(/group=flat/), "no address names the flat grouping"
+    assert_select "input[type=hidden][name=group][value=flat]", count: 0
+    assert_not_includes response.body, "group=flat"
+    pills = css_select("a.rubylode-progress-filter")
+    assert_operator pills.size, :>, 1
+    pills.each do |pill|
+      assert_equal grouping, query_of(pill["href"])["group"], "pill #{pill["href"]}"
+      assert_equal grouping, query_of(pill["data-checklist-path"])["group"], "pill #{pill["data-checklist-path"]}"
+    end
+    form = css_select("form.rubylode-progress-narrowing").first
+    assert_equal grouping, query_of(form["data-checklist-path"])["group"]
+    assert_select "form.rubylode-progress-narrowing input[type=hidden][name=group][value=?]", grouping
+    more = css_select("a.rubylode-progress-show-more").first
+    assert more, "a show more link"
+    assert_equal grouping, query_of(more["href"])["group"]
+    assert_equal grouping, query_of(more["data-checklist-path"])["group"]
+    name_link = focus_link_for(@upcoming)
+    assert name_link, "the focused stage's name is a link"
+    assert_equal grouping, query_of(name_link["href"])["group"]
+  end
+
+  test "a focused page keeps the chosen grouping in every link, and leaving the focus restores it" do
+    build_project
+    4.times { |count| Issue.generate!(project: @project, fixed_version: @upcoming, author: @developer, subject: "More #{count}") }
+    RubylodeProgress::ProjectSetting.create!(project: @project, checklist_rows_per_section: 5)
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { stage: @upcoming.id, filter: "all", group: "category" }
+
+    assert_response :success
+    assert_grouping_kept_in_links("category")
+    assert_select "a.rubylode-progress-group__button", count: 0
+
+    get css_select("a.rubylode-progress-filter[data-filter-name=open]").first["href"]
+
+    assert_response :success
+    assert_grouping_kept_in_links("category")
+    show_all = css_select("a.rubylode-progress-tracker__show-all").first
+    assert_equal "category", query_of(show_all["href"])["group"]
+    assert_nil query_of(show_all["href"])["stage"]
+
+    get show_all["href"]
+
+    assert_response :success
+    assert_select "a.rubylode-progress-group__button[aria-pressed=true][data-group-name=category]", count: 1
+    assert_select "a.rubylode-progress-tracker__show-all", count: 0
+  end
+
+  test "the checklist fragment of a focused page keeps the chosen grouping in its links" do
+    build_project
+    4.times { |count| Issue.generate!(project: @project, fixed_version: @upcoming, author: @developer, subject: "More #{count}") }
+    RubylodeProgress::ProjectSetting.create!(project: @project, checklist_rows_per_section: 5)
+    log_user("jsmith", "jsmith")
+
+    get checklist_path, params: { stage: @upcoming.id, filter: "all", group: "category" }
+
+    assert_response :success
+    assert_empty addresses_on_the_page.grep(/group=flat/)
+    assert_not_includes response.body, "group=flat"
+    css_select("a.rubylode-progress-filter, a.rubylode-progress-show-more").each do |link|
+      assert_equal "category", query_of(link["href"])["group"], link["href"]
+      assert_equal "category", query_of(link["data-checklist-path"])["group"], link["data-checklist-path"]
+    end
+    assert_select "form.rubylode-progress-narrowing input[type=hidden][name=group][value=category]", count: 1
+  end
+
+  test "the unfocused page keeps its group-by links and carries no stage or flat grouping" do
+    build_project
+    log_user("jsmith", "jsmith")
+
+    get progress_path, params: { filter: "all", group: "category" }
+
+    assert_response :success
+    assert_not_includes response.body, "group=flat"
+    buttons = css_select("a.rubylode-progress-group__button")
+    assert_equal %w[version category parent], buttons.map { |button| button["data-group-name"] }
+    assert_equal "category", css_select("a.rubylode-progress-group__button[aria-pressed=true]").first["data-group-name"]
+    css_select("a.rubylode-progress-filter").each do |pill|
+      assert_equal "category", query_of(pill["href"])["group"]
+      assert_not_includes query_of(pill["href"]).keys, "stage"
+    end
+    assert_select "form.rubylode-progress-narrowing input[type=hidden][name=group][value=category]", count: 1
+  end
+
   test "dragging targets survive the focus and the rail gains no drop target markup" do
     build_project
     log_user("jsmith", "jsmith")
