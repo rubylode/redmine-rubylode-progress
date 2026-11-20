@@ -50,6 +50,17 @@ class ProjectSettingsTabTest < Redmine::IntegrationTest
     patch save_path, params: { rubylode_progress_project_setting: fields }
   end
 
+  test "the number fields are wide enough to show their 'Use the default' hint" do
+    log_user("jsmith", "jsmith")
+
+    get settings_path
+
+    assert_response :success
+    %w[next_issue_limit finished_stages_kept checklist_rows_per_section].each do |name|
+      assert_select "input[type=number][name$='[#{name}]'][placeholder^='Use the default'][style*='width: 11em']", count: 1
+    end
+  end
+
   test "someone with Edit project sees the Progress tab and saves an override" do
     category = IssueCategory.create!(project: @project, name: "Backend")
     version = Version.generate!(project: @project, effective_date: Date.new(2026, 2, 15))

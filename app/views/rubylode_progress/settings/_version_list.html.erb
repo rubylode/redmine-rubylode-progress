@@ -13,7 +13,7 @@
         <%= check_box_tag "rubylode_progress_project_setting[counted_version_ids][]", version.id, !unticked_ids.include?(version.id),
                           id: "rubylode_progress_project_setting_counted_version_ids_#{version.id}" %>
         <%= version.name %>
-        <% if version.effective_date %><em class="info"><%= format_date(version.effective_date) %></em><% end %>
+        <% if version.effective_date %><span class="rubylode-progress-version-date" style="margin-left: 0.5em; color: #5d6672"><%= format_date(version.effective_date) %></span><% end %>
       </label>
     <% end %>
   </fieldset>
