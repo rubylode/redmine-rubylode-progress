@@ -43,6 +43,7 @@ the viewer may see.
 17. ~~Release 1.1.0~~ done 2026-11-20: v1.1.0 (45f5924) is on GitHub and on redmine.org (the same zip, sha256 checked).
     The settings number fields and the phone selects were fixed after the tag (74f64fb), for 1.1.1.
 18. Focus on one stage: ~~`22-focus-on-a-stage.md`~~ (spec `docs/specs/2026-11-20-focus-on-a-stage-design.md`) done 2026-11-20, for 1.2.0.
+19. ~~Release 1.2.0~~ done 2026-11-20: v1.2.0 (37a367f) is on GitHub and on redmine.org (the same zip, sha256 checked).
 
 ## Ideas
 
