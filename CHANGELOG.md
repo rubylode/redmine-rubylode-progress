@@ -4,6 +4,10 @@ All notable changes to this plugin. The format follows [Keep a Changelog](https:
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-20
+
+No migration: replace the folder and restart Redmine.
+
 ### Added
 
 - Focus on one stage: click a stage's name in the stage list, or its mark on the track, and the page lists only that stage and its issues, with the stage's own name, percent and closed count at the top. The address is the view, `/projects/:id/progress/stages/:version_id` (filter, grouping and selects follow as the query; the older `?stage=<id>` still works, and the path wins when both are given), so it can be shared; the other stages stay on the track, dimmed, as links, and "Show all stages" leaves the focus.
@@ -61,6 +65,7 @@ First release. Needs Redmine 7.0 or newer.
 - Styling through CSS custom properties, with a dark block to paste into a dark theme (`docs/theming.md`), and a layout for a phone.
 - A throwaway demo Redmine with made-up projects (`ruby bin/demo up`), the README screenshots from it, and unit and integration tests (`bin/test`).
 
+[1.2.0]: https://github.com/rubylode/redmine-rubylode-progress/releases/tag/v1.2.0
 [1.1.1]: https://github.com/rubylode/redmine-rubylode-progress/releases/tag/v1.1.1
 [1.1.0]: https://github.com/rubylode/redmine-rubylode-progress/releases/tag/v1.1.0
 [1.0.0]: https://github.com/rubylode/redmine-rubylode-progress/releases/tag/v1.0.0
